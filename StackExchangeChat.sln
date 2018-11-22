@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2041
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StackExchangeChat.Console", "StackExchangeChat.Console\StackExchangeChat.Console.csproj", "{09DF63E9-E7A0-4C9A-BBFD-37E8102E7D8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StackExchangeChat", "StackExchangeChat\StackExchangeChat.csproj", "{3B555F10-2376-4072-9866-7B8462AB056E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{09DF63E9-E7A0-4C9A-BBFD-37E8102E7D8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09DF63E9-E7A0-4C9A-BBFD-37E8102E7D8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09DF63E9-E7A0-4C9A-BBFD-37E8102E7D8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09DF63E9-E7A0-4C9A-BBFD-37E8102E7D8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B555F10-2376-4072-9866-7B8462AB056E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B555F10-2376-4072-9866-7B8462AB056E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B555F10-2376-4072-9866-7B8462AB056E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B555F10-2376-4072-9866-7B8462AB056E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1975A9CE-C904-46E2-A25B-F7B2A961C591}
+	EndGlobalSection
+EndGlobal
