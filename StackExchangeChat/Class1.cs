@@ -2,7 +2,13 @@
 
 namespace StackExchangeChat
 {
-    public class Class1
+    public class ChatClient
     {
+        private readonly IServiceProvider _serviceProvider;
+
+        public ChatClient(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
     }
 }
