@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchangeChat.Api;
 using StackExchangeChat.Authenticators;
 using StackExchangeChat.Console.AppSettings;
 using StackExchangeChat.Utilities;
@@ -38,13 +39,15 @@ namespace StackExchangeChat.Console
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var apiThing = new StackExchangeApiHelper(serviceProvider);
+            var apiThing = new ApiClient(serviceProvider);
 
-            apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
-            apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
-            apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
+            //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
+            //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
+            //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
 
-            StackExchangeApiHelper.QuotaRemaining.Subscribe(System.Console.WriteLine);
+            var result = apiThing.QuestionsByTag("meta.stackoverflow", "burninate-request").GetAwaiter().GetResult();
+
+            ApiClient.QuotaRemaining.Subscribe(System.Console.WriteLine);
 
             //// var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
 

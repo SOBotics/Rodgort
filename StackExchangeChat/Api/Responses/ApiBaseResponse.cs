@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace StackExchangeChat.Utilities.Responses
+namespace StackExchangeChat.Api.Responses
 {
     public class ApiBaseResponse
     {
@@ -10,10 +10,10 @@ namespace StackExchangeChat.Utilities.Responses
         public int QuotaRemaining { get; set; }
 
         [JsonProperty("error_id")]
-        public int ErrorId { get; set; }
+        public int? ErrorId { get; set; }
         [JsonProperty("error_message")]
-        public int ErrorMessage { get; set; }
+        public string ErrorMessage { get; set; }
         [JsonProperty("error_name")]
-        public int ErrorName { get; set; }
+        public string ErrorName { get; set; }
     }
 }

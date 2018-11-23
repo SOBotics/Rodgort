@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using StackExchangeChat.Utilities.Responses;
+using StackExchangeChat.Api.Responses;
 
-namespace StackExchangeChat.Utilities
+namespace StackExchangeChat.Api
 {
-    public class StackExchangeApiHelper
+    public class ApiClient
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -24,7 +24,7 @@ namespace StackExchangeChat.Utilities
 
         private static Action<int> m_UpdateQuota;
 
-        static StackExchangeApiHelper()
+        static ApiClient()
         {
             var replaySubject = new ReplaySubject<int>(1);
             Observable.Create<int>(o =>
@@ -37,7 +37,7 @@ namespace StackExchangeChat.Utilities
             QuotaRemaining.Subscribe(remaining => { Interlocked.Exchange(ref CurrentQuotaRemaining, remaining); });
         }
 
-        public StackExchangeApiHelper(IServiceProvider serviceProvider)
+        public ApiClient(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
@@ -79,11 +79,20 @@ namespace StackExchangeChat.Utilities
             }
         }
 
-        public Task<TotalResponse> TotalQuestionsByTag(string tag)
+        private const string BaseUrl = "https://api.stackexchange.com/2.2";
+
+        public Task<TotalResponse> TotalQuestionsByTag(string siteName, string tag)
         {
             var encodedTag = HttpUtility.HtmlEncode(tag);
-            var query = $"https://api.stackexchange.com/2.2/questions?order=desc&sort=activity&tagged={encodedTag}&site=stackoverflow&filter=!--s3oyShP3gx";
+            var query = $"{BaseUrl}/questions?tagged={encodedTag}&site={siteName}&filter=!--s3oyShP3gx";
             return MakeRequest<TotalResponse>(query);
+        }
+
+        public Task<ApiItemsResponse<BaseQuestion>> QuestionsByTag(string siteName, string tag)
+        {
+            var encodedTag = HttpUtility.HtmlEncode(tag);
+            var query = $"{BaseUrl}/questions?tagged={encodedTag}&site={siteName}&filter=!bHIU4eJgUSOOHK";
+            return MakeRequest<ApiItemsResponse<BaseQuestion>>(query);
         }
     }
 }

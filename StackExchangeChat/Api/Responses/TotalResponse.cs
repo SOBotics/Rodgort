@@ -1,4 +1,4 @@
-﻿namespace StackExchangeChat.Utilities.Responses
+﻿namespace StackExchangeChat.Api.Responses
 {
     public class TotalResponse : ApiBaseResponse
     {
