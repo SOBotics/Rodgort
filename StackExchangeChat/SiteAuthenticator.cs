@@ -6,17 +6,16 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using StackExchangeChat.Console.AppSettings;
 using StackExchangeChat.Sites;
 using StackExchangeChat.Utilities;
 
-namespace StackExchangeChat.Authenticators
+namespace StackExchangeChat
 {
     public class SiteAuthenticator
     {
         private readonly HttpClientWithHandler _authenticatingHttpClient;
         private readonly HttpClientWithHandler _fkeyHttpClient;
-        private readonly Credentials _credentials;
+        private readonly IChatCredentials _chatCredentials;
 
         private struct SiteRoomIdPair
         {
@@ -33,14 +32,14 @@ namespace StackExchangeChat.Authenticators
         public SiteAuthenticator(
             HttpClientWithHandler authenticatingHttpClient,
             HttpClientWithHandler fkeyHttpClient,
-            Credentials credentials)
+            IChatCredentials chatCredentials)
         {
             if (ReferenceEquals(authenticatingHttpClient, fkeyHttpClient))
                 throw new ArgumentException("Must provide two distinct instance of HttpClient for the Authenticating client and the fkey client.");
             
             _authenticatingHttpClient = authenticatingHttpClient;
             _fkeyHttpClient = fkeyHttpClient;
-            _credentials = credentials;
+            _chatCredentials = chatCredentials;
         }
 
         public async Task AuthenticateClient(HttpClientWithHandler httpClient, Site site)
@@ -99,10 +98,10 @@ namespace StackExchangeChat.Authenticators
 
             async Task<Cookie> GetAccountCookieInternal()
             {
-                if (!string.IsNullOrWhiteSpace(_credentials.AcctCookie))
+                if (!string.IsNullOrWhiteSpace(_chatCredentials.AcctCookie))
                 {
-                    var expiry = DateTime.ParseExact(_credentials.AcctCookieExpiry, "yyyy-MM-dd HH:mm:ssZ", CultureInfo.InvariantCulture);
-                    return new Cookie("acct", _credentials.AcctCookie, "/", site.LoginDomain)
+                    var expiry = DateTime.ParseExact(_chatCredentials.AcctCookieExpiry, "yyyy-MM-dd HH:mm:ssZ", CultureInfo.InvariantCulture);
+                    return new Cookie("acct", _chatCredentials.AcctCookie, "/", site.LoginDomain)
                     {
                         Expires = expiry
                     };
@@ -123,8 +122,8 @@ namespace StackExchangeChat.Authenticators
                 var loginPayload = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     {"fkey", fkey},
-                    {"email", _credentials.Email},
-                    {"password", _credentials.Password},
+                    {"email", _chatCredentials.Email},
+                    {"password", _chatCredentials.Password},
                 });
 
                 await _authenticatingHttpClient.PostAsync($"https://{site.LoginDomain}/users/login", loginPayload);

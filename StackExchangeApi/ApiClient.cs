@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using StackExchangeChat.Api.Responses;
+using StackExchangeApi.Responses;
 
-namespace StackExchangeChat.Api
+namespace StackExchangeApi
 {
     public class ApiClient
     {

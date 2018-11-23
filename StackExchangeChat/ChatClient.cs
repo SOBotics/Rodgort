@@ -6,7 +6,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StackExchangeChat.Authenticators;
 using StackExchangeChat.Sites;
 using StackExchangeChat.Utilities;
 using WebSocketSharp;

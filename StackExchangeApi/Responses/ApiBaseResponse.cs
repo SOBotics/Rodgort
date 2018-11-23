@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace StackExchangeChat.Api.Responses
+namespace StackExchangeApi.Responses
 {
     public class ApiBaseResponse
     {

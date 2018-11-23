@@ -4,9 +4,7 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchangeChat.Api;
-using StackExchangeChat.Authenticators;
-using StackExchangeChat.Console.AppSettings;
+using StackExchangeApi;
 using StackExchangeChat.Utilities;
 
 namespace StackExchangeChat.Console
@@ -26,7 +24,7 @@ namespace StackExchangeChat.Console
 
             IConfiguration config = builder.Build();
 
-            var credentials = new Credentials();
+            var credentials = new ChatCredentials();
             config.Bind("ChatCredentials", credentials);
             
             serviceCollection.AddScoped<SiteAuthenticator>();
@@ -35,7 +33,7 @@ namespace StackExchangeChat.Console
             serviceCollection.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
             serviceCollection.AddTransient<HttpClientWithHandler>();
             serviceCollection.AddSingleton(_ => config);
-            serviceCollection.AddSingleton(_ => credentials);
+            serviceCollection.AddSingleton<IChatCredentials>(_ => credentials);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -51,7 +49,7 @@ namespace StackExchangeChat.Console
 
             //// var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
 
-            //var chatClient = serviceProvider.GetService<ChatClient>();
+            var chatClient = serviceProvider.GetService<ChatClient>();
             //chatClient.SubscribeToEvents(Site.StackOverflow, 167908)
             //    .Where(c => c.EventType == EventType.MessagePosted || c.EventType == EventType.MessageEdited)
             //    .Subscribe(async chatEvent =>

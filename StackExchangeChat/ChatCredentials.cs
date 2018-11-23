@@ -1,6 +1,6 @@
-﻿namespace StackExchangeChat.Console.AppSettings
+﻿namespace StackExchangeChat
 {
-    public class Credentials
+    public class ChatCredentials : IChatCredentials
     {
         public string AcctCookie { get; set; }
         public string AcctCookieExpiry { get; set; }
