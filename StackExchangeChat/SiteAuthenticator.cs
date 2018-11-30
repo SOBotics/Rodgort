@@ -23,7 +23,7 @@ namespace StackExchangeChat
             public int RoomId;
         }
 
-        private DateTime? _cookieExpires;
+        private readonly Dictionary<ChatSite, DateTime> _cookieExpires = new Dictionary<ChatSite, DateTime>();
         private readonly Dictionary<ChatSite, Task<Cookie>> _authenticateTasks = new Dictionary<ChatSite, Task<Cookie>>();
         private readonly object _locker = new object();
 
@@ -97,7 +97,7 @@ namespace StackExchangeChat
             Task<Cookie> task;
             lock (_locker)
             {
-                if (_cookieExpires.HasValue && _cookieExpires.Value < DateTime.UtcNow)
+                if (_cookieExpires.ContainsKey(chatSite) && _cookieExpires[chatSite] < DateTime.UtcNow)
                     _authenticateTasks.Remove(chatSite);
 
                 if (!_authenticateTasks.ContainsKey(chatSite))
@@ -107,21 +107,13 @@ namespace StackExchangeChat
             }
 
             var cookie = await task;
-            _cookieExpires = cookie.Expires;
+            lock(_locker)
+                _cookieExpires[chatSite] = cookie.Expires;
+
             return cookie;
 
             async Task<Cookie> GetAccountCookieInternal()
             {
-                if (!string.IsNullOrWhiteSpace(_chatCredentials.AcctCookie))
-                {
-                    var expiry = DateTime.ParseExact(_chatCredentials.AcctCookieExpiry, "yyyy-MM-dd HH:mm:ssZ",
-                        CultureInfo.InvariantCulture);
-                    return new Cookie("acct", _chatCredentials.AcctCookie, "/", chatSite.LoginDomain)
-                    {
-                        Expires = expiry
-                    };
-                }
-
                 var cookieContainer = new CookieContainer();
                 using (var httpClient = _serviceProvider.GetService<HttpClientWithHandler>())
                 {
