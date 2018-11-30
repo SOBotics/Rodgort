@@ -52,13 +52,9 @@ namespace StackExchangeChat.Console
             // var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
 
             var chatClient = serviceProvider.GetService<ChatClient>();
-            chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421).Subscribe(System.Console.WriteLine);
-            chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421)
-                .Where(c => 
-                    c.EventDetails.EventType == EventType.MessagePosted 
-                    || c.EventDetails.EventType == EventType.MessageEdited
-                    || c.EventDetails.EventType == EventType.UserMentioned
-                )
+            chatClient
+                .SubscribeToEvents(ChatSite.StackExchange, 86421)
+                .OnlyMessages()
                 .Subscribe(async chatEvent =>
                 {
                     try
