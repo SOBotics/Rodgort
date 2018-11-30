@@ -6,7 +6,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using StackExchangeChat.Sites;
 using StackExchangeChat.Utilities;
 using WebSocketSharp;
 
@@ -23,11 +22,11 @@ namespace StackExchangeChat
             _httpClient = httpClient;
         }
 
-        public async Task SendMessage(Site site, int roomId, string message)
+        public async Task SendMessage(ChatSite chatSite, int roomId, string message)
         {
-            var fkey = await _siteAuthenticator.GetFKeyForRoom(site, roomId);
-            await _siteAuthenticator.AuthenticateClient(_httpClient, site);
-            await _httpClient.PostAsync($"https://{site.ChatDomain}/chats/{roomId}/messages/new",
+            var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
+            await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+            await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
                 new FormUrlEncodedContent(
                     new Dictionary<string, string>
                     {
@@ -36,35 +35,35 @@ namespace StackExchangeChat
                     }));
         }
 
-        public IObservable<ChatEvent> SubscribeToEvents(Site site, int roomId)
+        public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, int roomId)
         {
             return Observable.Create<ChatEvent>(async observer =>
             {
-                var roomFKey = await _siteAuthenticator.GetFKeyForRoom(site, roomId);
-
-                await _siteAuthenticator.AuthenticateClient(_httpClient, site);
-                var wsAuthRequest = await _httpClient.PostAsync($"https://{site.ChatDomain}/ws-auth",
+                var roomDetails = await _siteAuthenticator.GetRoomDetails(chatSite, roomId);
+                
+                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+                var wsAuthRequest = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/ws-auth",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
-                            {"fkey", roomFKey},
+                            {"fkey", roomDetails.FKey},
                             {"roomid", roomId.ToString()}
                         }));
 
                 var wsAuthUrl = JsonConvert.DeserializeObject<JObject>(await wsAuthRequest.Content.ReadAsStringAsync())["url"].Value<string>();
 
-                var eventsRequest = await _httpClient.PostAsync($"https://{site.ChatDomain}/chats/{roomId}/events",
+                var eventsRequest = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/events",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
                             {"mode", "events"},
                             {"msgCount", "0"},
-                            {"fkey", roomFKey}
+                            {"fkey", roomDetails.FKey}
                         }));
 
                 var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
 
-                var webSocket = new WebSocket($"{wsAuthUrl}?l={lastEventTime}") {Origin = $"https://{site.ChatDomain}"};
+                var webSocket = new WebSocket($"{wsAuthUrl}?l={lastEventTime}") {Origin = $"https://{chatSite.ChatDomain}"};
                 webSocket.OnMessage += (sender, args) =>
                 {
                     var dataObject = JsonConvert.DeserializeObject<JObject>(args.Data);
@@ -72,9 +71,16 @@ namespace StackExchangeChat
                     if (eventsObject == null)
                         return;
 
-                    var events = eventsObject.ToObject<List<ChatEvent>>();
+                    var events = eventsObject.ToObject<List<EventDetails>>();
                     foreach (var @event in events)
-                        observer.OnNext(@event);
+                    {
+                        var chatEvent = new ChatEvent
+                        {
+                            RoomDetails = roomDetails,
+                            EventDetails = @event
+                        };
+                        observer.OnNext(chatEvent);
+                    }
                 };
 
                 webSocket.Connect();

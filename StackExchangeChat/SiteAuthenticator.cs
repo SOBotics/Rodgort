@@ -4,95 +4,109 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
-using StackExchangeChat.Sites;
+using Microsoft.Extensions.DependencyInjection;
 using StackExchangeChat.Utilities;
 
 namespace StackExchangeChat
 {
     public class SiteAuthenticator
     {
-        private readonly HttpClientWithHandler _authenticatingHttpClient;
-        private readonly HttpClientWithHandler _fkeyHttpClient;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IChatCredentials _chatCredentials;
 
         private struct SiteRoomIdPair
         {
-            public Site Site;
+            public ChatSite ChatSite;
             public int RoomId;
         }
 
         private DateTime? _cookieExpires;
-        private Task<Cookie> _authenticateTask;
+        private readonly Dictionary<ChatSite, Task<Cookie>> _authenticateTasks = new Dictionary<ChatSite, Task<Cookie>>();
         private readonly object _locker = new object();
 
-        private readonly Dictionary<SiteRoomIdPair, Task<string>> m_CachedFKeys = new Dictionary<SiteRoomIdPair, Task<string>>();
+        private readonly Dictionary<SiteRoomIdPair, Task<RoomDetails>> _cachedRoomDetails = new Dictionary<SiteRoomIdPair, Task<RoomDetails>>();
 
-        public SiteAuthenticator(
-            HttpClientWithHandler authenticatingHttpClient,
-            HttpClientWithHandler fkeyHttpClient,
-            IChatCredentials chatCredentials)
+        public SiteAuthenticator(IServiceProvider serviceProvider, IChatCredentials chatCredentials)
         {
-            if (ReferenceEquals(authenticatingHttpClient, fkeyHttpClient))
-                throw new ArgumentException("Must provide two distinct instance of HttpClient for the Authenticating client and the fkey client.");
-            
-            _authenticatingHttpClient = authenticatingHttpClient;
-            _fkeyHttpClient = fkeyHttpClient;
+            _serviceProvider = serviceProvider;
             _chatCredentials = chatCredentials;
         }
 
-        public async Task AuthenticateClient(HttpClientWithHandler httpClient, Site site)
+        public async Task AuthenticateClient(HttpClientWithHandler httpClient, ChatSite chatSite)
         {
-            var acctCookie = await GetAccountCookie(site);
-
-            var cookieContainer = new CookieContainer();
-            httpClient.Handler.CookieContainer = cookieContainer;
-            cookieContainer.Add(acctCookie);
+            var acctCookie = await GetAccountCookie(chatSite);
+            httpClient.Handler.CookieContainer.Add(acctCookie);
         }
 
-        public async Task<string> GetFKeyForRoom(Site site, int roomId)
+        public async Task<RoomDetails> GetRoomDetails(ChatSite chatSite, int roomId)
         {
-            Task<string> task;
+            Task<RoomDetails> task;
             lock (_locker)
             {
-                var pair = new SiteRoomIdPair {Site = site, RoomId = roomId};
-                if (!m_CachedFKeys.ContainsKey(pair))
-                    m_CachedFKeys[pair] = GetFKeyForRoomInternal();
+                var pair = new SiteRoomIdPair {ChatSite = chatSite, RoomId = roomId};
+                if (!_cachedRoomDetails.ContainsKey(pair))
+                    _cachedRoomDetails[pair] = GetFKeyForRoomInternal();
 
-                task = m_CachedFKeys[pair];
+                task = _cachedRoomDetails[pair];
             }
 
             return await task;
 
-            async Task<string> GetFKeyForRoomInternal()
+            async Task<RoomDetails> GetFKeyForRoomInternal()
             {
-                await AuthenticateClient(_fkeyHttpClient, site);
-                var result = await _fkeyHttpClient.GetAsync($"https://{site.ChatDomain}/rooms/{roomId}");
-                var resultStr = await result.Content.ReadAsStringAsync();
+                using (var httpClient = _serviceProvider.GetService<HttpClientWithHandler>())
+                {
+                    await AuthenticateClient(httpClient, chatSite);
+                    var result = await httpClient.GetAsync($"https://{chatSite.ChatDomain}/rooms/{roomId}");
+                    var resultStr = await result.Content.ReadAsStringAsync();
 
-                var doc = new HtmlDocument();
-                doc.LoadHtml(resultStr);
+                    var doc = new HtmlDocument();
+                    doc.LoadHtml(resultStr);
 
-                var fkeyElement = doc.DocumentNode.SelectSingleNode("//input[@id = 'fkey']");
-                var fkey = fkeyElement.Attributes["value"].Value;
+                    var fkeyElement = doc.DocumentNode.SelectSingleNode("//input[@id = 'fkey']");
+                    var fkey = fkeyElement.Attributes["value"].Value;
 
-                return fkey;
+                    var userPanel = doc.DocumentNode.SelectSingleNode("//div[@id = 'active-user']");
+                    var classItems = userPanel.Attributes["class"].Value;
+
+                    var userIdRegex = new Regex("user\\-(\\d+)");
+                    var userId = int.Parse(userIdRegex.Match(classItems).Groups[1].Value);
+                    var userName = userPanel.SelectSingleNode(".//img").Attributes["title"].Value;
+                    
+                    var roomDetails = new RoomDetails
+                    {
+                        ChatSite = chatSite,
+                        RoomId = roomId,
+                        
+                        MyUserId = userId,
+                        MyUserName = userName,
+
+                        FKey = fkey
+                    };
+
+                    return roomDetails;
+                }
             }
         }
 
-        private async Task<Cookie> GetAccountCookie(Site site)
+        private async Task<Cookie> GetAccountCookie(ChatSite chatSite)
         {
+            Task<Cookie> task;
             lock (_locker)
             {
                 if (_cookieExpires.HasValue && _cookieExpires.Value < DateTime.UtcNow)
-                    _authenticateTask = null;
+                    _authenticateTasks.Remove(chatSite);
 
-                if (_authenticateTask == null)
-                    _authenticateTask = GetAccountCookieInternal();
+                if (!_authenticateTasks.ContainsKey(chatSite))
+                    _authenticateTasks[chatSite] = GetAccountCookieInternal();
+
+                task = _authenticateTasks[chatSite];
             }
 
-            var cookie = await _authenticateTask;
+            var cookie = await task;
             _cookieExpires = cookie.Expires;
             return cookie;
 
@@ -100,39 +114,45 @@ namespace StackExchangeChat
             {
                 if (!string.IsNullOrWhiteSpace(_chatCredentials.AcctCookie))
                 {
-                    var expiry = DateTime.ParseExact(_chatCredentials.AcctCookieExpiry, "yyyy-MM-dd HH:mm:ssZ", CultureInfo.InvariantCulture);
-                    return new Cookie("acct", _chatCredentials.AcctCookie, "/", site.LoginDomain)
+                    var expiry = DateTime.ParseExact(_chatCredentials.AcctCookieExpiry, "yyyy-MM-dd HH:mm:ssZ",
+                        CultureInfo.InvariantCulture);
+                    return new Cookie("acct", _chatCredentials.AcctCookie, "/", chatSite.LoginDomain)
                     {
                         Expires = expiry
                     };
                 }
 
                 var cookieContainer = new CookieContainer();
-                _authenticatingHttpClient.Handler.CookieContainer = cookieContainer;
-
-                var result = await _authenticatingHttpClient.GetAsync($"https://{site.LoginDomain}/users/login");
-                var content = await result.Content.ReadAsStringAsync();
-
-                var doc = new HtmlDocument();
-                doc.LoadHtml(content);
-
-                var fkeyElement = doc.DocumentNode.SelectSingleNode("//form[@id = 'login-form']/input[@name = 'fkey']");
-                var fkey = fkeyElement.Attributes["value"].Value;
-
-                var loginPayload = new FormUrlEncodedContent(new Dictionary<string, string>
+                using (var httpClient = _serviceProvider.GetService<HttpClientWithHandler>())
                 {
-                    {"fkey", fkey},
-                    {"email", _chatCredentials.Email},
-                    {"password", _chatCredentials.Password},
-                });
+                    httpClient.Handler.CookieContainer = cookieContainer;
 
-                await _authenticatingHttpClient.PostAsync($"https://{site.LoginDomain}/users/login", loginPayload);
-                var cookies = cookieContainer.GetCookies(new Uri($"https://{site.LoginDomain}")).Cast<Cookie>().ToList();
-                var acctCookie = cookies.FirstOrDefault(c => c.Name == "acct");
-                if (acctCookie == null || acctCookie.Expired)
-                    throw new Exception();
+                    var result = await httpClient.GetAsync($"https://{chatSite.LoginDomain}/users/login");
+                    var content = await result.Content.ReadAsStringAsync();
 
-                return acctCookie;
+                    var doc = new HtmlDocument();
+                    doc.LoadHtml(content);
+
+                    var fkeyElement =
+                        doc.DocumentNode.SelectSingleNode("//form[@id = 'login-form']/input[@name = 'fkey']");
+                    var fkey = fkeyElement.Attributes["value"].Value;
+
+                    var loginPayload = new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        {"fkey", fkey},
+                        {"email", _chatCredentials.Email},
+                        {"password", _chatCredentials.Password}
+                    });
+
+                    await httpClient.PostAsync($"https://{chatSite.LoginDomain}/users/login", loginPayload);
+                    var cookies = cookieContainer.GetCookies(new Uri($"https://{chatSite.LoginDomain}")).Cast<Cookie>()
+                        .ToList();
+                    var acctCookie = cookies.FirstOrDefault(c => c.Name == "acct");
+                    if (acctCookie == null || acctCookie.Expired)
+                        throw new Exception();
+
+                    return acctCookie;
+                }
             }
         }
     }

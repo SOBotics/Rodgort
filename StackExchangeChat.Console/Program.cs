@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
+using System.Reactive.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchangeApi;
@@ -29,9 +31,9 @@ namespace StackExchangeChat.Console
             
             serviceCollection.AddScoped<SiteAuthenticator>();
             serviceCollection.AddScoped<ChatClient>();
-            serviceCollection.AddTransient<HttpClient>();
-            serviceCollection.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
-            serviceCollection.AddTransient<HttpClientWithHandler>();
+
+            serviceCollection.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
+
             serviceCollection.AddSingleton(_ => config);
             serviceCollection.AddSingleton<IChatCredentials>(_ => credentials);
 
@@ -43,22 +45,34 @@ namespace StackExchangeChat.Console
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
 
-            var result = apiThing.QuestionsByTag("meta.stackoverflow", "burninate-request").GetAwaiter().GetResult();
+            //var result = apiThing.QuestionsByTag("meta.stackoverflow", "burninate-request").GetAwaiter().GetResult();
 
-            ApiClient.QuotaRemaining.Subscribe(System.Console.WriteLine);
+            //ApiClient.QuotaRemaining.Subscribe(System.Console.WriteLine);
 
-            //// var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
+            // var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
 
             var chatClient = serviceProvider.GetService<ChatClient>();
-            //chatClient.SubscribeToEvents(Site.StackOverflow, 167908)
-            //    .Where(c => c.EventType == EventType.MessagePosted || c.EventType == EventType.MessageEdited)
-            //    .Subscribe(async chatEvent =>
-            //    {
-            //        await chatClient.SendMessage(Site.StackOverflow, 167908, $":{chatEvent.MessageId} Replying to message..");
-            //    }, exception =>
-            //    {
-            //        System.Console.WriteLine(exception);
-            //    });
+            chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421).Subscribe(System.Console.WriteLine);
+            chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421)
+                .Where(c => 
+                    c.EventDetails.EventType == EventType.MessagePosted 
+                    || c.EventDetails.EventType == EventType.MessageEdited
+                    || c.EventDetails.EventType == EventType.UserMentioned
+                )
+                .Subscribe(async chatEvent =>
+                {
+                    try
+                    {
+                        if (chatEvent.EventDetails.UserId != chatEvent.RoomDetails.MyUserId)
+                        {
+                            await chatClient.SendMessage(chatEvent.RoomDetails.ChatSite, chatEvent.RoomDetails.RoomId,
+                                $":{chatEvent.EventDetails.MessageId} Replying to message..");
+                        }
+                    } catch (Exception ex) { }
+                }, exception =>
+                {
+                    System.Console.WriteLine(exception);
+                });
 
             System.Console.ReadKey();
         }
