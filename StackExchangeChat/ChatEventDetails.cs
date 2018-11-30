@@ -2,10 +2,10 @@
 
 namespace StackExchangeChat
 {
-    public class EventDetails
+    public class ChatEventDetails
     {
         [JsonProperty(PropertyName = "event_type")]
-        public EventType EventType { get; set; } 
+        public ChatEventType ChatEventType { get; set; } 
 
         [JsonProperty(PropertyName = "time_stamp")]
         public int TimeStamp { get; set; }

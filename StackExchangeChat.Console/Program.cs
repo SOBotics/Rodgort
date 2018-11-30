@@ -52,17 +52,19 @@ namespace StackExchangeChat.Console
             // var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
 
             var chatClient = serviceProvider.GetService<ChatClient>();
-            chatClient
-                .SubscribeToEvents(ChatSite.StackExchange, 86421)
+            var events = chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421);
+            events.Subscribe(System.Console.WriteLine);
+            events
                 .OnlyMessages()
+                .SameRoomOnly()
                 .Subscribe(async chatEvent =>
                 {
                     try
                     {
-                        if (chatEvent.EventDetails.UserId != chatEvent.RoomDetails.MyUserId)
+                        if (chatEvent.ChatEventDetails.UserId != chatEvent.RoomDetails.MyUserId)
                         {
                             await chatClient.SendMessage(chatEvent.RoomDetails.ChatSite, chatEvent.RoomDetails.RoomId,
-                                $":{chatEvent.EventDetails.MessageId} Replying to message..");
+                                $":{chatEvent.ChatEventDetails.MessageId} Replying to message..");
                         }
                     } catch (Exception ex) { }
                 }, exception =>

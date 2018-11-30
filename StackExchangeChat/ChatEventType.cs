@@ -1,7 +1,7 @@
 ﻿namespace StackExchangeChat
 {
     // Copy & pasted from https://github.com/SOBotics/SharpExchange/blob/master/SharpExchange/Chat/Events/EventType.cs
-    public enum EventType
+    public enum ChatEventType
     {
         /// <summary>
         /// A new message has been posted.
@@ -34,12 +34,12 @@
         MessageStarToggled = 6,
 
         /// <summary>
-        /// No idea.
+        /// Browser simply logs the content of this event.
         /// </summary>
         DebugMessage = 7,
 
         /// <summary>
-        /// The current account has been mentioned (@Username) in a message.
+        /// The current account has been mentioned (@Username) in a message. May originate from another room.
         /// </summary>
         UserMentioned = 8,
 
@@ -66,12 +66,13 @@
         ModeratorFlag = 12,
 
         /// <summary>
-        /// No idea.
+        /// User is ignored or un-ignored.
         /// </summary>
         UserSettingsChanged = 13,
 
         /// <summary>
-        /// No idea.
+        /// Notifications displayed as a banner in a room. Does not include room invitations. 
+        /// For example, room events starting.
         /// </summary>
         GlobalNotification = 14,
 
@@ -81,7 +82,7 @@
         UserAccessLevelChanged = 15,
 
         /// <summary>
-        /// No idea.
+        /// Not sure which events trigger this. Behaves the same as GlobalNotification in the web browser.
         /// </summary>
         UserNotification = 16,
 
@@ -91,7 +92,7 @@
         RoomInvitation = 17,
 
         /// <summary>
-        /// Someone has posted a direct reply to a message posted by this account.
+        /// Someone has posted a direct reply to a message posted by this account. May originate from another room.
         /// </summary>
         MessageReply = 18,
 
@@ -111,7 +112,7 @@
         TimeBreak = 21,
 
         /// <summary>
-        /// No idea.
+        /// New item in the room's feed ticker received.
         /// </summary>
         FeedTicker = 22,
 

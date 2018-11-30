@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -17,12 +16,7 @@ namespace StackExchangeChat
         private readonly IServiceProvider _serviceProvider;
         private readonly IChatCredentials _chatCredentials;
 
-        private struct SiteRoomIdPair
-        {
-            public ChatSite ChatSite;
-            public int RoomId;
-        }
-
+        private struct SiteRoomIdPair { public ChatSite ChatSite; public int RoomId; }
         private readonly Dictionary<ChatSite, DateTime> _cookieExpires = new Dictionary<ChatSite, DateTime>();
         private readonly Dictionary<ChatSite, Task<Cookie>> _authenticateTasks = new Dictionary<ChatSite, Task<Cookie>>();
         private readonly object _locker = new object();
@@ -137,8 +131,7 @@ namespace StackExchangeChat
                     });
 
                     await httpClient.PostAsync($"https://{chatSite.LoginDomain}/users/login", loginPayload);
-                    var cookies = cookieContainer.GetCookies(new Uri($"https://{chatSite.LoginDomain}")).Cast<Cookie>()
-                        .ToList();
+                    var cookies = cookieContainer.GetCookies(new Uri($"https://{chatSite.LoginDomain}")).Cast<Cookie>().ToList();
                     var acctCookie = cookies.FirstOrDefault(c => c.Name == "acct");
                     if (acctCookie == null || acctCookie.Expired)
                         throw new Exception();

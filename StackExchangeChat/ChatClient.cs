@@ -71,13 +71,13 @@ namespace StackExchangeChat
                     if (eventsObject == null)
                         return;
 
-                    var events = eventsObject.ToObject<List<EventDetails>>();
+                    var events = eventsObject.ToObject<List<ChatEventDetails>>();
                     foreach (var @event in events)
                     {
                         var chatEvent = new ChatEvent
                         {
                             RoomDetails = roomDetails,
-                            EventDetails = @event
+                            ChatEventDetails = @event
                         };
                         observer.OnNext(chatEvent);
                     }
