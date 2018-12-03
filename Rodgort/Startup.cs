@@ -1,10 +1,14 @@
+using System;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rodgort.Data;
 
 namespace Rodgort
 {
@@ -20,6 +24,9 @@ namespace Rodgort
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var connectionString = Configuration.GetConnectionString("RodgortDB");
+
+            services.AddHangfire(config => config.UsePostgreSqlStorage(connectionString));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // In production, the Angular files will be served from this directory
@@ -27,18 +34,29 @@ namespace Rodgort
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+
+            services
+                .AddEntityFrameworkNpgsql()
+                .AddDbContext<RodgortContext>(options =>
+                {
+                    options.UseNpgsql(connectionString).ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+                });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseHangfireServer();
+            app.UseHangfireDashboard();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
             else
             {
-                app.UseExceptionHandler("/Error");
+                app.UseExceptionHandler();
                 app.UseHsts();
             }
 
@@ -58,6 +76,19 @@ namespace Rodgort
                 if (env.IsDevelopment())
                     spa.UseProxyToSpaDevelopmentServer("http://localhost:4200");
             });
+
+            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            {
+                using (var context = serviceScope.ServiceProvider.GetService<RodgortContext>())
+                {
+                    if (!context.Database.IsInMemory())
+                        context.Database.Migrate();
+                }
+            }
+
+            RecurringJob.AddOrUpdate(
+                "Refresh burnination request list",
+                () => Console.WriteLine("Hello!"), "0 0 * * 0");
         }
     }
 }
