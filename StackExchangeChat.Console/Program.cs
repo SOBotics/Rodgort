@@ -54,19 +54,19 @@ namespace StackExchangeChat.Console
             var chatClient = serviceProvider.GetService<ChatClient>();
             var events = chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421);
             events.Subscribe(System.Console.WriteLine);
-            events
+
+            chatClient
+                .SubscribeToEvents(ChatSite.StackExchange, 86421)
                 .OnlyMessages()
                 .SameRoomOnly()
+                .SkipMyMessages()
                 .Subscribe(async chatEvent =>
                 {
                     try
                     {
-                        if (chatEvent.ChatEventDetails.UserId != chatEvent.RoomDetails.MyUserId)
-                        {
-                            await chatClient.SendMessage(chatEvent.RoomDetails.ChatSite, chatEvent.RoomDetails.RoomId,
-                                $":{chatEvent.ChatEventDetails.MessageId} Replying to message..");
-                        }
-                    } catch (Exception ex) { }
+                        await chatClient.SendMessage(chatEvent.RoomDetails.ChatSite, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} Replying to message..");
+                    }
+                    catch (Exception ex) { }
                 }, exception =>
                 {
                     System.Console.WriteLine(exception);

@@ -25,6 +25,11 @@ namespace StackExchangeChat.Utilities
             return observable.Where(c => c.ChatEventDetails.RoomId == c.RoomDetails.RoomId);
         }
 
+        public static IObservable<ChatEvent> SkipMyMessages(this IObservable<ChatEvent> observable, params ChatEventType[] chatEventTypes)
+        {
+            return observable.Where(c => c.ChatEventDetails.UserId != c.RoomDetails.MyUserId);
+        }
+
         public static IObservable<ChatEvent> OnlyEventTypes(this IObservable<ChatEvent> observable, params ChatEventType[] chatEventTypes)
         {
             return observable.Where(c => chatEventTypes.Contains(c.ChatEventDetails.ChatEventType));
