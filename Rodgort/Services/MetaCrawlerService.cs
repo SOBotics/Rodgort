@@ -48,7 +48,7 @@ namespace Rodgort.Services
 
                 var questionIds = metaQuestions.Items.Select(q => q.QuestionId).Distinct().ToList();
                 var questionLookup = _context.MetaQuestions.Where(q => questionIds.Contains(q.Id))
-                    .Include(mq => mq.MetaQuestionTags)
+                    .Include(mq => mq.MetaQuestionMetaTags)
                     .ToDictionary(q => q.Id, q => q);
 
                 var answerIds = metaQuestions.Items.Where(q => q.Answers != null).SelectMany(q => q.Answers.Select(a => a.AnswerId)).Distinct().ToList();

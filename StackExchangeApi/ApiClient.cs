@@ -152,6 +152,7 @@ namespace StackExchangeApi
                     result = await MakeRequest<ApiItemsResponse<TItemType>>(endPoint, copiedParameters);
                 }
 
+                runningItems.AddRange(result.Items);
                 result.Items = runningItems;
             }
 
