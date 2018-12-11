@@ -55,10 +55,10 @@ namespace StackExchangeApi
         {
             Task<TResponseType> nextTask;
             var copiedParameters = parameters.ToDictionary(d => d.Key, d => d.Value);
-            if (!string.IsNullOrWhiteSpace(_accessToken))
+            if (!string.IsNullOrWhiteSpace(_accessToken) && !copiedParameters.ContainsKey("access_token"))
                 copiedParameters["access_token"] = _accessToken;
 
-            if (!string.IsNullOrWhiteSpace(_appKey))
+            if (!string.IsNullOrWhiteSpace(_appKey) && !copiedParameters.ContainsKey("key"))
                 copiedParameters["key"] = _appKey;
 
             var url = QueryHelpers.AddQueryString(endpoint, copiedParameters);
