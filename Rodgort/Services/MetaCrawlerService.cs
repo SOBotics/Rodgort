@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +16,7 @@ namespace Rodgort.Services
         private readonly ApiClient _apiClient;
         private readonly DateService _dateService;
 
-        private static object _locker = new object();
+        private static readonly object _locker = new object();
         private static bool _alreadyProcessing;
 
         public MetaCrawlerService(RodgortContext context, ApiClient apiClient, DateService dateService)
