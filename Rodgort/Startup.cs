@@ -1,4 +1,7 @@
 using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +12,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Rodgort.Data;
+using Rodgort.Services;
+using StackExchangeApi;
 
 namespace Rodgort
 {
@@ -42,11 +47,15 @@ namespace Rodgort
                     options.UseNpgsql(connectionString).ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
                 });
 
+            services.AddTransient<DateService>();
+            services.AddTransient<ApiClient>();
+            services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            // GlobalConfiguration.Configuration.UseActivator(new HangfireContainerJobActivator(app))
             app.UseHangfireServer();
             app.UseHangfireDashboard();
 
@@ -86,9 +95,17 @@ namespace Rodgort
                 }
             }
 
-            RecurringJob.AddOrUpdate(
-                "Refresh burnination request list",
-                () => Console.WriteLine("Hello!"), "0 0 * * 0");
+            RecurringJob.AddOrUpdate<MetaCrawlerService>("Refresh burnination request list", service => service.CrawlMeta(), "0 0 * * 0");
+        }
+
+        public static void CrawlMeta(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
+                .CreateScope())
+            {
+                var service = serviceScope.ServiceProvider.GetService<MetaCrawlerService>();
+                service.CrawlMeta().GetAwaiter().GetResult();
+            }
         }
     }
 }

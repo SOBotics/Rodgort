@@ -5,7 +5,7 @@ namespace StackExchangeApi.Responses
 {
     public class ApiItemsResponse<TItemType> : ApiBaseResponse
     {
-        public int? Page { get; set; }
+        public int Page { get; set; }
 
         [JsonProperty("has_more")]
         public bool HasMore { get; set; }

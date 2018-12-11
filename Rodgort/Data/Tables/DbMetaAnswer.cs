@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Rodgort.Data.Tables
 {
@@ -9,6 +10,8 @@ namespace Rodgort.Data.Tables
         public int MetaQuestionId { get; set; }
 
         public string Body { get; set; }
+
+        public DateTime LastSeen { get; set; }
 
         public DbMetaQuestion MetaQuestion { get; set; }
 

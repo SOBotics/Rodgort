@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -6,8 +8,10 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using StackExchangeApi.Responses;
 
 namespace StackExchangeApi
@@ -42,12 +46,15 @@ namespace StackExchangeApi
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<TResponseType> MakeRequest<TResponseType>(string endpoint) where TResponseType: ApiBaseResponse
+        public async Task<TResponseType> MakeRequest<TResponseType>(string endpoint, Dictionary<string, string> parameters) where TResponseType: ApiBaseResponse
         {
             Task<TResponseType> nextTask;
-            
+            var url = QueryHelpers.AddQueryString(endpoint, parameters);
             lock (TaskLocker)
             {
+                if (ExecutingTask.IsFaulted)
+                    ExecutingTask = Task.CompletedTask;
+                
                 nextTask = MakeRequestInternal(ExecutingTask);
                 ExecutingTask = PostProcess(nextTask);
             }
@@ -71,28 +78,77 @@ namespace StackExchangeApi
 
                 using (var httpClient = _serviceProvider.GetService<HttpClient>())
                 {
-                    var response = await httpClient.GetAsync(endpoint);
+                    var response = await httpClient.GetAsync(url);
                     var content = await response.Content.ReadAsStringAsync();
-                    var payload = JsonConvert.DeserializeObject<TResponseType>(content);
+                    var payloadUntyped = JsonConvert.DeserializeObject<JObject>(content);
+                    var payload = payloadUntyped.ToObject<TResponseType>();
+
+                    if (!string.IsNullOrWhiteSpace(payload.ErrorMessage))
+                        throw new Exception($"Failed to request {url}.\n\n" + JsonConvert.SerializeObject(new
+                        {
+                            payload.ErrorId,
+                            payload.ErrorName,
+                            payload.ErrorMessage,
+                        }));
+
+                    var quotaRemaining = payloadUntyped["quota_remaining"];
+                    if (quotaRemaining == null)
+                        throw new Exception("Response did not fail, but did not include quota_remaining. Please ensure filter returns this field.");
+
                     return payload;
                 }
             }
         }
 
-        private const string BaseUrl = "https://api.stackexchange.com/2.2";
+        public const string BASE_URL = "https://api.stackexchange.com/2.2";
 
         public Task<TotalResponse> TotalQuestionsByTag(string siteName, string tag)
         {
-            var encodedTag = HttpUtility.HtmlEncode(tag);
-            var query = $"{BaseUrl}/questions?tagged={encodedTag}&site={siteName}&filter=!--s3oyShP3gx";
-            return MakeRequest<TotalResponse>(query);
+            return MakeRequest<TotalResponse>($"{BASE_URL}/questions", new Dictionary<string, string>
+            {
+                { "site", siteName },
+                { "tagged", tag },
+                { "filter", "!--s3oyShP3gx" }
+            });
         }
 
-        public Task<ApiItemsResponse<BaseQuestion>> QuestionsByTag(string siteName, string tag)
+        public Task<ApiItemsResponse<BaseQuestion>> QuestionsByTag(string siteName, string tag, PagingOptions pagingOptions)
         {
-            var encodedTag = HttpUtility.HtmlEncode(tag);
-            var query = $"{BaseUrl}/questions?tagged={encodedTag}&site={siteName}&filter=!bHIU4eJgUSOOHK";
-            return MakeRequest<ApiItemsResponse<BaseQuestion>>(query);
+            return ApplyWithPaging<BaseQuestion>($"{BASE_URL}/questions", new Dictionary<string, string>
+            {
+                { "site", siteName },
+                { "tagged", tag },
+                { "filter", "!bHIU4eJgUSOOHK" }
+            }, pagingOptions);
+        }
+
+
+        public async Task<ApiItemsResponse<TItemType>> ApplyWithPaging<TItemType>(
+            string endPoint,
+            Dictionary<string, string> parameters, 
+            PagingOptions pagingOptions)
+        {
+            var copiedParameters = parameters.ToDictionary(d => d.Key, d => d.Value);
+            var runningItems = new List<TItemType>();
+            var page = pagingOptions.Page;
+
+            copiedParameters["page"] = pagingOptions.Page.ToString();
+            copiedParameters["pageSize"] = pagingOptions.PageSize.ToString();
+
+            var result = await MakeRequest<ApiItemsResponse<TItemType>>(endPoint, copiedParameters);
+            if (pagingOptions.AutoFetchAll)
+            {
+                while (result.HasMore)
+                {
+                    copiedParameters["page"] = page++.ToString();
+                    runningItems.AddRange(result.Items);
+                    result = await MakeRequest<ApiItemsResponse<TItemType>>(endPoint, copiedParameters);
+                }
+
+                result.Items = runningItems;
+            }
+
+            return result;
         }
     }
 }

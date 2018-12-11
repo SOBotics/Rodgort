@@ -25,13 +25,15 @@ namespace Rodgort.Migrations
 
                     b.Property<string>("Body");
 
+                    b.Property<DateTime>("LastSeen");
+
                     b.Property<int>("MetaQuestionId");
 
                     b.HasKey("Id");
 
                     b.HasIndex("MetaQuestionId");
 
-                    b.ToTable("DbMetaAnswer");
+                    b.ToTable("MetaAnswers");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbMetaAnswerStatistics", b =>
@@ -49,7 +51,7 @@ namespace Rodgort.Migrations
 
                     b.HasIndex("MetaAnswerId");
 
-                    b.ToTable("DbMetaAnswerStatistics");
+                    b.ToTable("MetaAnswerStatistics");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbMetaQuestion", b =>
@@ -58,13 +60,28 @@ namespace Rodgort.Migrations
 
                     b.Property<string>("Body");
 
+                    b.Property<DateTime>("LastSeen");
+
                     b.Property<string>("Link");
 
                     b.Property<string>("Title");
 
                     b.HasKey("Id");
 
-                    b.ToTable("DbMetaQuestion");
+                    b.ToTable("MetaQuestions");
+                });
+
+            modelBuilder.Entity("Rodgort.Data.Tables.DbMetaQuestionMetaTag", b =>
+                {
+                    b.Property<int>("MetaQuestionId");
+
+                    b.Property<string>("TagName");
+
+                    b.HasKey("MetaQuestionId", "TagName");
+
+                    b.HasIndex("TagName");
+
+                    b.ToTable("MetaQuestionMetaTags");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbMetaQuestionStatistics", b =>
@@ -82,7 +99,7 @@ namespace Rodgort.Migrations
 
                     b.HasIndex("MetaQuestionId");
 
-                    b.ToTable("DbMetaQuestionStatistics");
+                    b.ToTable("MetaQuestionStatistics");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbMetaQuestionTag", b =>
@@ -103,7 +120,23 @@ namespace Rodgort.Migrations
 
                     b.HasIndex("TagName");
 
-                    b.ToTable("DbMetaQuestionTag");
+                    b.ToTable("MetaQuestionTags");
+                });
+
+            modelBuilder.Entity("Rodgort.Data.Tables.DbMetaTag", b =>
+                {
+                    b.Property<string>("Name")
+                        .ValueGeneratedOnAdd();
+
+                    b.HasKey("Name");
+
+                    b.ToTable("MetaTags");
+
+                    b.HasData(
+                        new { Name = "status-completed" },
+                        new { Name = "status-planned" },
+                        new { Name = "status-declined" }
+                    );
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbRequestType", b =>
@@ -114,13 +147,13 @@ namespace Rodgort.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DbRequestType");
+                    b.ToTable("RequestTypes");
 
                     b.HasData(
-                        new { Id = 0, Name = "Unknown" },
-                        new { Id = 1, Name = "Synonym" },
-                        new { Id = 2, Name = "Merge" },
-                        new { Id = 3, Name = "Burninate" }
+                        new { Id = 1, Name = "Unknown" },
+                        new { Id = 2, Name = "Synonym" },
+                        new { Id = 3, Name = "Merge" },
+                        new { Id = 4, Name = "Burninate" }
                     );
                 });
 
@@ -131,7 +164,7 @@ namespace Rodgort.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("DbTag");
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbTagStatistics", b =>
@@ -151,7 +184,7 @@ namespace Rodgort.Migrations
 
                     b.HasIndex("TagName");
 
-                    b.ToTable("DbTagStatistics");
+                    b.ToTable("TagStatistics");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbMetaAnswer", b =>
@@ -167,6 +200,19 @@ namespace Rodgort.Migrations
                     b.HasOne("Rodgort.Data.Tables.DbMetaAnswer", "MetaAnswer")
                         .WithMany("Statistics")
                         .HasForeignKey("MetaAnswerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Rodgort.Data.Tables.DbMetaQuestionMetaTag", b =>
+                {
+                    b.HasOne("Rodgort.Data.Tables.DbMetaQuestion", "MetaQuestion")
+                        .WithMany("MetaQuestionMetaTags")
+                        .HasForeignKey("MetaQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Rodgort.Data.Tables.DbMetaTag", "MetaTag")
+                        .WithMany("MetaQuestionMetaTags")
+                        .HasForeignKey("TagName")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

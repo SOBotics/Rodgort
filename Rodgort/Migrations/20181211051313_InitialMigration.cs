@@ -9,21 +9,33 @@ namespace Rodgort.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "DbMetaQuestion",
+                name: "MetaQuestions",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false),
                     Body = table.Column<string>(nullable: true),
                     Title = table.Column<string>(nullable: true),
-                    Link = table.Column<string>(nullable: true)
+                    Link = table.Column<string>(nullable: true),
+                    LastSeen = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbMetaQuestion", x => x.Id);
+                    table.PrimaryKey("PK_MetaQuestions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DbRequestType",
+                name: "MetaTags",
+                columns: table => new
+                {
+                    Name = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MetaTags", x => x.Name);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestTypes",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false),
@@ -31,41 +43,42 @@ namespace Rodgort.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbRequestType", x => x.Id);
+                    table.PrimaryKey("PK_RequestTypes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DbTag",
+                name: "Tags",
                 columns: table => new
                 {
                     Name = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbTag", x => x.Name);
+                    table.PrimaryKey("PK_Tags", x => x.Name);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DbMetaAnswer",
+                name: "MetaAnswers",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false),
                     MetaQuestionId = table.Column<int>(nullable: false),
-                    Body = table.Column<string>(nullable: true)
+                    Body = table.Column<string>(nullable: true),
+                    LastSeen = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbMetaAnswer", x => x.Id);
+                    table.PrimaryKey("PK_MetaAnswers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DbMetaAnswer_DbMetaQuestion_MetaQuestionId",
+                        name: "FK_MetaAnswers_MetaQuestions_MetaQuestionId",
                         column: x => x.MetaQuestionId,
-                        principalTable: "DbMetaQuestion",
+                        principalTable: "MetaQuestions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DbMetaQuestionStatistics",
+                name: "MetaQuestionStatistics",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -76,17 +89,41 @@ namespace Rodgort.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbMetaQuestionStatistics", x => x.Id);
+                    table.PrimaryKey("PK_MetaQuestionStatistics", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DbMetaQuestionStatistics_DbMetaQuestion_MetaQuestionId",
+                        name: "FK_MetaQuestionStatistics_MetaQuestions_MetaQuestionId",
                         column: x => x.MetaQuestionId,
-                        principalTable: "DbMetaQuestion",
+                        principalTable: "MetaQuestions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DbMetaQuestionTag",
+                name: "MetaQuestionMetaTags",
+                columns: table => new
+                {
+                    MetaQuestionId = table.Column<int>(nullable: false),
+                    TagName = table.Column<string>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MetaQuestionMetaTags", x => new { x.MetaQuestionId, x.TagName });
+                    table.ForeignKey(
+                        name: "FK_MetaQuestionMetaTags_MetaQuestions_MetaQuestionId",
+                        column: x => x.MetaQuestionId,
+                        principalTable: "MetaQuestions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MetaQuestionMetaTags_MetaTags_TagName",
+                        column: x => x.TagName,
+                        principalTable: "MetaTags",
+                        principalColumn: "Name",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MetaQuestionTags",
                 columns: table => new
                 {
                     MetaQuestionId = table.Column<int>(nullable: false),
@@ -96,35 +133,35 @@ namespace Rodgort.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbMetaQuestionTag", x => new { x.MetaQuestionId, x.TagName });
+                    table.PrimaryKey("PK_MetaQuestionTags", x => new { x.MetaQuestionId, x.TagName });
                     table.ForeignKey(
-                        name: "FK_DbMetaQuestionTag_DbMetaQuestion_MetaQuestionId",
+                        name: "FK_MetaQuestionTags_MetaQuestions_MetaQuestionId",
                         column: x => x.MetaQuestionId,
-                        principalTable: "DbMetaQuestion",
+                        principalTable: "MetaQuestions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_DbMetaQuestionTag_DbRequestType_RequestTypeId",
+                        name: "FK_MetaQuestionTags_RequestTypes_RequestTypeId",
                         column: x => x.RequestTypeId,
-                        principalTable: "DbRequestType",
+                        principalTable: "RequestTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_DbMetaQuestionTag_DbTag_SecondaryTagName",
+                        name: "FK_MetaQuestionTags_Tags_SecondaryTagName",
                         column: x => x.SecondaryTagName,
-                        principalTable: "DbTag",
+                        principalTable: "Tags",
                         principalColumn: "Name",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_DbMetaQuestionTag_DbTag_TagName",
+                        name: "FK_MetaQuestionTags_Tags_TagName",
                         column: x => x.TagName,
-                        principalTable: "DbTag",
+                        principalTable: "Tags",
                         principalColumn: "Name",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DbTagStatistics",
+                name: "TagStatistics",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -136,17 +173,17 @@ namespace Rodgort.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbTagStatistics", x => x.Id);
+                    table.PrimaryKey("PK_TagStatistics", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DbTagStatistics_DbTag_TagName",
+                        name: "FK_TagStatistics_Tags_TagName",
                         column: x => x.TagName,
-                        principalTable: "DbTag",
+                        principalTable: "Tags",
                         principalColumn: "Name",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "DbMetaAnswerStatistics",
+                name: "MetaAnswerStatistics",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -157,87 +194,108 @@ namespace Rodgort.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DbMetaAnswerStatistics", x => x.Id);
+                    table.PrimaryKey("PK_MetaAnswerStatistics", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_DbMetaAnswerStatistics_DbMetaAnswer_MetaAnswerId",
+                        name: "FK_MetaAnswerStatistics_MetaAnswers_MetaAnswerId",
                         column: x => x.MetaAnswerId,
-                        principalTable: "DbMetaAnswer",
+                        principalTable: "MetaAnswers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
-                table: "DbRequestType",
+                table: "MetaTags",
+                column: "Name",
+                values: new object[]
+                {
+                    "status-completed",
+                    "status-planned",
+                    "status-declined"
+                });
+
+            migrationBuilder.InsertData(
+                table: "RequestTypes",
                 columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 0, "Unknown" },
-                    { 1, "Synonym" },
-                    { 2, "Merge" },
-                    { 3, "Burninate" }
+                    { 1, "Unknown" },
+                    { 2, "Synonym" },
+                    { 3, "Merge" },
+                    { 4, "Burninate" }
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_DbMetaAnswer_MetaQuestionId",
-                table: "DbMetaAnswer",
+                name: "IX_MetaAnswers_MetaQuestionId",
+                table: "MetaAnswers",
                 column: "MetaQuestionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DbMetaAnswerStatistics_MetaAnswerId",
-                table: "DbMetaAnswerStatistics",
+                name: "IX_MetaAnswerStatistics_MetaAnswerId",
+                table: "MetaAnswerStatistics",
                 column: "MetaAnswerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DbMetaQuestionStatistics_MetaQuestionId",
-                table: "DbMetaQuestionStatistics",
-                column: "MetaQuestionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DbMetaQuestionTag_RequestTypeId",
-                table: "DbMetaQuestionTag",
-                column: "RequestTypeId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DbMetaQuestionTag_SecondaryTagName",
-                table: "DbMetaQuestionTag",
-                column: "SecondaryTagName");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DbMetaQuestionTag_TagName",
-                table: "DbMetaQuestionTag",
+                name: "IX_MetaQuestionMetaTags_TagName",
+                table: "MetaQuestionMetaTags",
                 column: "TagName");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DbTagStatistics_TagName",
-                table: "DbTagStatistics",
+                name: "IX_MetaQuestionStatistics_MetaQuestionId",
+                table: "MetaQuestionStatistics",
+                column: "MetaQuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MetaQuestionTags_RequestTypeId",
+                table: "MetaQuestionTags",
+                column: "RequestTypeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MetaQuestionTags_SecondaryTagName",
+                table: "MetaQuestionTags",
+                column: "SecondaryTagName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MetaQuestionTags_TagName",
+                table: "MetaQuestionTags",
+                column: "TagName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TagStatistics_TagName",
+                table: "TagStatistics",
                 column: "TagName");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "DbMetaAnswerStatistics");
+                name: "MetaAnswerStatistics");
 
             migrationBuilder.DropTable(
-                name: "DbMetaQuestionStatistics");
+                name: "MetaQuestionMetaTags");
 
             migrationBuilder.DropTable(
-                name: "DbMetaQuestionTag");
+                name: "MetaQuestionStatistics");
 
             migrationBuilder.DropTable(
-                name: "DbTagStatistics");
+                name: "MetaQuestionTags");
 
             migrationBuilder.DropTable(
-                name: "DbMetaAnswer");
+                name: "TagStatistics");
 
             migrationBuilder.DropTable(
-                name: "DbRequestType");
+                name: "MetaAnswers");
 
             migrationBuilder.DropTable(
-                name: "DbTag");
+                name: "MetaTags");
 
             migrationBuilder.DropTable(
-                name: "DbMetaQuestion");
+                name: "RequestTypes");
+
+            migrationBuilder.DropTable(
+                name: "Tags");
+
+            migrationBuilder.DropTable(
+                name: "MetaQuestions");
         }
     }
 }

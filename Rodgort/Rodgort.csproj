@@ -27,6 +27,17 @@
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Migrations\20181204062134_InitialMigration.cs" />
+    <Compile Remove="Migrations\20181204062134_InitialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20181211045543_InitialMigration.cs" />
+    <Compile Remove="Migrations\20181211045543_InitialMigration.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StackExchangeApi\StackExchangeApi.csproj" />
+  </ItemGroup>
+
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">

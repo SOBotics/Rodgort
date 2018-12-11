@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Rodgort.Data.Tables
 {
@@ -12,8 +13,11 @@ namespace Rodgort.Data.Tables
 
         public string Link { get; set; }
 
-        public List<DbMetaAnswer> MetaAnswers { get; set; }
-        public List<DbMetaQuestionTag> MetaQuestionTags { get; set; }
-        public List<DbMetaQuestionStatistics> Statistics { get; set; }
+        public DateTime LastSeen { get; set; }
+
+        public List<DbMetaAnswer> MetaAnswers { get; set; } = new List<DbMetaAnswer>();
+        public List<DbMetaQuestionMetaTag> MetaQuestionMetaTags { get; set; } = new List<DbMetaQuestionMetaTag>();
+        public List<DbMetaQuestionTag> MetaQuestionTags { get; set; } = new List<DbMetaQuestionTag>();
+        public List<DbMetaQuestionStatistics> Statistics { get; set; } = new List<DbMetaQuestionStatistics>();
     }
 }

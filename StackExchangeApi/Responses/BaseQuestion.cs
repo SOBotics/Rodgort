@@ -11,7 +11,7 @@ namespace StackExchangeApi.Responses
         [JsonProperty("answer_count")]
         public int? AnswerCount { get; set; }
 
-        public object Answers { get; set; }
+        public List<BaseAnswer> Answers { get; set; }
         public string Body { get; set; }
 
         [JsonProperty("body_markdown")]
