@@ -119,7 +119,7 @@ namespace StackExchangeApi
             });
         }
 
-        public Task<ApiItemsResponse<BaseQuestion>> QuestionsByTag(string siteName, string tag, PagingOptions pagingOptions)
+        public Task<ApiItemsResponse<BaseQuestion>> QuestionsByTag(string siteName, string tag, PagingOptions pagingOptions = null)
         {
             return ApplyWithPaging<BaseQuestion>($"{BASE_URL}/questions", new Dictionary<string, string>
             {
@@ -133,8 +133,11 @@ namespace StackExchangeApi
         public async Task<ApiItemsResponse<TItemType>> ApplyWithPaging<TItemType>(
             string endPoint,
             Dictionary<string, string> parameters, 
-            PagingOptions pagingOptions)
+            PagingOptions pagingOptions = null)
         {
+            if (pagingOptions == null)
+                pagingOptions = new PagingOptions();
+
             var copiedParameters = parameters.ToDictionary(d => d.Key, d => d.Value);
             var runningItems = new List<TItemType>();
             var page = pagingOptions.Page;

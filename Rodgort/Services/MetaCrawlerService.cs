@@ -38,13 +38,7 @@ namespace Rodgort.Services
 
             try
             {
-                var metaQuestions = await _apiClient.MetaQuestionsByTag("meta.stackoverflow.com", "burninate-request",
-                    new PagingOptions
-                    {
-                        Page = 1,
-                        PageSize = 100,
-                        AutoFetchAll = true
-                    });
+                var metaQuestions = await _apiClient.MetaQuestionsByTag("meta.stackoverflow.com", "burninate-request");
 
                 var questionIds = metaQuestions.Items.Select(q => q.QuestionId).Distinct().ToList();
                 var questionLookup = _context.MetaQuestions.Where(q => questionIds.Contains(q.Id))
