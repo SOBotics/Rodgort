@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,7 @@ namespace StackExchangeApi
     public class ApiClient
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly string _accessToken;
 
         public static IObservable<int> QuotaRemaining;
         public static int CurrentQuotaRemaining = int.MaxValue;
@@ -41,15 +43,20 @@ namespace StackExchangeApi
             QuotaRemaining.Subscribe(remaining => { Interlocked.Exchange(ref CurrentQuotaRemaining, remaining); });
         }
 
-        public ApiClient(IServiceProvider serviceProvider)
+        public ApiClient(IServiceProvider serviceProvider, IConfiguration configuration)
         {
             _serviceProvider = serviceProvider;
+            _accessToken = configuration.GetSection("AccessToken").Value;
         }
 
         public async Task<TResponseType> MakeRequest<TResponseType>(string endpoint, Dictionary<string, string> parameters) where TResponseType: ApiBaseResponse
         {
             Task<TResponseType> nextTask;
-            var url = QueryHelpers.AddQueryString(endpoint, parameters);
+            var copiedParameters = parameters.ToDictionary(d => d.Key, d => d.Value);
+            if (!string.IsNullOrWhiteSpace(_accessToken))
+                copiedParameters["access_token"] = _accessToken;
+
+            var url = QueryHelpers.AddQueryString(endpoint, copiedParameters);
             lock (TaskLocker)
             {
                 if (ExecutingTask.IsFaulted)

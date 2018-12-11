@@ -93,7 +93,7 @@ namespace Rodgort.Services
 
                     var dbMetaQuestionStatistics = new DbMetaQuestionStatistics
                     {
-                        DateTime = _dateService.UtcNow,
+                        DateTime = utcNow,
                         Score = metaQuestion.Score.Value,
 
                         MetaQuestion = dbMetaQuestion
@@ -127,7 +127,7 @@ namespace Rodgort.Services
 
                         var dbMetaAnswerStatistics = new DbMetaAnswerStatistics
                         {
-                            DateTime = _dateService.UtcNow,
+                            DateTime = utcNow,
                             Score = metaAnswer.Score.Value,
 
                             MetaAnswer = dbMetaAnswer
