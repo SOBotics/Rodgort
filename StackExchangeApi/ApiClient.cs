@@ -21,6 +21,7 @@ namespace StackExchangeApi
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly string _accessToken;
+        private readonly string _appKey;
 
         public static IObservable<int> QuotaRemaining;
         public static int CurrentQuotaRemaining = int.MaxValue;
@@ -47,6 +48,7 @@ namespace StackExchangeApi
         {
             _serviceProvider = serviceProvider;
             _accessToken = configuration.GetSection("AccessToken").Value;
+            _appKey = configuration.GetSection("AppKey").Value;
         }
 
         public async Task<TResponseType> MakeRequest<TResponseType>(string endpoint, Dictionary<string, string> parameters) where TResponseType: ApiBaseResponse
@@ -55,6 +57,9 @@ namespace StackExchangeApi
             var copiedParameters = parameters.ToDictionary(d => d.Key, d => d.Value);
             if (!string.IsNullOrWhiteSpace(_accessToken))
                 copiedParameters["access_token"] = _accessToken;
+
+            if (!string.IsNullOrWhiteSpace(_appKey))
+                copiedParameters["key"] = _appKey;
 
             var url = QueryHelpers.AddQueryString(endpoint, copiedParameters);
             lock (TaskLocker)

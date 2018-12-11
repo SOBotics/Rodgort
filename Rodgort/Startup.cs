@@ -1,7 +1,5 @@
-using System;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
@@ -55,7 +53,6 @@ namespace Rodgort
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            // GlobalConfiguration.Configuration.UseActivator(new HangfireContainerJobActivator(app))
             app.UseHangfireServer();
             app.UseHangfireDashboard();
 
@@ -87,25 +84,11 @@ namespace Rodgort
             });
 
             using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            {
-                using (var context = serviceScope.ServiceProvider.GetService<RodgortContext>())
-                {
-                    if (!context.Database.IsInMemory())
-                        context.Database.Migrate();
-                }
-            }
+            using (var context = serviceScope.ServiceProvider.GetService<RodgortContext>())
+                if (!context.Database.IsInMemory())
+                    context.Database.Migrate();
 
             RecurringJob.AddOrUpdate<MetaCrawlerService>("Refresh burnination request list", service => service.CrawlMeta(), "0 0 * * 0");
-        }
-
-        public static void CrawlMeta(IApplicationBuilder app)
-        {
-            using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
-                .CreateScope())
-            {
-                var service = serviceScope.ServiceProvider.GetService<MetaCrawlerService>();
-                service.CrawlMeta().GetAwaiter().GetResult();
-            }
         }
     }
 }
