@@ -1,6 +1,8 @@
 before_script:
+  - apt-get install curl
+  - curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
   - apt-get update
-  - apt-get install npm
+  - sudo apt-get install -y nodejs
 
 stages:
   - build
