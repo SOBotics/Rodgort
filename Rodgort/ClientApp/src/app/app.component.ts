@@ -12,11 +12,11 @@ export class AppComponent implements OnInit {
   public revision: string;
 
   constructor(
-    private http: HttpClient
+    private httpClient: HttpClient
   ) {}
 
   ngOnInit() {
-    this.http.get('/assets/revision.txt', { responseType: 'text' }).subscribe(a => this.revision = a);
+    this.httpClient.get('/assets/revision.txt', { responseType: 'text' }).subscribe(a => this.revision = a);
   }
 
   public getLoginUrl() {

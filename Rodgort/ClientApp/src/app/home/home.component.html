@@ -1,1 +1,24 @@
-Hi there!
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Tags</th>
+            <th>NumberOfQuestions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let question of questions">
+            <td>{{question.title}}</td>
+            <td>{{question.mainTags | json}}</td>
+            <td>{{question.questionsInTag}}</td>
+        </tr>
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination">
+        <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active" *ngFor="let page of pagingInfo">
+            <a class="page-link" (click)="loadPage(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
+        </li>
+    </ul>
+</nav>
