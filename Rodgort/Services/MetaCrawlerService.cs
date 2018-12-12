@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Rodgort.ApiUtilities;
@@ -68,8 +69,8 @@ namespace Rodgort.Services
                         dbMetaQuestion = questionLookup[metaQuestion.QuestionId.Value];
                     }
 
-                    dbMetaQuestion.Title = metaQuestion.Title;
-                    dbMetaQuestion.Body = metaQuestion.BodyMarkdown;
+                    dbMetaQuestion.Title = WebUtility.HtmlDecode(metaQuestion.Title);
+                    dbMetaQuestion.Body = WebUtility.HtmlDecode(metaQuestion.BodyMarkdown);
                     dbMetaQuestion.Link = metaQuestion.Link;
                     dbMetaQuestion.LastSeen = utcNow;
 

@@ -5,11 +5,11 @@ namespace Rodgort.Utilities.Paging
 {
     public static class PagingExtensions
     {
-        public static PagingResponse<T> Page<T>(this IQueryable<T> query, PagingRequest pagingRequest)
+        public static PagingResponse<T> Page<T>(this IOrderedQueryable<T> query, PagingRequest pagingRequest)
         {
             return query.Page(pagingRequest.PageNumber ?? 1, pagingRequest.PageSize ?? 50);
         }
-        public static PagingResponse<T> Page<T>(this IQueryable<T> query, int pageNumber, int pageSize)
+        public static PagingResponse<T> Page<T>(this IOrderedQueryable<T> query, int pageNumber, int pageSize)
         {
             var count = query.Count();
             var data =
