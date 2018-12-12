@@ -1,7 +1,59 @@
-<div class='container-fluid'>
-  <div class='row'>
-    <div class='col-sm-9 body-content'>
-      <router-outlet></router-outlet>
-    </div>
+<header>
+  <nav class="navbar navbar-expand-md navbar-light bg-faded">
+      <p class="navbar-brand" routerLink="/">Rodgort</p>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse"
+          aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav mr-auto">
+              <!-- <li class="nav-item">
+                  <a class="nav-link" routerLink="/reports">Reports</a>
+              </li>
+              <li class="nav-item dropdown hidden-md-down" *ngIf="isAdmin || isBotOwner">
+                  <a class="nav-link dropdown-toggle" href="#" id="adminDropdownLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Admin
+                  </a>
+                  <div class="dropdown-menu" aria-labelledby="adminDropdownLink">
+                      <a *ngIf="isAdmin || isBotOwner" class="dropdown-item" routerLink="/admin/bots">Bots</a>
+                      <a *ngIf="isAdmin" class="dropdown-item" routerLink="/admin/users">Users</a>
+                  </div>
+              </li> -->
+          </ul>
+
+          <a *ngIf="!isLoggedIn" class="btn btn-outline-success my-2 my-sm-0" href="{{getLoginUrl()}}">Log In</a>
+          <ul *ngIf="isLoggedIn" class="navbar-nav mt-2 mt-sm-0">
+              <li class="nav-item dropdown hidden-md-down">
+                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      {{userName}}
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                      <button class="dropdown-item button">Profile</button>
+                      <div class="dropdown-divider"></div>
+                      <button (click)="onLogoutClicked()" class="dropdown-item button">
+                          Log out
+                      </button>
+                  </div>
+              </li>
+          </ul>
+      </div>
+  </nav>
+</header>
+
+<main role="main" class="container">
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="footer">
+  <div class="container">
+      <span class="text-muted">
+          Made by the
+          <a href="https://sobotics.org/">SOBotics</a> team. Source code on
+          <a href="https://gitlab.com/rjrudman/StackExchangeChat">GitLab</a>. Content provided by
+          <a href="https://api.stackexchange.com/">Stack Exchange API</a>
+          under the
+          <a href="https://creativecommons.org/licenses/by-sa/3.0/"> CC BY-SA 3.0 license.</a>
+          <a *ngIf="revision" href="https://gitlab.com/rjrudman/StackExchangeChat/commit/{{revision}}">{{revision | slice:0:6}}</a>
+      </span>
   </div>
-</div>
+</footer>
