@@ -1,0 +1,11 @@
+stages:
+  - build
+  
+build:
+  stage: build
+  image: microsoft/dotnet:latest
+  script: 
+    - dotnet publish -c Release
+  artifacts:
+    paths:
+      - StackExchangeApi/bin/Release/netcoreapp2.1/publish/*.*
