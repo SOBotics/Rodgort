@@ -12,7 +12,7 @@ export class HomeComponent implements OnInit {
     pageNumber: 1,
   };
 
-  private questions: any[];
+  public questions: any[];
 
   constructor(
     private httpClient: HttpClient
