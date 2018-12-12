@@ -14,4 +14,4 @@ build:
     - dotnet publish Rodgort -c Release
   artifacts:
     paths:
-      - Rodgort/bin/Release/netcoreapp2.1/publish/*.*
+      - Rodgort/bin/Release/netcoreapp2.1/publish/**/*.*
