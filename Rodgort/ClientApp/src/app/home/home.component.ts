@@ -25,7 +25,7 @@ export class HomeComponent implements OnInit {
   }
 
   public reloadData() {
-    this.httpClient.get(`/api/MetaQuestions?page=${this.filter.pageNumber}&pageSize=30`)
+    this.httpClient.get(`/api/MetaQuestions?page=${this.filter.pageNumber}&pageSize=10`)
       .subscribe((response: any) => {
         console.log(response);
         if (response.totalPages > 0 && response.pageNumber > response.totalPages) {
