@@ -91,7 +91,7 @@ namespace Rodgort.Data
                 .HasData(
                     new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.GUESSED, Name = "Guessed"},
                     new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.APPROVED, Name = "Approved"},
-                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.DECLINED, Name = "Declined"}
+                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.REJECTED, Name = "Rejected"}
                 );
         }
     }

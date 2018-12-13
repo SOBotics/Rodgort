@@ -2,56 +2,68 @@
     <div class="col-md-12">
         <h3><a href="https://meta.stackoverflow.com/questions/{{question.id}}">{{question.title}}</a></h3>
         <div class="tags">
-            <div *ngFor="let tag of question.mainTags" class="mt-3" [class.tag-rejected]="tag.status === 'Rejected'">
-                <div class="row tag-header">
-                    <div class="col-3">
-                        <p class="post-tag">{{tag.tagName}}</p>
-                    </div>
-                </div>
+            <div *ngFor="let tag of question.mainTags" class="mt-3 p-2" [class.tag-rejected]="tag.status === 'Rejected'">
                 <div class="row">
-                    <div class="col-md-2">
-                        Number of questions:
-                    </div>
-                    <div class="col-md-10">
-                        {{tag.numQuestions}}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-2">
-                        Type:
-                    </div>
-                    <div class="col-md-10">
-                        {{tag.type}}
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-2">
-                        Status:
-                    </div>
-                    <div class="col-md-10">
-                        {{tag.status}}
-                    </div>
-                </div>
+                    <div class="col-md-6">
+                        <div class="row pb-3">
+                            <div class="col-3">
+                                <p class="post-tag">{{tag.tagName}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                Number of questions:
+                            </div>
+                            <div class="col-md-6">
+                                {{tag.numQuestions}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                Type:
+                            </div>
+                            <div class="col-md-6">
+                                {{tag.type}}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                Status:
+                            </div>
+                            <div class="col-md-6">
+                                {{tag.status}}
+                            </div>
+                        </div>
 
-                <div *ngIf="isAdmin">
-                    <div class="row mt-2">
-                        <div class="col-md-2">
-                            Admin
-                        </div>
-                        <div class="col-md-10">
-                            <a *ngIf="tag.status !== 'Burninate'" href="javascript:void">Burninate</a> |
-                            <a *ngIf="tag.status !== 'Synonym'" href="javascript:void">Synonym</a> |
-                            <a *ngIf="tag.status !== 'Merge'" href="javascript:void">Merge</a>
+                        <div *ngIf="isAdmin">
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                    Admin
+                                </div>
+                                <div class="col-md-6">
+                                    <a *ngIf="tag.type !== 'Burninate'" href="javascript:void">Burninate</a>
+                                    <span *ngIf="tag.type !== 'Burninate' && tag.type !== 'Synonym'">|</span>
+                                    <a *ngIf="tag.type !== 'Synonym'" href="javascript:void">Synonym</a>
+                                    <span *ngIf="tag.type !== 'Synonym' && tag.type !== 'Merge'">|</span>
+                                    <a *ngIf="tag.type !== 'Merge'" href="javascript:void">Merge</a>
+                                </div>
+                            </div>
+
+                            <div class="row mt-2">
+                                <div class="col-md-6">
+                                </div>
+                                <div class="col-md-6">
+                                    <a *ngIf="tag.status !== 'Approved'" href="javascript:void">Approve Tag</a>
+                                    <span *ngIf="tag.status !== 'Approved' && tag.status !== 'Rejected'"> </span>
+                                    <a *ngIf="tag.status !== 'Rejected'" href="javascript:void">Reject Tag</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                    <div class="col-md-6" *ngIf="tag.questionCountOverTime.length">
+                        <app-question-count-graph [thing]="tag.questionCountOverTime">
 
-                    <div class="row mt-2">
-                        <div class="col-md-2">
-                        </div>
-                        <div class="col-md-10">
-                            <a *ngIf="tag.status !== 'Approved'" href="javascript:void">Approve Tag</a> |
-                            <a *ngIf="tag.status !== 'Rejected'" href="javascript:void">Reject Tag</a>
-                        </div>
+                        </app-question-count-graph>
                     </div>
                 </div>
             </div>

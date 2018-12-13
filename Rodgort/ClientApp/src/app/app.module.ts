@@ -6,13 +6,17 @@ import { RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
+import { QuestionCountGraphComponent } from './question-count-graph/question-count-graph.component';
+import { ChartModule } from 'angular-highcharts';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
+    QuestionCountGraphComponent,
   ],
   imports: [
+    ChartModule,
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpClientModule,
     FormsModule,
