@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchangeApi.Responses;
@@ -19,6 +20,7 @@ namespace StackExchangeApi
     public class ApiClient
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<ApiClient> _logger;
         private readonly string _accessToken;
         private readonly string _appKey;
 
@@ -43,9 +45,10 @@ namespace StackExchangeApi
             QuotaRemaining.Subscribe(remaining => { Interlocked.Exchange(ref CurrentQuotaRemaining, remaining); });
         }
 
-        public ApiClient(IServiceProvider serviceProvider, IConfiguration configuration)
+        public ApiClient(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<ApiClient> logger)
         {
             _serviceProvider = serviceProvider;
+            _logger = logger;
             _accessToken = configuration.GetSection("AccessToken").Value;
             _appKey = configuration.GetSection("AppKey").Value;
         }
@@ -77,6 +80,7 @@ namespace StackExchangeApi
             {
                 var returnedItem = await executingTask;
                 m_UpdateQuota(returnedItem.QuotaRemaining);
+                _logger.LogInformation($"Finished request {url}. Remaining quota: " + returnedItem.QuotaRemaining);
                 if (returnedItem.Backoff.HasValue)
                     await Task.Delay(TimeSpan.FromSeconds(returnedItem.Backoff.Value));
             }

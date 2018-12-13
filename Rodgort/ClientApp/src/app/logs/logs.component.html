@@ -1,0 +1,38 @@
+<nav style="margin-top: 20px;">
+  <ul class="pagination">
+    <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active" *ngFor="let page of pagingInfo">
+      <a class="page-link" (click)="loadPage(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
+    </li>
+  </ul>
+</nav>
+
+<table *ngIf="logs" class="table">
+  <thead>
+    <tr>
+      <th>TimeLogged</th>
+      <th>Level</th>
+      <th>Message</th>
+      <th>Exception</th>
+      <th>Logger</th>
+      <th>Callsite</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let log of logs">
+      <td>{{log.timeLogged}}</td>
+      <td>{{log.level}}</td>
+      <td>{{log.message}}</td>
+      <td>{{log.exception}}</td>
+      <td>{{log.logger}}</td>
+      <td>{{log.callsite}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<nav style="margin-top: 20px;">
+  <ul class="pagination">
+    <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active" *ngFor="let page of pagingInfo">
+      <a class="page-link" (click)="loadPage(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
+    </li>
+  </ul>
+</nav>

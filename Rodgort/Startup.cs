@@ -84,7 +84,8 @@ namespace Rodgort
                     context.Database.Migrate();
             
             RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 0 * * 0");
-            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.SERVICE_NAME, service => service.GetQuestionCount(), "0 1 * * 0");
+            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.QUESTION_COUNT_SERVICE_NAME, service => service.GetQuestionCount(), "0 1 * * 0");
+            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.IN_PROGRESS, service => service.GetQuestionCountForInProgressBurninations(), "0 * * * *");
 
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
             // So, we'll just execute once a year

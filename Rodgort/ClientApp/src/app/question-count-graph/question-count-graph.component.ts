@@ -48,7 +48,7 @@ export class QuestionCountGraphComponent implements OnInit {
       },
       tooltip: {
         formatter: function () {
-          return `${this.y} questions seen on ${Highcharts.dateFormat('%Y-%m-%d', this.x)}`;
+          return `${this.y} questions seen on ${Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)}`;
         }
       },
       yAxis: {
