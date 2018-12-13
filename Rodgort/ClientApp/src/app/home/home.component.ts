@@ -8,6 +8,7 @@ import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  public isAdmin = true;
   public pagingInfo: PagingInfo[];
   public filter = {
     pageNumber: 1,

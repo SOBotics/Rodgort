@@ -22,7 +22,6 @@
                     </div>
                     <div class="col-md-10">
                         {{tag.type}}
-
                     </div>
                 </div>
                 <div class="row">
@@ -34,23 +33,25 @@
                     </div>
                 </div>
 
-                <div class="row mt-2">
-                    <div class="col-md-2">
-                        Set type
+                <div *ngIf="isAdmin">
+                    <div class="row mt-2">
+                        <div class="col-md-2">
+                            Admin
+                        </div>
+                        <div class="col-md-10">
+                            <a *ngIf="tag.status !== 'Burninate'" href="javascript:void">Burninate</a> |
+                            <a *ngIf="tag.status !== 'Synonym'" href="javascript:void">Synonym</a> |
+                            <a *ngIf="tag.status !== 'Merge'" href="javascript:void">Merge</a>
+                        </div>
                     </div>
-                    <div class="col-md-10">
-                        <a *ngIf="tag.status !== 'Burninate'" href="javascript:void">Burninate</a> |
-                        <a *ngIf="tag.status !== 'Synonym'" href="javascript:void">Synonym</a> |
-                        <a *ngIf="tag.status !== 'Merge'" href="javascript:void">Merge</a>
-                    </div>
-                </div>
 
-                <div class="row mt-2">
-                    <div class="col-md-2">
-                    </div>
-                    <div class="col-md-10">
-                        <a *ngIf="tag.status !== 'Approved'" href="javascript:void">Approve Tag</a> |
-                        <a *ngIf="tag.status !== 'Rejected'" href="javascript:void">Reject Tag</a>
+                    <div class="row mt-2">
+                        <div class="col-md-2">
+                        </div>
+                        <div class="col-md-10">
+                            <a *ngIf="tag.status !== 'Approved'" href="javascript:void">Approve Tag</a> |
+                            <a *ngIf="tag.status !== 'Rejected'" href="javascript:void">Reject Tag</a>
+                        </div>
                     </div>
                 </div>
             </div>

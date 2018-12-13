@@ -19,12 +19,21 @@ namespace Rodgort.Controllers
         [HttpGet]
         public object Get(int page = 1, int pageSize = 30)
         {
-            var result = _context.MetaQuestions.Select(mq => new
+            var result = _context.MetaQuestions
+                .Where(q => q.Id == 320690)
+                .Select(mq => new
             {
                 mq.Id,
                 mq.Title,
                 QuestionsInTag = 5,
-                MainTags = mq.MetaQuestionTags.Select(mqt => new {mqt.TagName, Type = mqt.RequestType.Name, Status = mqt.Status.Name })
+                MainTags = mq.MetaQuestionTags.Select(mqt => new
+                {
+                    mqt.TagName,
+                    Type = mqt.RequestType.Name,
+                    Status = mqt.Status.Name,
+                    QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount })
+                }),
+                ScoreOverTime = mq.Statistics.Select(s => new { s.DateTime, s.Score}),
             })
             .OrderBy(q => q.Id)
             .Page(page, pageSize);
