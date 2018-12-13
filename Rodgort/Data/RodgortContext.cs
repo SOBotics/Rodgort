@@ -38,9 +38,13 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaQuestionTag>().ToTable("MetaQuestionTags");
             modelBuilder.Entity<DbMetaQuestionTag>().HasKey(mqt => new { mqt.MetaQuestionId, mqt.TagName });
             modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.RequestType).WithMany(rt => rt.MetaQuestionTags).HasForeignKey(mqt => mqt.RequestTypeId);
+            modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.Status).WithMany(rt => rt.MetaQuestionTags).HasForeignKey(mqt => mqt.StatusId);
             modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.Tag).WithMany(t => t.MetaQuestionTags).HasForeignKey(mqt => mqt.TagName);
             modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.MetaQuestion).WithMany(mq => mq.MetaQuestionTags).HasForeignKey(mqt => mqt.MetaQuestionId);
             modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.SecondaryTag).WithMany(t => t.MetaQuestionSecondaryTags).IsRequired(false).HasForeignKey(mqt => mqt.SecondaryTagName);
+
+            modelBuilder.Entity<DbMetaQuestionTagStatus>().ToTable("MetaQuestionTagStatuses");
+            modelBuilder.Entity<DbMetaQuestionTagStatus>().HasKey(mqts => mqts.Id);
 
             modelBuilder.Entity<DbRequestType>().ToTable("RequestTypes");
             modelBuilder.Entity<DbRequestType>().HasKey(rt => rt.Id);
@@ -55,6 +59,9 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbMetaTag>().ToTable("MetaTags");
             modelBuilder.Entity<DbMetaTag>().HasKey(tag => tag.Name);
+
+            modelBuilder.Entity<DbLog>().ToTable("Logs");
+            modelBuilder.Entity<DbLog>().HasKey(tag => tag.Id);
 
             modelBuilder.Entity<DbMetaQuestionMetaTag>().ToTable("MetaQuestionMetaTags");
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasKey(mqmt => new { mqmt.MetaQuestionId, mqmt.TagName });
@@ -75,6 +82,13 @@ namespace Rodgort.Data
                     new DbMetaTag {Name = DbMetaTag.STATUS_COMPLETED},
                     new DbMetaTag {Name = DbMetaTag.STATUS_PLANNED},
                     new DbMetaTag {Name = DbMetaTag.STATUS_DECLINED}
+                );
+
+            modelBuilder.Entity<DbMetaQuestionTagStatus>()
+                .HasData(
+                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.GUESSED, Name = "Guessed"},
+                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.APPROVED, Name = "Approved"},
+                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.DECLINED, Name = "Declined"}
                 );
         }
     }

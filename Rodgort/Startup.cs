@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NLog;
 using Rodgort.Data;
 using Rodgort.Services;
 using StackExchangeApi;
@@ -28,6 +29,7 @@ namespace Rodgort
         public void ConfigureServices(IServiceCollection services)
         {
             var connectionString = Configuration.GetConnectionString("RodgortDB");
+            GlobalDiagnosticsContext.Set("connectionString", connectionString);
 
             services.AddHangfire(config => config.UsePostgreSqlStorage(connectionString));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
