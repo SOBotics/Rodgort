@@ -59,14 +59,7 @@ namespace Rodgort
             app.UseHangfireDashboard();
 
             if (env.IsDevelopment())
-            {
                 app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler();
-                app.UseHsts();
-            }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
