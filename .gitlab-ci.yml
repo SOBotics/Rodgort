@@ -6,6 +6,7 @@ before_script:
 
 stages:
   - build
+  - deploy
   
 build:
   stage: build
@@ -15,3 +16,28 @@ build:
   artifacts:
     paths:
       - Rodgort/bin/Release/netcoreapp2.1/publish
+
+deploy production:
+  environment: production
+  stage: deploy
+  image: node:latest
+  only:
+    - master
+  variables:
+    GIT_STRATEGY: none
+    
+  script:
+    - apt-get -qq update
+    - apt-get -qq -y install rsync
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KEY_DEPLOY" > ~/.ssh/id_rsa
+    - chown 400 ~/.ssh/id_rsa
+    - ls -la
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - "ssh deploy@$PRODUCTION_IP 'mkdir -p /var/www/Rodgort/Server'"
+    - rsync -az --force --delete --progress -e "ssh -p22" Rodgort/bin/Release/netcoreapp2.1/publish/* deploy@$PRODUCTION_IP:/var/www/Rodgort/Server
+    - "ssh deploy@$PRODUCTION_IP 'cp /var/www/Rodgort/Configuration/appsettings.Production.json /var/www/Rodgort/Server/.'"
+    - "ssh deploy@$PRODUCTION_IP 'sudo systemctl restart rodgort.service'"
+    - rm ~/.ssh/id_rsa

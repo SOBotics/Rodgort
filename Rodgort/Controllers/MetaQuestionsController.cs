@@ -58,7 +58,7 @@ namespace Rodgort.Controllers
                         Type = mqt.RequestType.Name,
                         Status = mqt.Status.Name,
                         QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount})
-                    }),
+                    }).OrderBy(mqt => mqt.TagName),
                     NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
                         .Select(mqt => mqt.Tag.NumberOfQuestions)
                         .OrderByDescending(mqt => mqt)

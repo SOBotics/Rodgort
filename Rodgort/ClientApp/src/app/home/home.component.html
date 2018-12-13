@@ -91,7 +91,10 @@
                             <div class="col-md-6">
                                 Approval Status:
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" 
+                                [class.tag-approved]="tag.status==='Approved'"
+                                [class.tag-pending]="tag.status==='Pending'"
+                            >
                                 {{tag.status}}
                             </div>
                         </div>
