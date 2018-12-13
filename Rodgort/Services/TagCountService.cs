@@ -31,21 +31,24 @@ namespace Rodgort.Services
         {
             var tagsToCheck = _context.MetaQuestionTags
                 .Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
-                .Select(mqt => mqt.TagName)
+                .Where(mqt => !mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_COMPLETED || mqmt.TagName == DbMetaTag.STATUS_DECLINED))
+                .Select(mqt => mqt.Tag)
                 .Distinct()
                 .ToList();
 
             _logger.LogInformation("Fetching question counts for the following tags: ", string.Join(", ", tagsToCheck));
             foreach (var tagToCheck in tagsToCheck)
             {
-                var response = await _apiClient.TotalQuestionsByTag("stackoverflow.com", tagToCheck);
+                var tagName = tagToCheck.Name;
+                var response = await _apiClient.TotalQuestionsByTag("stackoverflow.com", tagName);
 
                 _context.DbTagStatistics.Add(new DbTagStatistics
                 {
                     QuestionCount = response.Total,
                     DateTime = _dateService.UtcNow,
-                    TagName = tagToCheck
+                    TagName = tagName
                 });
+                tagToCheck.NumberOfQuestions = response.Total;
             }
 
             _context.SaveChanges();

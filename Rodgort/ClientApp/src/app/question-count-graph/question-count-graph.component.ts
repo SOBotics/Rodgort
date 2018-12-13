@@ -10,7 +10,7 @@ import * as Highcharts from 'highcharts';
 export class QuestionCountGraphComponent implements OnInit {
 
   @Input()
-  public thing: any;
+  public data: any;
 
   public chart: Chart = null;
 
@@ -20,7 +20,7 @@ export class QuestionCountGraphComponent implements OnInit {
     const series: { name: string, data: [number, number][] }[] = [];
     series.push({
       name: '',
-      data: this.thing.map(gd => {
+      data: this.data.map(gd => {
         const date = new Date(gd.dateTime);
         const utcDate = Date.UTC(
           date.getFullYear(),

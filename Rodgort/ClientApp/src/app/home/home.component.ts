@@ -11,7 +11,11 @@ export class HomeComponent implements OnInit {
   public isAdmin = true;
   public pagingInfo: PagingInfo[];
   public filter = {
+    tag: '',
+    approvalStatus: -1,
+    status: '',
     pageNumber: 1,
+    sortBy: 'score'
   };
 
   public questions: any[];
@@ -25,9 +29,17 @@ export class HomeComponent implements OnInit {
   }
 
   public reloadData() {
-    this.httpClient.get(`/api/MetaQuestions?page=${this.filter.pageNumber}&pageSize=10`)
+    const query =
+      `/api/MetaQuestions` +
+      `?tag=${this.filter.tag}` +
+      `&approvalStatus=${this.filter.approvalStatus}` +
+      `&status=${this.filter.status}` +
+      `&sortBy=${this.filter.sortBy}` +
+      `&page=${this.filter.pageNumber}` +
+      `&pageSize=10`;
+
+    this.httpClient.get(query)
       .subscribe((response: any) => {
-        console.log(response);
         if (response.totalPages > 0 && response.pageNumber > response.totalPages) {
           this.filter.pageNumber = 1;
           this.reloadData();
@@ -36,6 +48,16 @@ export class HomeComponent implements OnInit {
           this.pagingInfo = GetPagingInfo(response);
         }
       });
+  }
+
+  public setApprovalStatus(metaQuestionId: number, tagName: string, approved: boolean) {
+    this.httpClient.post('/api/MetaQuestions/SetTagApprovalStatus', {
+      metaQuestionId,
+      tagName,
+      approved
+    }).subscribe(_ => {
+      this.reloadData();
+    });
   }
 
   public loadPage(pageNumber: number) {

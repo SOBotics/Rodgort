@@ -13,6 +13,8 @@ namespace Rodgort.Data.Tables
 
         public string Link { get; set; }
 
+        public int Score { get; set; }
+
         public DateTime LastSeen { get; set; }
 
         public List<DbMetaAnswer> MetaAnswers { get; set; } = new List<DbMetaAnswer>();

@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
+using Rodgort.Data.Tables;
 using Rodgort.Utilities.Paging;
 
 namespace Rodgort.Controllers
@@ -17,27 +18,90 @@ namespace Rodgort.Controllers
         }
 
         [HttpGet]
-        public object Get(int page = 1, int pageSize = 30)
+        public object Get(
+            string tag = null,
+            int approvalStatus = -1,
+            string status = null,
+            string sortBy = null,
+            int page = 1, 
+            int pageSize = 30)
         {
-            var result = _context.MetaQuestions
-                .Select(mq => new
+            IQueryable<DbMetaQuestion> query = _context.MetaQuestions;
+            if (!string.IsNullOrWhiteSpace(tag))
+                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == tag));
+
+            if (approvalStatus > 0)
+                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == approvalStatus));
+
+            if (!string.IsNullOrWhiteSpace(status))
             {
-                mq.Id,
-                mq.Title,
-                QuestionsInTag = 5,
-                MainTags = mq.MetaQuestionTags.Select(mqt => new
+                if (status == "none")
+                    query = query.Where(mq =>
+                        !mq.MetaQuestionMetaTags.Any(mqt =>
+                            mqt.TagName == DbMetaTag.STATUS_COMPLETED
+                            || mqt.TagName == DbMetaTag.STATUS_DECLINED
+                            || mqt.TagName == DbMetaTag.STATUS_PLANNED)
+                    );
+                else
+                    query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqt => mqt.TagName == status));
+            }
+
+            var transformedQuery = query
+                .Select(mq => new
                 {
-                    mqt.TagName,
-                    Type = mqt.RequestType.Name,
-                    Status = mqt.Status.Name,
-                    QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount })
-                }),
-                ScoreOverTime = mq.Statistics.Select(s => new { s.DateTime, s.Score}),
-            })
-            .OrderBy(q => q.Id)
-            .Page(page, pageSize);
-               
+                    mq.Id,
+                    mq.Title,
+                    mq.Score,
+                    MainTags = mq.MetaQuestionTags.Select(mqt => new
+                    {
+                        mqt.TagName,
+                        Type = mqt.RequestType.Name,
+                        Status = mqt.Status.Name,
+                        QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount})
+                    }),
+                    NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
+                        .Select(mqt => mqt.Tag.NumberOfQuestions)
+                        .OrderByDescending(mqt => mqt)
+                        .FirstOrDefault(),
+                    ScoreOverTime = mq.Statistics.Select(s => new {s.DateTime, s.Score}),
+                });
+
+            IOrderedQueryable<object> orderedQuery;
+            if (sortBy == "score")
+                orderedQuery = transformedQuery.OrderByDescending(t => t.Score);
+            else if (sortBy == "numQuestions")
+                orderedQuery = transformedQuery.OrderByDescending(t => t.NumQuestions);
+            else
+                orderedQuery = transformedQuery.OrderByDescending(t => t.Id);
+
+            var result = orderedQuery.Page(page, pageSize);
             return result;
+        }
+
+        [HttpPost("SetTagApprovalStatus")]
+        public void SetTagApprovalStatus([FromBody] SetApprovalStatusRequest request)
+        {
+            var matchingQuestionMetaTag = _context.MetaQuestionTags.FirstOrDefault(mqt => mqt.MetaQuestionId == request.MetaQuestionId && mqt.TagName == request.TagName);
+            if (matchingQuestionMetaTag != null)
+            {
+                var newStatusId =
+                    request.Approved
+                        ? DbMetaQuestionTagStatus.APPROVED
+                        : DbMetaQuestionTagStatus.REJECTED;
+
+                if (matchingQuestionMetaTag.StatusId != newStatusId)
+                {
+                    matchingQuestionMetaTag.StatusId = newStatusId;;
+                    _context.SaveChanges();
+                }
+            }
+        }
+
+        public class SetApprovalStatusRequest
+        {
+            public int MetaQuestionId { get; set; }
+            public string TagName { get; set; }
+            public bool Approved { get; set; }
         }
     }
 }

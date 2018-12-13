@@ -83,10 +83,14 @@ namespace Rodgort.Services
                         dbMetaQuestion = questionLookup[metaQuestion.QuestionId.Value];
                     }
 
+                    if (!metaQuestion.Score.HasValue)
+                        throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.Score)}");
+
                     dbMetaQuestion.Title = WebUtility.HtmlDecode(metaQuestion.Title);
                     dbMetaQuestion.Body = WebUtility.HtmlDecode(metaQuestion.BodyMarkdown);
                     dbMetaQuestion.Link = metaQuestion.Link;
                     dbMetaQuestion.LastSeen = utcNow;
+                    dbMetaQuestion.Score = metaQuestion.Score.Value;
 
                     foreach (var tag in metaQuestion.Tags)
                         if (!dbMetaQuestion.MetaQuestionMetaTags.Any(t => string.Equals(t.TagName, tag, StringComparison.OrdinalIgnoreCase)))
@@ -95,9 +99,6 @@ namespace Rodgort.Services
                     foreach(var dbTag in dbMetaQuestion.MetaQuestionMetaTags.ToList())
                         if (!metaQuestion.Tags.Any(t => string.Equals(t, dbTag.TagName, StringComparison.OrdinalIgnoreCase)))
                             _context.MetaQuestionMetaTags.Remove(dbTag);
-
-                    if (!metaQuestion.Score.HasValue)
-                        throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.Score)}");
 
                     var dbMetaQuestionStatistics = new DbMetaQuestionStatistics
                     {
