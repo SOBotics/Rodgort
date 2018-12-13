@@ -12,6 +12,7 @@ export class HomeComponent implements OnInit {
   public pagingInfo: PagingInfo[];
   public filter = {
     tag: '',
+    type: -1,
     approvalStatus: -1,
     status: '',
     pageNumber: 1,
@@ -33,6 +34,7 @@ export class HomeComponent implements OnInit {
       `/api/MetaQuestions` +
       `?tag=${this.filter.tag}` +
       `&approvalStatus=${this.filter.approvalStatus}` +
+      `&type=${this.filter.type}` +
       `&status=${this.filter.status}` +
       `&sortBy=${this.filter.sortBy}` +
       `&page=${this.filter.pageNumber}` +

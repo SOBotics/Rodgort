@@ -21,6 +21,7 @@ namespace Rodgort.Controllers
         public object Get(
             string tag = null,
             int approvalStatus = -1,
+            int type = -1,
             string status = null,
             string sortBy = null,
             int page = 1, 
@@ -32,6 +33,9 @@ namespace Rodgort.Controllers
 
             if (approvalStatus > 0)
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == approvalStatus));
+
+            if (type > 0)
+                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.RequestTypeId == type));
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -56,9 +60,10 @@ namespace Rodgort.Controllers
                     {
                         mqt.TagName,
                         Type = mqt.RequestType.Name,
+                        mqt.StatusId,
                         Status = mqt.Status.Name,
                         QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount})
-                    }).OrderBy(mqt => mqt.TagName),
+                    }).OrderBy(mqt => mqt.StatusId),
                     NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
                         .Select(mqt => mqt.Tag.NumberOfQuestions)
                         .OrderByDescending(mqt => mqt)

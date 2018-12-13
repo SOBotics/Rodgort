@@ -21,6 +21,19 @@
         <div class="col">
             <div class="input-group">
                 <div class="input-group-prepend">
+                    <label class="input-group-text" for="sortBySelector">Sort By</label>
+                </div>
+                <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
+                    <option value="score">Score</option>
+                    <option value="numQuestions"># of Questions</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="form-row align-items-center mb-2">
+        <div class="col">
+            <div class="input-group">
+                <div class="input-group-prepend">
                     <label class="input-group-text" for="statusSelector">Status</label>
                 </div>
                 <select class="custom-select" id="statusSelector" [(ngModel)]="filter.status" [ngModelOptions]="{standalone: true}">
@@ -35,11 +48,14 @@
         <div class="col">
             <div class="input-group">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" for="sortBySelector">Sort By</label>
+                    <label class="input-group-text" for="typeSelector">Type</label>
                 </div>
-                <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
-                    <option value="score">Score</option>
-                    <option value="numQuestions"># of Questions</option>
+                <select class="custom-select" id="typeSelector" [(ngModel)]="filter.type" [ngModelOptions]="{standalone: true}">
+                    <option value="-1">Any</option>
+                    <option value="4">Burninate</option>
+                    <option value="2">Synonym</option>
+                    <option value="3">Merge</option>
+                    <option value="1">Unknown</option>
                 </select>
             </div>
         </div>
@@ -52,7 +68,7 @@
 <div class="row pt-1" *ngFor="let question of questions">
     <div class="col-md-12">
         <!-- <h3><a routerLink="/questions/{{question.id}}">{{question.title}}</a></h3> -->
-        <h3><a >{{question.title}}</a></h3>
+        <h3><a>{{question.title}}</a></h3>
         <a href="https://meta.stackoverflow.com/questions/{{question.id}}">View on site</a>
         <div class="row">
             <div class="col-md-3">
@@ -91,10 +107,7 @@
                             <div class="col-md-6">
                                 Approval Status:
                             </div>
-                            <div class="col-md-6" 
-                                [class.tag-approved]="tag.status==='Approved'"
-                                [class.tag-pending]="tag.status==='Pending'"
-                            >
+                            <div class="col-md-6" [class.tag-approved]="tag.status==='Approved'" [class.tag-pending]="tag.status==='Pending'">
                                 {{tag.status}}
                             </div>
                         </div>
@@ -117,9 +130,11 @@
                                 <div class="col-md-6">
                                 </div>
                                 <div class="col-md-6">
-                                    <a *ngIf="tag.status !== 'Approved'" href="javascript:void" (click)="setApprovalStatus(question.id, tag.tagName, true)">Approve Tag</a>
+                                    <a *ngIf="tag.status !== 'Approved'" href="javascript:void" (click)="setApprovalStatus(question.id, tag.tagName, true)">Approve
+                                        Tag</a>
                                     <span *ngIf="tag.status !== 'Approved' && tag.status !== 'Rejected'">|</span>
-                                    <a *ngIf="tag.status !== 'Rejected'" href="javascript:void" (click)="setApprovalStatus(question.id, tag.tagName, false)">Reject Tag</a>
+                                    <a *ngIf="tag.status !== 'Rejected'" href="javascript:void" (click)="setApprovalStatus(question.id, tag.tagName, false)">Reject
+                                        Tag</a>
                                 </div>
                             </div>
                         </div>
