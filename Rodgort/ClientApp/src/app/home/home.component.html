@@ -97,7 +97,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                Type:
+                                Type
                             </div>
                             <div class="col-md-6">
                                 {{tag.type}}
@@ -105,7 +105,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                Approval Status:
+                                Approval Status <img width="15px" height="15px" src="../../assets/questionmark.jpeg" title="Approved: The tag is relevant to the request. Rejected: The tag is not relevant to the request.">
                             </div>
                             <div class="col-md-6" [class.tag-approved]="tag.status==='Approved'" [class.tag-pending]="tag.status==='Pending'">
                                 {{tag.status}}
