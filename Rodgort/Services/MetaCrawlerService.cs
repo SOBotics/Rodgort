@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Rodgort.ApiUtilities;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
@@ -13,33 +16,44 @@ namespace Rodgort.Services
 {
     public class MetaCrawlerService
     {
+        public const string SERVICE_NAME = "Refresh burnination request list";
+
         private readonly RodgortContext _context;
         private readonly ApiClient _apiClient;
         private readonly DateService _dateService;
+        private readonly ILogger<MetaCrawlerService> _logger;
 
         private static readonly object _locker = new object();
         private static bool _alreadyProcessing;
 
-        public MetaCrawlerService(RodgortContext context, ApiClient apiClient, DateService dateService)
+        public MetaCrawlerService(RodgortContext context, ApiClient apiClient, DateService dateService, ILogger<MetaCrawlerService> logger)
         {
             _context = context;
             _apiClient = apiClient;
             _dateService = dateService;
+            _logger = logger;
         }
 
+        [SuppressMessage("ReSharper", "InconsistentlySynchronizedField", Justification = "Flagged _logger, but in both blocks we're guaranteed to run on a single thread")]
         public async Task CrawlMeta()
         {
             lock (_locker)
             {
                 if (_alreadyProcessing)
+                {
+                    _logger.LogWarning("Attempted to crawl meta while process already running");
                     return;
-
+                }
+                    
                 _alreadyProcessing = true;
             }
 
             try
             {
+                _logger.LogInformation("Starting meta crawl");
                 var metaQuestions = await _apiClient.MetaQuestionsByTag("meta.stackoverflow.com", "burninate-request");
+
+                _logger.LogInformation($"{metaQuestions.Items.Count} meta questions retrieved. Processing...");
 
                 var questionIds = metaQuestions.Items.Select(q => q.QuestionId).Distinct().ToList();
                 var questionLookup = _context.MetaQuestions.Where(q => questionIds.Contains(q.Id))
@@ -140,6 +154,10 @@ namespace Rodgort.Services
                 }
                 
                 _context.SaveChanges();
+
+                _logger.LogInformation("Meta crawl completed");
+
+                RecurringJob.Trigger(BurninationTagGuessingService.SERVICE_NAME);
             }
             finally
             {

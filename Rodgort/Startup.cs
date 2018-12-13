@@ -89,8 +89,12 @@ namespace Rodgort
             using (var context = serviceScope.ServiceProvider.GetService<RodgortContext>())
                 if (!context.Database.IsInMemory())
                     context.Database.Migrate();
-
-            RecurringJob.AddOrUpdate<MetaCrawlerService>("Refresh burnination request list", service => service.CrawlMeta(), "0 0 * * 0");
+            
+            RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 0 * * 0");
+            
+            // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
+            // So, we'll just execute once a year
+            RecurringJob.AddOrUpdate<BurninationTagGuessingService>(BurninationTagGuessingService.SERVICE_NAME, service => service.GuessTags(), "0 0 1 1 *");
         }
     }
 }

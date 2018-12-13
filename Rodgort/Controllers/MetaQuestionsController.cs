@@ -24,7 +24,7 @@ namespace Rodgort.Controllers
                 mq.Id,
                 mq.Title,
                 QuestionsInTag = 5,
-                MainTags = new[] {new {TagName = "design", Status = "guessed"}}
+                MainTags = mq.MetaQuestionTags.Select(mqt => new {mqt.TagName, Type = mqt.RequestType.Name, Status = mqt.Status.Name })
             })
             .OrderBy(q => q.Id)
             .Page(page, pageSize);

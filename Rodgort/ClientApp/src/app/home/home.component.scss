@@ -1,0 +1,39 @@
+.post-tag {
+    display: inline;
+
+    padding: .4em .5em;
+    margin: 2px 2px 2px 0;
+    font-size: 11px;
+    line-height: 1;
+
+    white-space: nowrap;
+    text-decoration: none;
+    text-align: center;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 3px;
+
+    font-size: 12px;
+    color: #535a60;
+    background-color: #ececec;
+    border-color: #ececec;
+}
+
+.block-info {
+    text-align: center;
+    height: 38px;
+    min-width: 40px;
+    font-size: 17px;
+    color: #848d95;
+    padding: 7px 6px;
+}
+
+.tag-group {
+    padding: 10px;
+}
+.tag-header {
+    padding-bottom: 10px;
+}
+.tag-rejected {
+    background-color: #f1c0c0;
+}
