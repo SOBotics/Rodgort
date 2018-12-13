@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -22,11 +23,21 @@ export class HomeComponent implements OnInit {
   public questions: any[];
 
   constructor(
+    private route: ActivatedRoute,
+    private router: Router,
     private httpClient: HttpClient
   ) { }
 
   ngOnInit() {
-    this.reloadData();
+    this.route.queryParams.subscribe(params => {
+      this.filter.tag = params['tag'] || '';
+      this.filter.type = +params['type'] || -1;
+      this.filter.approvalStatus = +params['approvalStatus'] || -1;
+      this.filter.status = params['status'] || '';
+      this.filter.pageNumber = +params['pageNumber'] || 1;
+      this.filter.sortBy = params['sortBy'] || 'score';
+      this.reloadData();
+    });
   }
 
   public reloadData() {
@@ -64,6 +75,10 @@ export class HomeComponent implements OnInit {
 
   public loadPage(pageNumber: number) {
     this.filter.pageNumber = pageNumber;
-    this.reloadData();
+    this.applyFilter();
+  }
+
+  public applyFilter() {
+    this.router.navigate(['/'], { queryParams: this.filter });
   }
 }
