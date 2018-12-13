@@ -56,7 +56,7 @@ namespace Rodgort.Services
 
         private async Task ProcessTags(List<DbTag> tagsToCheck)
         {
-            _logger.LogInformation("Fetching question counts for the following tags: ", string.Join(", ", tagsToCheck));
+            _logger.LogInformation("Fetching question counts for the following tags: " + string.Join(", ", tagsToCheck));
             foreach (var tagToCheck in tagsToCheck)
             {
                 var tagName = tagToCheck.Name;
