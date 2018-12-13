@@ -20,7 +20,6 @@ namespace Rodgort.Controllers
         public object Get(int page = 1, int pageSize = 30)
         {
             var result = _context.MetaQuestions
-                .Where(q => q.Id == 320690)
                 .Select(mq => new
             {
                 mq.Id,

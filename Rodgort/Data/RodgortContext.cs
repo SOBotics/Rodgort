@@ -89,7 +89,7 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbMetaQuestionTagStatus>()
                 .HasData(
-                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.GUESSED, Name = "Guessed"},
+                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.PENDING, Name = "Pending"},
                     new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.APPROVED, Name = "Approved"},
                     new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.REJECTED, Name = "Rejected"}
                 );

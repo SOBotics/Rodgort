@@ -48,7 +48,7 @@ namespace Rodgort.Services
                     if (existingTags.ContainsKey(matchedTagName))
                     {
                         var matchedTag = existingTags[matchedTagName];
-                        if (matchedTag.StatusId == DbMetaQuestionTagStatus.GUESSED)
+                        if (matchedTag.StatusId == DbMetaQuestionTagStatus.PENDING)
                             metaQuestionTag = matchedTag;
                         else
                             continue;
@@ -76,7 +76,7 @@ namespace Rodgort.Services
                     metaQuestionTag.MetaQuestion = question;
                     metaQuestionTag.TagName = matchedTagName;
                     metaQuestionTag.RequestTypeId = requestType;
-                    metaQuestionTag.StatusId = DbMetaQuestionTagStatus.GUESSED;
+                    metaQuestionTag.StatusId = DbMetaQuestionTagStatus.PENDING;
 
                     if (isNew)
                         _context.MetaQuestionTags.Add(metaQuestionTag); 
