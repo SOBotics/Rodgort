@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class HomeComponent implements OnInit {
   public isAdmin = true;
+  public loading = false;
   public pagingInfo: PagingInfo[];
   public filter = {
     tag: '',
@@ -51,8 +52,10 @@ export class HomeComponent implements OnInit {
       `&page=${this.filter.pageNumber}` +
       `&pageSize=10`;
 
+    this.loading = true;
     this.httpClient.get(query)
       .subscribe((response: any) => {
+        this.loading = false;
         if (response.totalPages > 0 && response.pageNumber > response.totalPages) {
           this.filter.pageNumber = 1;
           this.reloadData();
