@@ -33,7 +33,8 @@ namespace Rodgort.Services
         {
             var tagsToCheck = _context.MetaQuestionTags
                 .Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
-                .Where(mqt => !mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_COMPLETED || mqmt.TagName == DbMetaTag.STATUS_DECLINED))
+                // If the request was declined, we don't need to watch the count
+                .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.All(mqmt => mqmt.TagName != DbMetaTag.STATUS_DECLINED))
                 .Select(mqt => mqt.Tag)
                 .Distinct()
                 .ToList();
