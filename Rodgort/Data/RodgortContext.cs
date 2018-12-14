@@ -66,6 +66,7 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbLog>().ToTable("Logs");
             modelBuilder.Entity<DbLog>().HasKey(tag => tag.Id);
+            modelBuilder.Entity<DbLog>().HasIndex(tag => tag.TimeLogged);
 
             modelBuilder.Entity<DbMetaQuestionMetaTag>().ToTable("MetaQuestionMetaTags");
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasKey(mqmt => new { mqmt.MetaQuestionId, mqmt.TagName });
