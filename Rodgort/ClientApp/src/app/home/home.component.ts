@@ -52,7 +52,7 @@ export class HomeComponent implements OnInit {
       `&page=${this.filter.pageNumber}` +
       `&pageSize=10`;
 
-    this.loading = true;
+    // this.loading = true;
     this.httpClient.get(query)
       .subscribe((response: any) => {
         this.loading = false;
