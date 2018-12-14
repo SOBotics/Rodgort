@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
-using System.Reactive.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchangeApi;
@@ -39,7 +37,7 @@ namespace StackExchangeChat.Console
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var apiThing = new ApiClient(serviceProvider, config);
+            var apiThing = new ApiClient(serviceProvider, config, null);
 
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
