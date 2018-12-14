@@ -76,8 +76,13 @@ namespace Rodgort.Services
                     metaQuestionTag.MetaQuestion = question;
                     metaQuestionTag.TagName = matchedTagName;
                     metaQuestionTag.RequestTypeId = requestType;
-                    metaQuestionTag.StatusId = DbMetaQuestionTagStatus.PENDING;
 
+                    // If there's only one tag, and that tag is found in the title in the form of [tag], we can just approve it.
+                    if (matchedTagNames.Count == 1 && question.Title.Contains($"[{matchedTagName}]"))
+                        metaQuestionTag.StatusId = DbMetaQuestionTagStatus.APPROVED;
+                    else
+                        metaQuestionTag.StatusId = DbMetaQuestionTagStatus.PENDING;
+                    
                     if (isNew)
                         _context.MetaQuestionTags.Add(metaQuestionTag); 
                 }
