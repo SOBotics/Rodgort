@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using Hangfire;
+using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -56,7 +58,10 @@ namespace Rodgort
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseHangfireServer();
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard(options: new DashboardOptions
+            {
+                Authorization = new List<IDashboardAuthorizationFilter> { new NoAuthorizationFilter() }
+            });
 
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
@@ -95,6 +100,14 @@ namespace Rodgort
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
             // So, we'll just execute once a year - the first of January at midnight
             RecurringJob.AddOrUpdate<BurninationTagGuessingService>(BurninationTagGuessingService.SERVICE_NAME, service => service.GuessTags(), "0 0 1 1 *");
+        }
+
+        public class NoAuthorizationFilter : IDashboardAuthorizationFilter
+        {
+            public bool Authorize(DashboardContext context)
+            {
+                return true;
+            }
         }
     }
 }
