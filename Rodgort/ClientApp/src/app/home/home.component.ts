@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ArraySortPipe } from '../../pipes/ArraySortPipe';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
   public isAdmin = true;
@@ -86,6 +87,40 @@ export class HomeComponent implements OnInit {
     }).subscribe(_ => {
       tag.type = requestType;
     });
+  }
+
+  public onNewTagAdded(question: any, event: any) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      const newTagName = event.target.value;
+
+      const matchedTag = question.mainTags.find((mt: any) => mt.tagName === newTagName);
+
+      if (matchedTag && matchedTag.status !== 'Rejected') {
+        return;
+      }
+
+      event.target.value = '';
+
+      this.httpClient.post('/api/MetaQuestions/AddTag', {
+        metaQuestionId: question.id,
+        tagName: newTagName,
+        requestType: 'Burninate'
+      }).subscribe(_ => {
+        if (matchedTag) {
+          matchedTag.status = 'Approved';
+          matchedTag.statusId = 2;
+        } else {
+          question.mainTags = question.mainTags.concat([{
+            questionCountOverTime: [],
+            status: 'Approved',
+            statusId: 2,
+            tagName: newTagName,
+            type: 'Burninate'
+          }]);
+        }
+      });
+    }
   }
 
   public loadPage(pageNumber: number) {

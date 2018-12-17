@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Utilities.Paging;
@@ -64,7 +65,7 @@ namespace Rodgort.Controllers
                         mqt.StatusId,
                         Status = mqt.Status.Name,
                         QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount})
-                    }).OrderBy(mqt => mqt.StatusId),
+                    }),
                     NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
                         .Select(mqt => mqt.Tag.NumberOfQuestions)
                         .OrderByDescending(mqt => mqt)
@@ -138,5 +139,49 @@ namespace Rodgort.Controllers
             public string RequestType { get; set; }
         }
 
+
+        [HttpPost("AddTag")]
+        public void AddTag([FromBody] AddTagRequest request)
+        {
+            var matchingQuestionMetaTag = _context.MetaQuestions
+                .Include(mq => mq.MetaQuestionTags)
+                .FirstOrDefault(mqt => mqt.Id == request.MetaQuestionId);
+
+            if (matchingQuestionMetaTag != null)
+            {
+                var matchingRequestType = _context.RequestTypes.FirstOrDefault(rt => rt.Name == request.RequestType);
+                if (matchingRequestType == null)
+                    throw new ArgumentException($"Request type {request.RequestType} invalid.");
+
+                var alreadyExistingTag = matchingQuestionMetaTag.MetaQuestionTags.FirstOrDefault(mqt => mqt.TagName == request.TagName);
+                if (alreadyExistingTag != null)
+                {
+                    alreadyExistingTag.StatusId = DbMetaQuestionTagStatus.APPROVED;
+                }
+                else
+                {
+                    var tagExists = _context.Tags.Any(mt => mt.Name == request.TagName);
+                    if (!tagExists)
+                        _context.Tags.Add(new DbTag { Name = request.TagName });
+
+                    _context.MetaQuestionTags.Add(new DbMetaQuestionTag
+                    {
+                        MetaQuestionId = request.MetaQuestionId,
+                        RequestTypeId = matchingRequestType.Id,
+                        StatusId = DbMetaQuestionTagStatus.APPROVED,
+                        TagName = request.TagName
+                    });
+                }
+
+                _context.SaveChanges();
+            }
+        }
+
+        public class AddTagRequest
+        {
+            public int MetaQuestionId { get; set; }
+            public string TagName { get; set; }
+            public string RequestType { get; set; }
+        }
     }
 }

@@ -10,6 +10,7 @@ import { QuestionCountGraphComponent } from './question-count-graph/question-cou
 import { ChartModule } from 'angular-highcharts';
 import { appRoutes } from './app.routes';
 import { LogsComponent } from './logs/logs.component';
+import { ArraySortPipe } from '../pipes/ArraySortPipe';
 
 @NgModule({
   declarations: [
@@ -17,6 +18,7 @@ import { LogsComponent } from './logs/logs.component';
     HomeComponent,
     QuestionCountGraphComponent,
     LogsComponent,
+    ArraySortPipe
   ],
   imports: [
     ChartModule,

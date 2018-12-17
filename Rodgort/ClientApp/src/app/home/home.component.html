@@ -87,7 +87,7 @@
                 </div>
             </div>
             <div class="tags">
-                <ng-container *ngFor="let tag of question.mainTags">
+                <ng-container *ngFor="let tag of question.mainTags | sort:'statusId'">
                     <div *ngIf="showRejectedTags || tag.status !== 'Rejected'" class="mt-3 p-2" [class.tag-rejected]="tag.status === 'Rejected'">
                         <div class="row">
                             <div class="col-md-6">
@@ -158,6 +158,8 @@
                         </div>
                     </div>
                 </ng-container>
+
+                <input type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
             </div>
             <hr />
         </div>
