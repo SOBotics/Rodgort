@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.httpClient.get('/assets/revision.txt', { responseType: 'text' }).subscribe(a => this.revision = a);
 
-    const quotaRemainingSocket = new WebSocket('wss://localhost:5001/ws/quotaRemaining');
+    const quotaRemainingSocket = new WebSocket(`wss://${location.host}/ws/quotaRemaining`);
     quotaRemainingSocket.onmessage = event => {
       const payload = JSON.parse(event.data);
       this.quotaRemaining = payload.quotaRemaining;
