@@ -12,6 +12,8 @@ export class HomeComponent implements OnInit {
   public isAdmin = true;
   public loading = false;
   public pagingInfo: PagingInfo[];
+  public showRejectedTags: boolean;
+
   public filter = {
     tag: '',
     type: -1,
