@@ -17,15 +17,25 @@
 }
 
 .post-tag {
-    color: #535a60;
     background-color: #ececec;
     border-color: #ececec;
 }
+.post-tag > a {
+    color: #212529;
+}
+.post-tag > a:hover {
+    text-decoration: none;
+}
 
 .post-metatag {
-    color: #353030;
     background-color: #fbcd6c;
     border-color: #fbcd6c;
+}
+.post-metatag > a {
+    color: #353030;
+}
+.post-metatag > a:hover {
+    text-decoration: none;
 }
 
 .block-info {
