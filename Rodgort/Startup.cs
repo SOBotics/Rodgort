@@ -66,6 +66,10 @@ namespace Rodgort
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
 
+
+            app.UseWebSockets();
+            app.ConfigureQuotaRemainingWebsocket();
+            
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
@@ -87,7 +91,8 @@ namespace Rodgort
             using (var context = serviceScope.ServiceProvider.GetService<RodgortContext>())
                 if (!context.Database.IsInMemory())
                     context.Database.Migrate();
-            
+
+
             // Every sunday at midnight
             RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 0 * * 0");
 

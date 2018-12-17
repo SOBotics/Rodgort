@@ -19,8 +19,11 @@
                       <a *ngIf="isAdmin" class="dropdown-item" routerLink="/admin/users">Users</a>
                   </div>
               </li> -->
+
+              
           </ul>
 
+          <div class="quota-display">Quota Remaining: {{quotaRemaining}}</div>
           <a *ngIf="!isLoggedIn" class="btn btn-outline-success my-2 my-sm-0" href="{{getLoginUrl()}}">Log In</a>
           <ul *ngIf="isLoggedIn" class="navbar-nav mt-2 mt-sm-0">
               <li class="nav-item dropdown hidden-md-down">
