@@ -39,5 +39,6 @@ deploy production:
     - "ssh deploy@$PRODUCTION_IP 'mkdir -p /var/www/Rodgort/Server'"
     - rsync -az --force --delete --progress -e "ssh -p22" Rodgort/bin/Release/netcoreapp2.1/publish/* deploy@$PRODUCTION_IP:/var/www/Rodgort/Server
     - "ssh deploy@$PRODUCTION_IP 'cp /var/www/Rodgort/Configuration/appsettings.Production.json /var/www/Rodgort/Server/.'"
+    - "ssh deploy@$PRODUCTION_IP 'cp /var/www/Rodgort/Configuration/nlog.config /var/www/Higgs/Server/.'"
     - "ssh deploy@$PRODUCTION_IP 'sudo systemctl restart rodgort.service'"
     - rm ~/.ssh/id_rsa
