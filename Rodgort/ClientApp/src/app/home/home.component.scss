@@ -1,4 +1,4 @@
-.post-tag {
+.post-tag, .post-metatag {
     display: inline;
 
     padding: .4em .5em;
@@ -14,9 +14,18 @@
     border-radius: 3px;
 
     font-size: 12px;
+}
+
+.post-tag {
     color: #535a60;
     background-color: #ececec;
     border-color: #ececec;
+}
+
+.post-metatag {
+    color: #353030;
+    background-color: #fbcd6c;
+    border-color: #fbcd6c;
 }
 
 .block-info {

@@ -75,8 +75,10 @@
 <ng-container *ngIf="!loading">
     <div class="row pt-1" *ngFor="let question of questions">
         <div class="col-md-12">
-            <!-- <h3><a routerLink="/questions/{{question.id}}">{{question.title}}</a></h3> -->
-            <h3><a>{{question.title}}</a></h3>
+            <h3>
+                <a>{{question.title}}</a>
+                <p *ngFor="let metaTag of question.metaStatusTags" class="post-metatag">{{metaTag.tagName}}</p>
+            </h3>
             <a href="https://meta.stackoverflow.com/questions/{{question.id}}">View on site</a>
             <div class="row">
                 <div class="col-md-3">
