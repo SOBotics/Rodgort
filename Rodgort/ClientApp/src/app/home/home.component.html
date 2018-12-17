@@ -135,10 +135,10 @@
                                     <div class="col-md-6">
                                     </div>
                                     <div class="col-md-6">
-                                        <a *ngIf="tag.status !== 'Approved'" href="javascript:void" (click)="setApprovalStatus(question.id, tag.tagName, true)">Approve
+                                        <a *ngIf="tag.status !== 'Approved'" href="javascript:void" (click)="setApprovalStatus(question.id, tag, true)">Approve
                                             Tag</a>
                                         <span *ngIf="tag.status !== 'Approved' && tag.status !== 'Rejected'">|</span>
-                                        <a *ngIf="tag.status !== 'Rejected'" href="javascript:void" (click)="setApprovalStatus(question.id, tag.tagName, false)">Reject
+                                        <a *ngIf="tag.status !== 'Rejected'" href="javascript:void" (click)="setApprovalStatus(question.id, tag, false)">Reject
                                             Tag</a>
                                     </div>
                                 </div>

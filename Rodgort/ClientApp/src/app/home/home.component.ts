@@ -66,13 +66,13 @@ export class HomeComponent implements OnInit {
       });
   }
 
-  public setApprovalStatus(metaQuestionId: number, tagName: string, approved: boolean) {
+  public setApprovalStatus(metaQuestionId: number, tag: any, approved: boolean) {
     this.httpClient.post('/api/MetaQuestions/SetTagApprovalStatus', {
       metaQuestionId,
-      tagName,
+      tagName: tag.tagName,
       approved
     }).subscribe(_ => {
-      this.reloadData();
+      tag.status = approved ? 'Approved' : 'Rejected';
     });
   }
 
