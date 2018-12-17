@@ -78,6 +78,16 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  public setRequestType(metaQuestionId: number, tag: any, requestType: string) {
+    this.httpClient.post('/api/MetaQuestions/SetTagRequestType', {
+      metaQuestionId,
+      tagName: tag.tagName,
+      requestType
+    }).subscribe(_ => {
+      tag.type = requestType;
+    });
+  }
+
   public loadPage(pageNumber: number) {
     this.filter.pageNumber = pageNumber;
     this.applyFilter();

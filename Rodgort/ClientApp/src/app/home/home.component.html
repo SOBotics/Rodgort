@@ -129,11 +129,11 @@
                                             Admin
                                         </div>
                                         <div class="col-md-6">
-                                            <a *ngIf="tag.type !== 'Burninate'" href="javascript:void">Burninate</a>
-                                            <span *ngIf="tag.type !== 'Burninate' && tag.type !== 'Synonym'">|</span>
-                                            <a *ngIf="tag.type !== 'Synonym'" href="javascript:void">Synonym</a>
+                                            <a *ngIf="tag.type !== 'Burninate'" href="javascript:void" (click)="setRequestType(question.id, tag, 'Burninate')">Burninate</a>
+                                            <span *ngIf="tag.type !== 'Burninate'">|</span>
+                                            <a *ngIf="tag.type !== 'Synonym'" href="javascript:void" (click)="setRequestType(question.id, tag, 'Synonym')">Synonym</a>
                                             <span *ngIf="tag.type !== 'Synonym' && tag.type !== 'Merge'">|</span>
-                                            <a *ngIf="tag.type !== 'Merge'" href="javascript:void">Merge</a>
+                                            <a *ngIf="tag.type !== 'Merge'" href="javascript:void" (click)="setRequestType(question.id, tag, 'Merge')">Merge</a>
                                         </div>
                                     </div>
 

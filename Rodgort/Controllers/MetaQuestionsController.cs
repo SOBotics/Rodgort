@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
@@ -96,7 +97,7 @@ namespace Rodgort.Controllers
 
                 if (matchingQuestionMetaTag.StatusId != newStatusId)
                 {
-                    matchingQuestionMetaTag.StatusId = newStatusId;;
+                    matchingQuestionMetaTag.StatusId = newStatusId;
                     _context.SaveChanges();
                 }
             }
@@ -108,5 +109,34 @@ namespace Rodgort.Controllers
             public string TagName { get; set; }
             public bool Approved { get; set; }
         }
+
+
+        [HttpPost("SetTagRequestType")]
+        public void SetTagRequestType([FromBody] SetTagRequestTypeRequest request)
+        {
+            var matchingQuestionMetaTag = _context.MetaQuestionTags.FirstOrDefault(mqt => mqt.MetaQuestionId == request.MetaQuestionId && mqt.TagName == request.TagName);
+            if (matchingQuestionMetaTag != null)
+            {
+                var matchingRequestType = _context.RequestTypes.FirstOrDefault(rt => rt.Name == request.RequestType);
+                if (matchingRequestType == null)
+                    throw new ArgumentException($"Request type {request.RequestType} invalid.");
+
+                var newRequestTypeId = matchingRequestType.Id;
+                
+                if (matchingQuestionMetaTag.RequestTypeId != newRequestTypeId)
+                {
+                    matchingQuestionMetaTag.RequestTypeId = newRequestTypeId;
+                    _context.SaveChanges();
+                }
+            }
+        }
+
+        public class SetTagRequestTypeRequest
+        {
+            public int MetaQuestionId { get; set; }
+            public string TagName { get; set; }
+            public string RequestType { get; set; }
+        }
+
     }
 }

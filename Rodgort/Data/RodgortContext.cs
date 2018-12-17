@@ -15,7 +15,8 @@ namespace Rodgort.Data
         public DbSet<DbMetaQuestionMetaTag> MetaQuestionMetaTags { get; set; }
         public DbSet<DbTag> Tags { get; set; }
         public DbSet<DbMetaTag> MetaTags { get; set; }
-        public DbSet<DbTagStatistics> DbTagStatistics { get; set; }
+        public DbSet<DbRequestType> RequestTypes { get; set; }
+        public DbSet<DbTagStatistics> TagStatistics { get; set; }
         public DbSet<DbLog> Logs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

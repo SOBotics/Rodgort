@@ -63,7 +63,7 @@ namespace Rodgort.Services
                 var tagName = tagToCheck.Name;
                 var response = await _apiClient.TotalQuestionsByTag("stackoverflow.com", tagName);
 
-                _context.DbTagStatistics.Add(new DbTagStatistics
+                _context.TagStatistics.Add(new DbTagStatistics
                 {
                     QuestionCount = response.Total,
                     DateTime = _dateService.UtcNow,
