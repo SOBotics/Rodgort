@@ -40,12 +40,14 @@ namespace Rodgort.Controllers
             if (type > 0)
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.RequestTypeId == type));
 
-            var statusFlags = new[] { DbMetaTag.STATUS_FEATURED, DbMetaTag.STATUS_COMPLETED, DbMetaTag.STATUS_DECLINED, DbMetaTag.STATUS_PLANNED };
+            var statusFlags = DbMetaTag.StatusFlags;
 
             if (!string.IsNullOrWhiteSpace(status))
             {
                 if (status == "none")
-                    query = query.Where(mq => !mq.MetaQuestionMetaTags.Any(mqt => statusFlags.Contains(mqt.TagName)));
+                    query = query.Where(mq => !mq.MetaQuestionMetaTags.Any(mqt => statusFlags.Contains(mqt.TagName)) && !mq.ClosedDate.HasValue);
+                else if (status == "closed")
+                    query = query.Where(mq => mq.ClosedDate.HasValue);
                 else
                     query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqt => mqt.TagName == status));
             }

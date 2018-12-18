@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Rodgort.ApiUtilities;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
+using Rodgort.Utilities;
 using StackExchangeApi;
 using StackExchangeApi.Responses;
 
@@ -91,6 +92,10 @@ namespace Rodgort.Services
                     dbMetaQuestion.Link = metaQuestion.Link;
                     dbMetaQuestion.LastSeen = utcNow;
                     dbMetaQuestion.Score = metaQuestion.Score.Value;
+                    dbMetaQuestion.CloseReason = metaQuestion.ClosedReason;
+
+                    if (metaQuestion.ClosedDate.HasValue)
+                        dbMetaQuestion.ClosedDate = Dates.UnixTimeStampToDateTime(metaQuestion.ClosedDate.Value);
 
                     foreach (var tag in metaQuestion.Tags)
                         if (!dbMetaQuestion.MetaQuestionMetaTags.Any(t => string.Equals(t.TagName, tag, StringComparison.OrdinalIgnoreCase)))

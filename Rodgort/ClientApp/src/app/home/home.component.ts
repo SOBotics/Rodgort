@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-home',
@@ -8,25 +9,32 @@ import { Component, OnInit } from '@angular/core';
 export class HomeComponent implements OnInit {
   public statistics: any = {
     requests: {
-      total: 658,
-      declined: 53,
-      completed: 123,
+      total: 0,
 
-      completedWithQuestionsLeft: 86,
-      noStatusButCompleted: 12,
+      requireApproval: 0,
+      withApprovedTags: 0,
+
+      declined: 0,
+      completed: 0,
+
+      completedWithQuestionsLeft: 0,
+      noStatusButCompleted: 0,
     },
     tags: {
-      total: 2018,
-      noQuestions: 28,
-      synonymised: 38,
-      hasQuestionsAndAttachedToCompletedRequest: 32
+      total: 0,
+      noQuestions: 0,
+      synonymised: 0,
+      hasQuestionsAndAttachedToCompletedRequest: 0
     }
   };
 
   constructor(
+    private httpClient: HttpClient
   ) { }
 
   ngOnInit() {
-
+    this.httpClient.get('/api/statistics').subscribe(d => {
+      this.statistics = d;
+    });
   }
 }

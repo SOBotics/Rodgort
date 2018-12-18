@@ -10,6 +10,8 @@ namespace Rodgort.Data.Tables
 
         public const string STATUS_FEATURED = "featured";
 
+        public static string[] StatusFlags = { STATUS_FEATURED, STATUS_COMPLETED, STATUS_DECLINED, STATUS_PLANNED };
+
         public const string BURNINATE_REQUEST = "burninate-request";
         public const string SYNONYM_REQUEST = "synonym-request";
         public const string RETAG_REQUEST = "retag-request";

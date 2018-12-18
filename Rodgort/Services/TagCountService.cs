@@ -12,10 +12,8 @@ namespace Rodgort.Services
 {
     public class TagCountService
     {
-        public const string ACTIVE_TAGS = "Fetch question counts per tag last seen with at least one question";
-        public const string EMPTY_TAGS = "Fetch question counts for tags last seen with zero questions";
-        public const string IN_PROGRESS = "Fetch question counts per tag for burninations in progress";
-
+        public const string ALL_TAGS = "Fetch question counts per tag";
+        
         private readonly RodgortContext _context;
         private readonly ILogger<TagCountService> _logger;
         private readonly ApiClient _apiClient;
@@ -32,42 +30,13 @@ namespace Rodgort.Services
             _dateService = dateService;
         }
 
-        public async Task GetQuestionCountForActiveTags()
+        public async Task GetQuestionCountForApprovedTags()
         {
             var tagsToCheck = _context.MetaQuestionTags
+                // The tag was approved
                 .Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
                 // If the request was declined, we don't need to watch the count
                 .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.All(mqmt => mqmt.TagName != DbMetaTag.STATUS_DECLINED))
-                .Where(mqt => !mqt.Tag.NumberOfQuestions.HasValue || mqt.Tag.NumberOfQuestions.Value > 0)
-                .Select(mqt => mqt.Tag)
-                .Distinct()
-                .ToList();
-
-            await ProcessTags(tagsToCheck);
-        }
-
-
-        public async Task GetQuestionCountForEmptyTags()
-        {
-            var tagsToCheck = _context.MetaQuestionTags
-                .Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
-                // If the request was declined, we don't need to watch the count
-                .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.All(mqmt => mqmt.TagName != DbMetaTag.STATUS_DECLINED))
-                .Where(mqt => mqt.Tag.NumberOfQuestions.HasValue && mqt.Tag.NumberOfQuestions == 0)
-                .Select(mqt => mqt.Tag)
-                .Distinct()
-                .ToList();
-
-            await ProcessTags(tagsToCheck);
-        }
-
-
-        public async Task GetQuestionCountForFeaturedOrInProgressBurninations()
-        {
-            var tagsToCheck = _context.MetaQuestionTags
-                .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED)
-                    || mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_FEATURED))
-                .Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
                 .Select(mqt => mqt.Tag)
                 .Distinct()
                 .ToList();

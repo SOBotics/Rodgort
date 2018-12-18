@@ -15,6 +15,10 @@ namespace Rodgort.Data.Tables
 
         public int Score { get; set; }
 
+        public string CloseReason { get; set; }
+
+        public DateTime? ClosedDate { get; set; }
+
         public DateTime LastSeen { get; set; }
 
         public List<DbMetaAnswer> MetaAnswers { get; set; } = new List<DbMetaAnswer>();

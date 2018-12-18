@@ -94,16 +94,10 @@ namespace Rodgort
 
 
             // Every sunday at midnight
-            RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 0 * * 0");
+            RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 * * * *");
 
             // Every day at midnight
-            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ACTIVE_TAGS, service => service.GetQuestionCountForActiveTags(), "0 0 * * *");
-
-            // Every sunday at 1 am
-            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.EMPTY_TAGS, service => service.GetQuestionCountForEmptyTags(), "0 1 * * 0");
-
-            // Every hour
-            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.IN_PROGRESS, service => service.GetQuestionCountForFeaturedOrInProgressBurninations(), "0 * * * *");
+            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ALL_TAGS, service => service.GetQuestionCountForApprovedTags(), "0 * * * *");
 
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
             // So, we'll just execute once a year - the first of January at midnight
