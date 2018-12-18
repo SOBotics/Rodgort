@@ -44,9 +44,11 @@ namespace Rodgort.Controllers
             var tagsNoQuestions = filteredTags.Count(t => t.NumberOfQuestions == 0);
             var synonomisedTags = filteredTags.Count(t => t.SynonymOf != null);
 
-            var tagsQuestionsOnCompleted = filteredTags.Count(t => 
-                t.NumberOfQuestions > 0 
-                && t.MetaQuestionTags.Any(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqma => mqma.TagName == DbMetaTag.STATUS_COMPLETED))
+            var tagsQuestionsOnCompleted = filteredTags.Count(t =>
+                t.NumberOfQuestions > 0
+                && t.MetaQuestionTags.Any(mqt =>
+                    mqt.StatusId == DbMetaQuestionTagStatus.APPROVED
+                    && mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqma => mqma.TagName == DbMetaTag.STATUS_COMPLETED))
             );
 
             return new
