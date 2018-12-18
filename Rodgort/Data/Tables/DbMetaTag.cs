@@ -8,7 +8,7 @@ namespace Rodgort.Data.Tables
         public const string STATUS_PLANNED = "status-planned";
         public const string STATUS_DECLINED = "status-declined";
 
-        public const string STATUS_FEATURED = "status-featured";
+        public const string STATUS_FEATURED = "featured";
 
         public const string BURNINATE_REQUEST = "burninate-request";
         public const string SYNONYM_REQUEST = "synonym-request";

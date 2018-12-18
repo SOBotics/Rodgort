@@ -39,25 +39,15 @@ namespace Rodgort.Controllers
             if (type > 0)
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.RequestTypeId == type));
 
+            var statusFlags = new[] { DbMetaTag.STATUS_FEATURED, DbMetaTag.STATUS_COMPLETED, DbMetaTag.STATUS_DECLINED, DbMetaTag.STATUS_PLANNED };
+
             if (!string.IsNullOrWhiteSpace(status))
             {
                 if (status == "none")
-                    query = query.Where(mq =>
-                        !mq.MetaQuestionMetaTags.Any(mqt =>
-                            mqt.TagName == DbMetaTag.STATUS_COMPLETED
-                            || mqt.TagName == DbMetaTag.STATUS_DECLINED
-                            || mqt.TagName == DbMetaTag.STATUS_PLANNED
-                            || mqt.TagName == DbMetaTag.STATUS_FEATURED)
-                    );
+                    query = query.Where(mq => !mq.MetaQuestionMetaTags.Any(mqt => statusFlags.Contains(mqt.TagName)));
                 else
                     query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqt => mqt.TagName == status));
             }
-
-            var modTags = new[]
-            {
-                DbMetaTag.STATUS_FEATURED, DbMetaTag.STATUS_COMPLETED, DbMetaTag.STATUS_DECLINED,
-                DbMetaTag.STATUS_PLANNED
-            };
 
             var transformedQuery = query
                 .Select(mq => new
@@ -73,7 +63,7 @@ namespace Rodgort.Controllers
                         Status = mqt.Status.Name,
                         QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount})
                     }),
-                    MetaStatusTags = mq.MetaQuestionMetaTags.Where(mqmt => modTags.Contains(mqmt.TagName)).Select(mqt => new
+                    MetaStatusTags = mq.MetaQuestionMetaTags.Where(mqmt => statusFlags.Contains(mqmt.TagName)).Select(mqt => new
                     {
                         mqt.TagName
                     }),
