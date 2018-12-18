@@ -7,8 +7,8 @@
         </li>
         of which
         <ul>
-            <li><a routerLink="/requests" [queryParams]="{approvalStatus:2}">{{statistics.requests.requireApproval}} have an approved tag</a></li>
-            <li><a routerLink="/requests" [queryParams]="{approvalStatus:1}">{{statistics.requests.withApprovedTags}} require tag approval</a></li>
+            <li><a routerLink="/requests" [queryParams]="{approvalStatus:2}">{{statistics.requests.withApprovedTags}} have an approved tag</a></li>
+            <li><a routerLink="/requests" [queryParams]="{approvalStatus:1}">{{statistics.requests.requireApproval}} require tag approval</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined}} were declined</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed}} were completed</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}} are completed but still have approved tags with questions</a></li>

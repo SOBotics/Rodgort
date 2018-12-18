@@ -19,9 +19,10 @@ namespace Rodgort.Controllers
         public object Get()
         {
             var burninationRequests = _context.MetaQuestions.Count();
+
             var burninationRequestsWithApproved = _context.MetaQuestions.Count(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED));
             var burninationRequestsRequireApproval = _context.MetaQuestions.Count(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == DbMetaQuestionTagStatus.PENDING));
-
+            
             var declinedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_DECLINED));
             var completedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED));
 
@@ -54,9 +55,9 @@ namespace Rodgort.Controllers
                 {
                     Total = burninationRequests,
 
-                    RequireApproval = burninationRequestsRequireApproval,
                     WithApprovedTags = burninationRequestsWithApproved,
-
+                    RequireApproval = burninationRequestsRequireApproval,
+                    
                     Declined = declinedRequests,
                     Completed = completedRequests,
 

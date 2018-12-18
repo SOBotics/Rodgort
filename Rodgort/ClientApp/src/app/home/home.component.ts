@@ -11,9 +11,9 @@ export class HomeComponent implements OnInit {
     requests: {
       total: 0,
 
-      requireApproval: 0,
       withApprovedTags: 0,
-
+      requireApproval: 0,
+      
       declined: 0,
       completed: 0,
 
