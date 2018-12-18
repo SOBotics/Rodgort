@@ -7,12 +7,18 @@
         </li>
         of which
         <ul>
-            <li><a routerLink="/requests" [queryParams]="{approvalStatus:2}">{{statistics.requests.withApprovedTags}} have an approved tag</a></li>
-            <li><a routerLink="/requests" [queryParams]="{approvalStatus:1}">{{statistics.requests.requireApproval}} require tag approval</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined}} were declined</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed}} were completed</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}} are completed but still have approved tags with questions</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'none', hasQuestions: 'no'}">{{statistics.requests.noStatusButCompleted}} have no status but none of the approved tags have questions</a></li>
+            <li><a routerLink="/requests" [queryParams]="{approvalStatus:2}">{{statistics.requests.withApprovedTags}}
+                    have an approved tag</a></li>
+            <li><a routerLink="/requests" [queryParams]="{approvalStatus:1}">{{statistics.requests.requireApproval}}
+                    require tag approval</a></li>
+            <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined}}
+                    were declined</a></li>
+            <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed}}
+                    were completed</a></li>
+            <li><a routerLink="/requests" [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}}
+                    are completed but still have approved tags with questions</a></li>
+            <li><a routerLink="/requests" [queryParams]="{status:'none', hasQuestions: 'no'}">{{statistics.requests.noStatusButCompleted}}
+                    have no status but none of the approved tags have questions</a></li>
         </ul>
     </ul>
 
@@ -24,7 +30,15 @@
         <ul>
             <li>{{statistics.tags.noQuestions}} have no questions attached to them</li>
             <li>{{statistics.tags.synonymised}} were synonomised</li>
-            <li>{{statistics.tags.hasQuestionsAndAttachedToCompletedRequest}} have questions despite being found on a status-completed request</li>
+            <li>{{statistics.tags.hasQuestionsAndAttachedToCompletedRequest}} have questions despite being found on a
+                status-completed request</li>
         </ul>
+    </ul>
+
+    <hr />
+    <h2>Administration</h2>
+    <ul>
+        <li><a routerLink="/logs">Logs</a></li>
+        <li><a href="/Hangfire">Hangfire</a></li>
     </ul>
 </div>
