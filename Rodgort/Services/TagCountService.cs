@@ -42,12 +42,12 @@ namespace Rodgort.Services
             await ProcessTags(tagsToCheck);
         }
 
-        public async Task GetQuestionCountForInProgressBurninations()
+        public async Task GetQuestionCountForFeaturedOrInProgressBurninations()
         {
             var tagsToCheck = _context.MetaQuestionTags
-                .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED))
+                .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED)
+                    || mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_FEATURED))
                 .Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
-                .Where(mqt => !mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_COMPLETED || mqmt.TagName == DbMetaTag.STATUS_DECLINED))
                 .Select(mqt => mqt.Tag)
                 .Distinct()
                 .ToList();

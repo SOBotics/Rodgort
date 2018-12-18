@@ -87,7 +87,8 @@ namespace Rodgort.Data
                 .HasData(
                     new DbMetaTag {Name = DbMetaTag.STATUS_COMPLETED},
                     new DbMetaTag {Name = DbMetaTag.STATUS_PLANNED},
-                    new DbMetaTag {Name = DbMetaTag.STATUS_DECLINED}
+                    new DbMetaTag {Name = DbMetaTag.STATUS_DECLINED},
+                    new DbMetaTag {Name = DbMetaTag.STATUS_FEATURED}
                 );
 
             modelBuilder.Entity<DbMetaQuestionTagStatus>()

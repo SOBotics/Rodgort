@@ -46,11 +46,18 @@ namespace Rodgort.Controllers
                         !mq.MetaQuestionMetaTags.Any(mqt =>
                             mqt.TagName == DbMetaTag.STATUS_COMPLETED
                             || mqt.TagName == DbMetaTag.STATUS_DECLINED
-                            || mqt.TagName == DbMetaTag.STATUS_PLANNED)
+                            || mqt.TagName == DbMetaTag.STATUS_PLANNED
+                            || mqt.TagName == DbMetaTag.STATUS_FEATURED)
                     );
                 else
                     query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqt => mqt.TagName == status));
             }
+
+            var modTags = new[]
+            {
+                DbMetaTag.STATUS_FEATURED, DbMetaTag.STATUS_COMPLETED, DbMetaTag.STATUS_DECLINED,
+                DbMetaTag.STATUS_PLANNED
+            };
 
             var transformedQuery = query
                 .Select(mq => new
@@ -66,7 +73,7 @@ namespace Rodgort.Controllers
                         Status = mqt.Status.Name,
                         QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount})
                     }),
-                    MetaStatusTags = mq.MetaQuestionMetaTags.Where(mqmt => mqmt.TagName.StartsWith("status-")).Select(mqt => new
+                    MetaStatusTags = mq.MetaQuestionMetaTags.Where(mqmt => modTags.Contains(mqmt.TagName)).Select(mqt => new
                     {
                         mqt.TagName
                     }),
