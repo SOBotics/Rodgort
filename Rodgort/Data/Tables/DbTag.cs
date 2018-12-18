@@ -7,7 +7,7 @@ namespace Rodgort.Data.Tables
     {
         public string Name { get; set; }
 
-        public int NumberOfQuestions { get; set; }
+        public int? NumberOfQuestions { get; set; }
 
         public List<DbMetaQuestionTag> MetaQuestionTags { get; set; }
         public List<DbMetaQuestionTag> MetaQuestionSecondaryTags { get; set; }

@@ -97,7 +97,10 @@ namespace Rodgort
             RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 0 * * 0");
 
             // Every day at midnight
-            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.QUESTION_COUNT_SERVICE_NAME, service => service.GetQuestionCount(), "0 0 * * *");
+            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ACTIVE_TAGS, service => service.GetQuestionCountForActiveTags(), "0 0 * * *");
+
+            // Every sunday at 1 am
+            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.EMPTY_TAGS, service => service.GetQuestionCountForEmptyTags(), "0 1 * * 0");
 
             // Every hour
             RecurringJob.AddOrUpdate<TagCountService>(TagCountService.IN_PROGRESS, service => service.GetQuestionCountForFeaturedOrInProgressBurninations(), "0 * * * *");
