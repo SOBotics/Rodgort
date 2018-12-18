@@ -24,7 +24,7 @@
                     <label class="input-group-text" for="sortBySelector">Sort By</label>
                 </div>
                 <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
-                    <option value="score">Score</option>
+                    <option value="score">Request score</option>
                     <option value="numQuestions"># of Questions</option>
                 </select>
             </div>
@@ -63,11 +63,11 @@
         <div class="col">
             <div class="btn-group btn-group-toggle">
                 <div class="input-group-prepend">
-                    <label class="input-group-text" >Has Questions</label>
+                    <label class="input-group-text">Has Questions</label>
                 </div>
                 <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'any'">
-                        <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="any">Any
-                    </label>
+                    <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="any">Any
+                </label>
                 <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'yes'">
                     <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="yes">Yes
                 </label>
@@ -100,10 +100,18 @@
             <a href="https://meta.stackoverflow.com/questions/{{question.id}}">View on site</a>
             <div class="row">
                 <div class="col-md-3">
-                    Score:
+                    Request score:
                 </div>
                 <div class="col-md-3">
                     {{question.score}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    Question count:
+                </div>
+                <div class="col-md-3">
+                    {{question.numQuestions}}
                 </div>
             </div>
             <div class="tags">
@@ -116,9 +124,9 @@
                                         <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
                                     </div>
                                 </div>
-                                <div class="row" *ngIf="tag.numQuestions">
+                                <div class="row">
                                     <div class="col-md-6">
-                                        Number of questions:
+                                        Number of questions
                                     </div>
                                     <div class="col-md-6">
                                         {{tag.numQuestions}}

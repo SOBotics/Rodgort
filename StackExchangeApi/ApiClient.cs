@@ -117,26 +117,17 @@ namespace StackExchangeApi
 
         public const string BASE_URL = "https://api.stackexchange.com/2.2";
 
-        public Task<TotalResponse> TotalQuestionsByTag(string siteName, string tag)
+        public Task<ApiItemsResponse<TagResponse>> TotalQuestionsByTag(string siteName, IEnumerable<string> tags)
         {
-            return MakeRequest<TotalResponse>($"{BASE_URL}/questions", new Dictionary<string, string>
+            var tagsList = tags.ToList();
+            var tagString = string.Join(";", tagsList);
+            return MakeRequest<ApiItemsResponse<TagResponse>>($"{BASE_URL}/tags/{tagString}/info", new Dictionary<string, string>
             {
-                { "site", siteName },
-                { "tagged", tag },
-                { "filter", "!--s3oyShP3gx" }
+                {"site", siteName},
+                {"filter", "!9Z(-wqiNh"},
+                { "pageSize", tagsList.Count().ToString() }
             });
         }
-
-        public Task<ApiItemsResponse<BaseQuestion>> QuestionsByTag(string siteName, string tag, PagingOptions pagingOptions = null)
-        {
-            return ApplyWithPaging<BaseQuestion>($"{BASE_URL}/questions", new Dictionary<string, string>
-            {
-                { "site", siteName },
-                { "tagged", tag },
-                { "filter", "!bHIU4eJgUSOOHK" }
-            }, pagingOptions);
-        }
-
 
         public async Task<ApiItemsResponse<TItemType>> ApplyWithPaging<TItemType>(
             string endPoint,

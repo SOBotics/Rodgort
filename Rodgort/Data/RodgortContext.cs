@@ -57,6 +57,7 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbTag>().ToTable("Tags");
             modelBuilder.Entity<DbTag>().HasKey(tag => tag.Name);
+            modelBuilder.Entity<DbTag>().HasOne(tag => tag.SynonymOf).WithMany(tag => tag.Synonyms).IsRequired(false).HasForeignKey(tag => tag.SynonymOfTagName);
 
             modelBuilder.Entity<DbTagStatistics>().ToTable("TagStatistics");
             modelBuilder.Entity<DbTagStatistics>().HasKey(ts => ts.Id);

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MoreLinq;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using StackExchangeApi;
@@ -73,21 +75,59 @@ namespace Rodgort.Services
             await ProcessTags(tagsToCheck);
         }
 
-        private async Task ProcessTags(List<DbTag> tagsToCheck)
+        private async Task ProcessTags(IReadOnlyCollection<DbTag> tagsToCheck)
         {
             _logger.LogInformation("Fetching question counts for the following tags: " + string.Join(", ", tagsToCheck));
-            foreach (var tagToCheck in tagsToCheck)
-            {
-                var tagName = tagToCheck.Name;
-                var response = await _apiClient.TotalQuestionsByTag("stackoverflow.com", tagName);
 
-                _context.TagStatistics.Add(new DbTagStatistics
+            foreach (var batch in tagsToCheck.Batch(95))
+            {
+                var tagLookup = batch.ToDictionary(b => b.Name, tag => tag, StringComparer.OrdinalIgnoreCase);
+                
+                var response = await _apiClient.TotalQuestionsByTag("stackoverflow.com", tagLookup.Keys);
+
+                foreach (var responseTag in response.Items)
                 {
-                    QuestionCount = response.Total,
-                    DateTime = _dateService.UtcNow,
-                    TagName = tagName
-                });
-                tagToCheck.NumberOfQuestions = response.Total;
+                    if (tagLookup.ContainsKey(responseTag.Name))
+                    {
+                        _context.TagStatistics.Add(new DbTagStatistics
+                        {
+                            QuestionCount = responseTag.Count,
+                            DateTime = _dateService.UtcNow,
+                            TagName = responseTag.Name
+                        });
+
+                        tagLookup[responseTag.Name].NumberOfQuestions = responseTag.Count;
+                    }
+
+                    
+                    if (responseTag.Synonyms != null)
+                    {
+                        foreach (var synonymTagName in responseTag.Synonyms)
+                        {
+                            if (tagLookup.ContainsKey(synonymTagName))
+                            {
+                                var synonym = tagLookup[synonymTagName];
+                                synonym.SynonymOfTagName = responseTag.Name;
+                                synonym.NumberOfQuestions = 0;
+
+                                _context.TagStatistics.Add(new DbTagStatistics
+                                {
+                                    QuestionCount = 0,
+                                    DateTime = _dateService.UtcNow,
+                                    TagName = synonymTagName
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            var currentTags = tagsToCheck.Select(mqmt => mqmt.SynonymOfTagName).Where(n => n != null).Distinct().ToList();
+            var dbTags = _context.Tags.Where(t => currentTags.Contains(t.Name)).ToLookup(t => t.Name);
+            foreach (var currentTag in currentTags)
+            {
+                if (!dbTags.Contains(currentTag))
+                    _context.Tags.Add(new DbTag { Name = currentTag });
             }
 
             _context.SaveChanges();
