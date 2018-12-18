@@ -91,12 +91,11 @@ namespace Rodgort
             using (var context = serviceScope.ServiceProvider.GetService<RodgortContext>())
                 if (!context.Database.IsInMemory())
                     context.Database.Migrate();
-
-
-            // Every sunday at midnight
+            
+            // Every hour
             RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 * * * *");
 
-            // Every day at midnight
+            // Every hour
             RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ALL_TAGS, service => service.GetQuestionCountForApprovedTags(), "0 * * * *");
 
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
