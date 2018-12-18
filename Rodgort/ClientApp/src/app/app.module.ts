@@ -11,6 +11,7 @@ import { ChartModule } from 'angular-highcharts';
 import { appRoutes } from './app.routes';
 import { LogsComponent } from './logs/logs.component';
 import { ArraySortPipe } from '../pipes/ArraySortPipe';
+import { RequestsComponent } from './requests/requests.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import { ArraySortPipe } from '../pipes/ArraySortPipe';
     HomeComponent,
     QuestionCountGraphComponent,
     LogsComponent,
-    ArraySortPipe
+    ArraySortPipe,
+    RequestsComponent
   ],
   imports: [
     ChartModule,

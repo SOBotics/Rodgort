@@ -25,6 +25,7 @@ namespace Rodgort.Controllers
             int approvalStatus = -1,
             int type = -1,
             string status = null,
+            string hasQuestions = null,
             string sortBy = null,
             int page = 1, 
             int pageSize = 30)
@@ -73,6 +74,11 @@ namespace Rodgort.Controllers
                         .FirstOrDefault(),
                     ScoreOverTime = mq.Statistics.Select(s => new {s.DateTime, s.Score}),
                 });
+
+            if (hasQuestions == "yes")
+                transformedQuery = transformedQuery.Where(tq => tq.NumQuestions > 0);
+            if (hasQuestions == "no")
+                transformedQuery = transformedQuery.Where(tq => tq.NumQuestions <= 0);
 
             IOrderedQueryable<object> orderedQuery;
             if (sortBy == "score")

@@ -1,0 +1,195 @@
+<form style="padding: 10px" #filterForm="ngForm">
+    <div class="form-row align-items-center mb-2">
+        <div class="col">
+            <input type="text" class="form-control" id="contentInput" placeholder="Tag" name="tag" [(ngModel)]="filter.tag"
+                #tag="ngModel">
+        </div>
+        <div class="col">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="approvalStatusSelector">Approval Status</label>
+                </div>
+                <select class="custom-select" id="approvalStatusSelector" [(ngModel)]="filter.approvalStatus"
+                    [ngModelOptions]="{standalone: true}">
+                    <option value="-1">Any</option>
+                    <option value="2">Approved</option>
+                    <option value="3">Rejected</option>
+                    <option value="1">Pending</option>
+                </select>
+            </div>
+        </div>
+        <div class="col">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="sortBySelector">Sort By</label>
+                </div>
+                <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
+                    <option value="score">Score</option>
+                    <option value="numQuestions"># of Questions</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="form-row align-items-center mb-2">
+        <div class="col">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="statusSelector">Status</label>
+                </div>
+                <select class="custom-select" id="statusSelector" [(ngModel)]="filter.status" [ngModelOptions]="{standalone: true}">
+                    <option value="">Any</option>
+                    <option value="none">None</option>
+                    <option value="status-completed">Completed</option>
+                    <option value="status-planned">Planned</option>
+                    <option value="featured">Featured</option>
+                    <option value="status-declined">Declined</option>
+                </select>
+            </div>
+        </div>
+        <div class="col">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" for="typeSelector">Type</label>
+                </div>
+                <select class="custom-select" id="typeSelector" [(ngModel)]="filter.type" [ngModelOptions]="{standalone: true}">
+                    <option value="-1">Any</option>
+                    <option value="4">Burninate</option>
+                    <option value="2">Synonym</option>
+                    <option value="3">Merge</option>
+                    <option value="1">Unknown</option>
+                </select>
+            </div>
+        </div>
+        <div class="col">
+            <div class="btn-group btn-group-toggle">
+                <div class="input-group-prepend">
+                    <label class="input-group-text" >Has Questions</label>
+                </div>
+                <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'any'">
+                        <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="any">Any
+                    </label>
+                <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'yes'">
+                    <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="yes">Yes
+                </label>
+                <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'no'">
+                    <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="no">No
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="form-row align-items-center mb-2">
+        <div class="col">
+            <button type="submit" class="btn btn-primary" (click)="applyFilter()">Search</button>
+            <div class="pull-right">
+                <input type="checkbox" id="chkShowRejectedTags" [(ngModel)]="showRejectedTags" [ngModelOptions]="{standalone: true}" />
+                <label for="chkShowRejectedTags">Show rejected tags</label>
+            </div>
+        </div>
+    </div>
+</form>
+
+<img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
+
+<ng-container *ngIf="!loading">
+    <div class="row pt-1" *ngFor="let question of questions">
+        <div class="col-md-12">
+            <h3>
+                <a>{{question.title}}</a>
+                <p *ngFor="let metaTag of question.metaStatusTags" class="post-metatag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
+            </h3>
+            <a href="https://meta.stackoverflow.com/questions/{{question.id}}">View on site</a>
+            <div class="row">
+                <div class="col-md-3">
+                    Score:
+                </div>
+                <div class="col-md-3">
+                    {{question.score}}
+                </div>
+            </div>
+            <div class="tags">
+                <ng-container *ngFor="let tag of question.mainTags | sort:'statusId'">
+                    <div *ngIf="showRejectedTags || tag.status !== 'Rejected'" class="mt-3 p-2" [class.tag-rejected]="tag.status === 'Rejected'">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="row pb-3">
+                                    <div class="col">
+                                        <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                    </div>
+                                </div>
+                                <div class="row" *ngIf="tag.numQuestions">
+                                    <div class="col-md-6">
+                                        Number of questions:
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{tag.numQuestions}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        Type
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{tag.type}}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        Approval Status <img width="15px" height="15px" src="../../assets/questionmark.jpeg"
+                                            title="Approved: The tag is relevant to the request. Rejected: The tag is not relevant to the request.">
+                                    </div>
+                                    <div class="col-md-6" [class.tag-approved]="tag.status==='Approved'"
+                                        [class.tag-pending]="tag.status==='Pending'">
+                                        {{tag.status}}
+                                    </div>
+                                </div>
+
+                                <div *ngIf="isAdmin">
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            Admin
+                                        </div>
+                                        <div class="col-md-6">
+                                            <a *ngIf="tag.type !== 'Burninate'" href="javascript:void" (click)="setRequestType(question.id, tag, 'Burninate')">Burninate</a>
+                                            <span *ngIf="tag.type !== 'Burninate'">|</span>
+                                            <a *ngIf="tag.type !== 'Synonym'" href="javascript:void" (click)="setRequestType(question.id, tag, 'Synonym')">Synonym</a>
+                                            <span *ngIf="tag.type !== 'Synonym' && tag.type !== 'Merge'">|</span>
+                                            <a *ngIf="tag.type !== 'Merge'" href="javascript:void" (click)="setRequestType(question.id, tag, 'Merge')">Merge</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <a *ngIf="tag.status !== 'Approved'" href="javascript:void" (click)="setApprovalStatus(question.id, tag, true)">Approve
+                                                Tag</a>
+                                            <span *ngIf="tag.status !== 'Approved' && tag.status !== 'Rejected'">|</span>
+                                            <a *ngIf="tag.status !== 'Rejected'" href="javascript:void" (click)="setApprovalStatus(question.id, tag, false)">Reject
+                                                Tag</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6" *ngIf="tag.questionCountOverTime.length">
+                                <app-question-count-graph [data]="tag.questionCountOverTime">
+
+                                </app-question-count-graph>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <input type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
+            </div>
+            <hr />
+        </div>
+    </div>
+</ng-container>
+
+<nav style="margin-top: 20px;">
+    <ul class="pagination">
+        <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active" *ngFor="let page of pagingInfo">
+            <a class="page-link" (click)="loadPage(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
+        </li>
+    </ul>
+</nav>
