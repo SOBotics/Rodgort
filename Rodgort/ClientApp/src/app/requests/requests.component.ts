@@ -16,7 +16,6 @@ export class RequestsComponent implements OnInit {
 
   public filter = {
     tag: '',
-    type: -1,
     approvalStatus: -1,
     status: '',
     pageNumber: 1,
@@ -37,7 +36,6 @@ export class RequestsComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.filter.tag = params['tag'] || '';
-      this.filter.type = +params['type'] || -1;
       this.filter.approvalStatus = +params['approvalStatus'] || -1;
       this.filter.status = params['status'] || '';
       this.filter.hasQuestions = params['hasQuestions'] || 'any';
@@ -52,7 +50,6 @@ export class RequestsComponent implements OnInit {
       `/api/MetaQuestions` +
       `?tag=${this.filter.tag}` +
       `&approvalStatus=${this.filter.approvalStatus}` +
-      `&type=${this.filter.type}` +
       `&status=${this.filter.status}` +
       `&hasQuestions=${this.filter.hasQuestions}` +
       `&sortBy=${this.filter.sortBy}` +

@@ -44,16 +44,41 @@ namespace Rodgort.Services
             await ProcessTags(tagsToCheck);
         }
 
+        private IEnumerable<IEnumerable<DbTag>> BatchTags(IReadOnlyCollection<DbTag> tagsToCheck)
+        {
+            const int maxSize = 100;
+            const int maxLength = 908;
+
+            var currentList = new List<DbTag>();
+
+            foreach (var tagToCheck in tagsToCheck)
+            {
+                if (
+                    string.Join(";", currentList.Concat(new[] {tagToCheck}).Select(t => t.Name)).Length > maxLength
+                    || currentList.Count >= maxSize)
+                {
+                    yield return currentList;
+                    currentList = new List<DbTag>();
+                }
+
+                currentList.Add(tagToCheck);
+            }
+
+            if (currentList.Any())
+                yield return currentList;
+        }
+
         private async Task ProcessTags(IReadOnlyCollection<DbTag> tagsToCheck)
         {
             _logger.LogInformation("Fetching question counts for the following tags: " + string.Join(", ", tagsToCheck));
 
-            foreach (var batch in tagsToCheck.Batch(95))
+            foreach (var batch in BatchTags(tagsToCheck))
             {
                 var tagLookup = batch.ToDictionary(b => b.Name, tag => tag, StringComparer.OrdinalIgnoreCase);
                 
                 var response = await _apiClient.TotalQuestionsByTag("stackoverflow.com", tagLookup.Keys);
 
+                var responseLookup = response.Items.ToLookup(r => r.Name);
                 foreach (var responseTag in response.Items)
                 {
                     if (tagLookup.ContainsKey(responseTag.Name))
@@ -88,6 +113,24 @@ namespace Rodgort.Services
                             }
                         }
                     }
+                }
+
+                foreach (var tag in tagLookup.Values)
+                {
+                    if (responseLookup.Contains(tag.Name))
+                        continue;
+
+                    // If it's got a synonym, we've already handled the 0 entry
+                    if (!string.IsNullOrWhiteSpace(tag.SynonymOfTagName))
+                        continue;
+
+                    tag.NumberOfQuestions = 0;
+                    _context.TagStatistics.Add(new DbTagStatistics
+                    {
+                        QuestionCount = 0,
+                        DateTime = _dateService.UtcNow,
+                        TagName = tag.Name
+                    });
                 }
             }
 

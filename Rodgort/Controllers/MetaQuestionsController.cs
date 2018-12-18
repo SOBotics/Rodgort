@@ -23,7 +23,6 @@ namespace Rodgort.Controllers
         public object Get(
             string tag = null,
             int approvalStatus = -1,
-            int type = -1,
             string status = null,
             string hasQuestions = null,
             string sortBy = null,
@@ -36,9 +35,6 @@ namespace Rodgort.Controllers
 
             if (approvalStatus > 0)
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == approvalStatus));
-
-            if (type > 0)
-                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.RequestTypeId == type));
 
             var statusFlags = DbMetaTag.StatusFlags;
 

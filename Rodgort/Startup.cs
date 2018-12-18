@@ -96,11 +96,11 @@ namespace Rodgort
             RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 * * * *");
 
             // Every hour
-            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ALL_TAGS, service => service.GetQuestionCountForApprovedTags(), "0 * * * *");
+            RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ALL_TAGS, service => service.GetQuestionCountForApprovedTags(), "5 * * * *");
 
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
-            // So, we'll just execute once a year - the first of January at midnight
-            RecurringJob.AddOrUpdate<BurninationTagGuessingService>(BurninationTagGuessingService.SERVICE_NAME, service => service.GuessTags(), "0 0 1 1 *");
+            // So, we'll just execute once a year - the first of January at 0:10
+            RecurringJob.AddOrUpdate<BurninationTagGuessingService>(BurninationTagGuessingService.SERVICE_NAME, service => service.GuessTags(), "10 0 1 1 *");
         }
 
         public class NoAuthorizationFilter : IDashboardAuthorizationFilter
