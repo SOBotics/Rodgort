@@ -57,7 +57,6 @@ namespace Rodgort.Controllers
                     MainTags = mq.MetaQuestionTags.Select(mqt => new
                     {
                         mqt.TagName,
-                        Type = mqt.RequestType.Name,
                         mqt.StatusId,
                         Status = mqt.Status.Name,
                         NumQuestions = mqt.Tag.NumberOfQuestions,
