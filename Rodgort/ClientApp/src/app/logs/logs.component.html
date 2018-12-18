@@ -13,18 +13,14 @@
       <th>Level</th>
       <th>Message</th>
       <th>Exception</th>
-      <th>Logger</th>
-      <th>Callsite</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let log of logs">
       <td>{{log.timeLogged}}</td>
       <td>{{log.level}}</td>
-      <td>{{log.message}}</td>
-      <td>{{log.exception}}</td>
-      <td>{{log.logger}}</td>
-      <td>{{log.callsite}}</td>
+      <td style="width: 50%"><code>{{log.message}}</code></td>
+      <td style="width: 50%"><code>{{log.exception}}</code></td>
     </tr>
   </tbody>
 </table>
