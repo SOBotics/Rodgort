@@ -16,6 +16,8 @@ namespace Rodgort.Data.Tables
         public const string SYNONYM_REQUEST = "synonym-request";
         public const string RETAG_REQUEST = "retag-request";
 
+        public static string[] RequestTypes = { BURNINATE_REQUEST, SYNONYM_REQUEST, RETAG_REQUEST };
+
         public string Name { get; set; }
 
         public List<DbMetaQuestionMetaTag> MetaQuestionMetaTags { get; set; }

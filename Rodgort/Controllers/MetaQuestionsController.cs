@@ -37,6 +37,7 @@ namespace Rodgort.Controllers
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == approvalStatus));
 
             var statusFlags = DbMetaTag.StatusFlags;
+            var requestTypes = DbMetaTag.RequestTypes;
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -63,6 +64,10 @@ namespace Rodgort.Controllers
                         QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount})
                     }),
                     MetaStatusTags = mq.MetaQuestionMetaTags.Where(mqmt => statusFlags.Contains(mqmt.TagName)).Select(mqt => new
+                    {
+                        mqt.TagName
+                    }),
+                    MetaRequestTags = mq.MetaQuestionMetaTags.Where(mqmt => requestTypes.Contains(mqmt.TagName)).Select(mqt => new
                     {
                         mqt.TagName
                     }),

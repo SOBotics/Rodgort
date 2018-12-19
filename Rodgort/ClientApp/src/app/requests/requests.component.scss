@@ -1,4 +1,4 @@
-.post-tag, .post-metatag {
+.post-tag, .post-metatag, .post-statustag {
     display: inline;
 
     padding: .4em .5em;
@@ -35,6 +35,17 @@
     color: #353030;
 }
 .post-metatag > a:hover {
+    text-decoration: none;
+}
+
+.post-statustag {
+    background-color: #ff7575;
+    border-color: #ff7575;
+}
+.post-statustag > a {
+    color: #353030;
+}
+.post-statustag > a:hover {
     text-decoration: none;
 }
 

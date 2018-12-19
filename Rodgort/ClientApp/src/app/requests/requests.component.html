@@ -82,7 +82,8 @@
         <div class="col-md-12">
             <h3>
                 <a>{{question.title}}</a>
-                <p *ngFor="let metaTag of question.metaStatusTags" class="post-metatag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
+                <p *ngFor="let metaTag of question.metaStatusTags" class="post-statustag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
+                <p *ngFor="let metaTag of question.metaRequestTags" class="post-metatag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
             </h3>
             <a href="https://meta.stackoverflow.com/questions/{{question.id}}">View on site</a>
             <div class="row">
