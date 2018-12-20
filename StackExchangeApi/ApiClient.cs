@@ -120,6 +120,17 @@ namespace StackExchangeApi
 
         public const string BASE_URL = "https://api.stackexchange.com/2.2";
 
+        public Task<ApiItemsResponse<RevisionResponse>> Revisions(string siteName, IEnumerable<int> postIds)
+        {
+            var postIdsList = postIds.ToList();
+            var postIdsString = string.Join(";", postIdsList);
+            return MakeRequest<ApiItemsResponse<RevisionResponse>>($"{BASE_URL}/posts/{postIdsString}/revisions", new Dictionary<string, string>
+            {
+                {"site", siteName},
+                {"filter", "!)Q2B_A1P5n.P0yAO6UEixChT"},
+            });
+        }
+
         public Task<ApiItemsResponse<TagResponse>> TotalQuestionsByTag(string siteName, IEnumerable<string> tags)
         {
             var tagsList = tags.ToList();

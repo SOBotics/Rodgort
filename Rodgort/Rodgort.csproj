@@ -36,10 +36,13 @@
     <Compile Remove="Migrations\20181204062134_InitialMigration.Designer.cs" />
     <Compile Remove="Migrations\20181211045543_InitialMigration.cs" />
     <Compile Remove="Migrations\20181211045543_InitialMigration.Designer.cs" />
+    <Compile Remove="Migrations\20181220070441_AddUserRetagTable.cs" />
+    <Compile Remove="Migrations\20181220070441_AddUserRetagTable.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\StackExchangeApi\StackExchangeApi.csproj" />
+    <ProjectReference Include="..\StackExchangeChat\StackExchangeChat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

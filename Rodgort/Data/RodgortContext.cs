@@ -18,6 +18,8 @@ namespace Rodgort.Data
         public DbSet<DbRequestType> RequestTypes { get; set; }
         public DbSet<DbTagStatistics> TagStatistics { get; set; }
         public DbSet<DbLog> Logs { get; set; }
+        public DbSet<DbBurnakiFollow> BurnakiFollows { get; set; }
+        public DbSet<DbUserRetag> UserRetags { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,6 +68,12 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaTag>().ToTable("MetaTags");
             modelBuilder.Entity<DbMetaTag>().HasKey(tag => tag.Name);
 
+            modelBuilder.Entity<DbBurnakiFollow>().ToTable("BurnakiFollows");
+            modelBuilder.Entity<DbBurnakiFollow>().HasKey(tag => tag.Id);
+
+            modelBuilder.Entity<DbUserRetag>().ToTable("UserRetags");
+            modelBuilder.Entity<DbUserRetag>().HasKey(tag => tag.Id);
+            
             modelBuilder.Entity<DbLog>().ToTable("Logs");
             modelBuilder.Entity<DbLog>().HasKey(tag => tag.Id);
             modelBuilder.Entity<DbLog>().HasIndex(tag => tag.TimeLogged);

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rodgort.Data;
@@ -9,9 +10,10 @@ using Rodgort.Data;
 namespace Rodgort.Migrations
 {
     [DbContext(typeof(RodgortContext))]
-    partial class RodgortContextModelSnapshot : ModelSnapshot
+    [Migration("20181220064110_AddBurnakiFollowsTable")]
+    partial class AddBurnakiFollowsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -274,24 +276,6 @@ namespace Rodgort.Migrations
                     b.HasIndex("TagName");
 
                     b.ToTable("TagStatistics");
-                });
-
-            modelBuilder.Entity("Rodgort.Data.Tables.DbUserRetag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<bool>("Removed");
-
-                    b.Property<string>("Tag");
-
-                    b.Property<DateTime>("Time");
-
-                    b.Property<int>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserRetags");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbMetaAnswer", b =>

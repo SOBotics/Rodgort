@@ -15,6 +15,8 @@ using NLog;
 using Rodgort.Data;
 using Rodgort.Services;
 using StackExchangeApi;
+using StackExchangeChat;
+using StackExchangeChat.Utilities;
 
 namespace Rodgort
 {
@@ -52,6 +54,16 @@ namespace Rodgort
             services.AddTransient<DateService>();
             services.AddTransient<ApiClient>();
             services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
+            services.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
+
+            var credentials = new ChatCredentials();
+            Configuration.Bind("ChatCredentials", credentials);
+
+            services.AddSingleton<IChatCredentials>(_ => credentials);
+            services.AddScoped<SiteAuthenticator>();
+            services.AddScoped<ChatClient>();
+            
+            services.AddHostedService<BurnakiFollowService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
