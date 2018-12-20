@@ -58,7 +58,7 @@ namespace Rodgort.Services
                             return;
                         if (!int.TryParse(splitContent[2], out var roomId))
                             return;
-                        if (!int.TryParse(splitContent[2], out var burnakiUserId))
+                        if (!int.TryParse(splitContent[3], out var burnakiUserId))
                             return;
 
                         var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
