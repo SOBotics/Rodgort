@@ -21,8 +21,14 @@ namespace Rodgort.Data.Tables
 
         public DateTime? ClosedDate { get; set; }
 
-        public DateTime LastSeen { get; set; }
+        public DateTime? FeaturedStarted { get; set; }
+        public DateTime? FeaturedEnded { get; set; }
 
+        public DateTime? BurnStarted { get; set; }
+        public DateTime? BurnEnded { get; set; }
+
+        public DateTime LastSeen { get; set; }
+        
         public List<DbMetaAnswer> MetaAnswers { get; set; } = new List<DbMetaAnswer>();
         public List<DbMetaQuestionMetaTag> MetaQuestionMetaTags { get; set; } = new List<DbMetaQuestionMetaTag>();
         public List<DbMetaQuestionTag> MetaQuestionTags { get; set; } = new List<DbMetaQuestionTag>();

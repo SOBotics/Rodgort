@@ -108,12 +108,31 @@ namespace Rodgort.Services
                                 dbMetaQuestion.ClosedDate = Dates.UnixTimeStampToDateTime(metaQuestion.ClosedDate.Value);
 
                             foreach (var tag in metaQuestion.Tags)
+                            {
                                 if (!dbMetaQuestion.MetaQuestionMetaTags.Any(t => string.Equals(t.TagName, tag, StringComparison.OrdinalIgnoreCase)))
-                                    context.MetaQuestionMetaTags.Add(new DbMetaQuestionMetaTag {TagName = tag, MetaQuestion = dbMetaQuestion});
+                                {
+                                    context.MetaQuestionMetaTags.Add(new DbMetaQuestionMetaTag { TagName = tag, MetaQuestion = dbMetaQuestion });
+
+                                    if (tag == DbMetaTag.STATUS_FEATURED)
+                                        dbMetaQuestion.FeaturedStarted = utcNow;
+                                    if (tag == DbMetaTag.STATUS_PLANNED)
+                                        dbMetaQuestion.BurnStarted = utcNow;
+                                }
+                            }
+
 
                             foreach (var dbTag in dbMetaQuestion.MetaQuestionMetaTags.ToList())
+                            {
                                 if (!metaQuestion.Tags.Any(t => string.Equals(t, dbTag.TagName, StringComparison.OrdinalIgnoreCase)))
+                                {
                                     context.MetaQuestionMetaTags.Remove(dbTag);
+
+                                    if (dbTag.TagName == DbMetaTag.STATUS_FEATURED)
+                                        dbMetaQuestion.FeaturedEnded = utcNow;
+                                    if (dbTag.TagName == DbMetaTag.STATUS_PLANNED)
+                                        dbMetaQuestion.BurnEnded = utcNow;
+                                }
+                            }
 
                             var dbMetaQuestionStatistics = new DbMetaQuestionStatistics
                             {
