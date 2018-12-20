@@ -103,7 +103,7 @@ namespace Rodgort.Services
             await events
                 .OnlyMessages()
                 .SameRoomOnly()
-                .Where(r => r.ChatEventDetails.UserId == userId || r.ChatEventDetails.UserId == 563532)
+                .Where(r => r.ChatEventDetails.UserId == userId)
                 // .SlidingBuffer(TimeSpan.FromSeconds(30))
                 .ForEachAsync(async chatEvent =>
                 {
@@ -119,28 +119,25 @@ namespace Rodgort.Services
                         var apiClient = _serviceProvider.GetRequiredService<ApiClient>();
                         var revisions = await apiClient.Revisions("stackoverflow.com", questionIds);
 
-                        using (var context = _serviceProvider.GetRequiredService<RodgortContext>())
+                        var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
+                        foreach (var revision in revisions.Items.Where(r => r.LastTags != null && r.Tags != null)
+                            .Where(r => Dates.UnixTimeStampToDateTime(r.CreationDate) > fromTime))
                         {
-                            foreach (var revision in revisions.Items.Where(r => r.LastTags != null && r.Tags != null)
-                                .Where(r => Dates.UnixTimeStampToDateTime(r.CreationDate) > fromTime))
+                            var newTags = revision.LastTags.Except(revision.Tags);
+                            foreach (var newTag in newTags)
                             {
-                                var newTags = revision.LastTags.Except(revision.Tags);
-                                foreach (var newTag in newTags)
+                                innerContext.UserRetags.Add(new DbUserRetag
                                 {
-                                    context.UserRetags.Add(new DbUserRetag
-                                    {
-                                        Tag = newTag,
-                                        Removed = true,
-                                        Time = dateService.UtcNow,
-                                        UserId = revision.User.UserId
-                                    });
-                                }
+                                    Tag = newTag,
+                                    Removed = true,
+                                    Time = dateService.UtcNow,
+                                    UserId = revision.User.UserId
+                                });
                             }
-
-                            context.SaveChanges();
                         }
-                    }
 
+                        innerContext.SaveChanges();
+                    }
 
                 }, cancellationToken);
         }
