@@ -130,7 +130,7 @@ namespace Rodgort.Services
                                 {
                                     Tag = newTag,
                                     Removed = true,
-                                    Time = dateService.UtcNow,
+                                    Time = Dates.UnixTimeStampToDateTime(revision.CreationDate),
                                     UserId = revision.User.UserId
                                 });
                             }
