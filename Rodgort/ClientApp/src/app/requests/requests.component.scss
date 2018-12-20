@@ -1,4 +1,4 @@
-.post-tag, .post-metatag, .post-statustag {
+.post-tag, .post-metatag, .post-statustag, .tag-approved, .tag-pending {
     display: inline;
 
     padding: .4em .5em;
@@ -63,10 +63,12 @@
 }
 
 .tag-approved {
+    border:none;
     background-color: #a8f1a8;
 }
 
 .tag-pending {
+    border:none;
     background-color: #f3bb84;
 }
 
@@ -79,17 +81,6 @@
 @-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
 @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
 
-// .btn-secondary:not(:disabled):not(.disabled) {
-//     background-color: #007bff85;
-//     border-color: #007bff85
-// }
-
-// .btn-secondary:not(:disabled):not(.disabled).active {
-//     background-color: #007bff;
-//     border-color: #007bff;
-// }
-
-// .btn-secondary:not(:disabled):not(.disabled).active.focus, 
-// .btn-secondary:not(:disabled):not(.disabled):active:focus {
-//     box-shadow: none;
-// }
+.row {
+    margin-bottom: 5px;
+}

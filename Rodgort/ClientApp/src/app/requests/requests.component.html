@@ -112,6 +112,14 @@
                                         <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
                                     </div>
                                 </div>
+                                <div *ngIf="tag.synonymOf" class="row">
+                                    <div class="col-md-6">
+                                        Synonym of
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.synonymOf}}">{{tag.synonymOf}}</a></p>
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         Number of questions
@@ -125,9 +133,10 @@
                                         Approval Status <img width="15px" height="15px" src="../../assets/questionmark.jpeg"
                                             title="Approved: The tag is relevant to the request. Rejected: The tag is not relevant to the request.">
                                     </div>
-                                    <div class="col-md-6" [class.tag-approved]="tag.status==='Approved'"
-                                        [class.tag-pending]="tag.status==='Pending'">
-                                        {{tag.status}}
+                                    <div class="col-md-6">
+                                        <div [class.tag-approved]="tag.status==='Approved'" [class.tag-pending]="tag.status==='Pending'">
+                                            {{tag.status}}
+                                        </div>
                                     </div>
                                 </div>
 
