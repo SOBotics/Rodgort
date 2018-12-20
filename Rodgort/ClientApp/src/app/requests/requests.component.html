@@ -75,7 +75,9 @@
     </div>
 </form>
 
-<img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
+<div class="container loading-container">
+    <img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
+</div>
 
 <ng-container *ngIf="!loading">
     <div class="row pt-1" *ngFor="let question of questions">
@@ -168,13 +170,9 @@
                                 </div>
                             </div>
                             <div class="col-md-6" *ngIf="tag.questionCountOverTime.length">
-                                <app-question-count-graph 
-                                    [data]="tag.questionCountOverTime"
-                                    [featuredStarted]="question.featuredStarted"
-                                    [featuredEnded]="question.featuredEnded"
-                                    [burnStarted]="question.burnStarted"
-                                    [burnEnded]="question.burnEnded"
-                                    >
+                                <app-question-count-graph [data]="tag.questionCountOverTime" [featuredStarted]="question.featuredStarted"
+                                    [featuredEnded]="question.featuredEnded" [burnStarted]="question.burnStarted"
+                                    [burnEnded]="question.burnEnded">
 
                                 </app-question-count-graph>
                             </div>
