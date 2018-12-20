@@ -168,7 +168,13 @@
                                 </div>
                             </div>
                             <div class="col-md-6" *ngIf="tag.questionCountOverTime.length">
-                                <app-question-count-graph [data]="tag.questionCountOverTime">
+                                <app-question-count-graph 
+                                    [data]="tag.questionCountOverTime"
+                                    [featuredStarted]="question.featureStarted"
+                                    [featuredEnded]="question.featureEnded"
+                                    [burnStarted]="question.burnStarted"
+                                    [burnEnded]="question.burnEnded"
+                                    >
 
                                 </app-question-count-graph>
                             </div>

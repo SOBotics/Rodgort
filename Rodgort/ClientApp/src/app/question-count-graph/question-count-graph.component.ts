@@ -11,25 +11,85 @@ export class QuestionCountGraphComponent implements OnInit {
 
   @Input()
   public data: any;
+  @Input()
+  public featuredStarted?: string;
+  @Input()
+  public featuredEnded?: string;
+  @Input()
+  public burnStarted?: string;
+  @Input()
+  public burnEnded?: string;
 
   public chart: Chart = null;
 
   constructor() { }
 
   ngOnInit() {
+    const bands = [];
+    const lines = [];
+    if (this.featuredStarted && this.featuredEnded) {
+      bands.push({
+        color: 'red',
+        from: this.toUtcDateTime(this.featuredStarted),
+        to: this.toUtcDateTime(this.featuredEnded),
+        label: {
+          text: 'featured'
+        }
+      });
+    } else if (this.featuredStarted) {
+      lines.push({
+        color: 'red',
+        value: this.toUtcDateTime(this.featuredStarted),
+        width: 2,
+        label: {
+          text: 'featured start'
+        }
+      });
+    } else if (this.featuredEnded) {
+      lines.push({
+        color: 'red',
+        value: this.toUtcDateTime(this.featuredEnded),
+        width: 2,
+        label: {
+          text: 'featured end'
+        }
+      });
+    }
+
+    if (this.burnStarted && this.burnEnded) {
+      bands.push({
+        color: 'red',
+        from: this.toUtcDateTime(this.burnStarted),
+        to: this.toUtcDateTime(this.burnEnded),
+        label: {
+          text: 'burnination'
+        }
+      });
+    } else if (this.burnStarted) {
+      lines.push({
+        color: 'red',
+        value: this.toUtcDateTime(this.burnStarted),
+        width: 2,
+        label: {
+          text: 'burn start'
+        }
+      });
+    } else if (this.burnEnded) {
+      lines.push({
+        color: 'red',
+        value: this.toUtcDateTime(this.burnEnded),
+        width: 2,
+        label: {
+          text: 'burn end'
+        }
+      });
+    }
+
     const series: { name: string, data: [number, number][] }[] = [];
     series.push({
       name: '',
       data: this.data.map(gd => {
-        const date = new Date(gd.dateTime);
-        const utcDate = Date.UTC(
-          date.getFullYear(),
-          date.getMonth(),
-          date.getDate(),
-          date.getHours(),
-          date.getMinutes(),
-          date.getSeconds()
-        );
+        const utcDate = this.toUtcDateTime(gd.dateTime);
         return [utcDate, gd.questionCount];
       })
     });
@@ -44,7 +104,9 @@ export class QuestionCountGraphComponent implements OnInit {
         type: 'datetime',
         labels: {
           format: '{value:%Y-%m-%d}'
-        }
+        },
+        plotLines: lines,
+        plotBands: bands,
       },
       tooltip: {
         formatter: function () {
@@ -67,4 +129,16 @@ export class QuestionCountGraphComponent implements OnInit {
     });
   }
 
+  private toUtcDateTime(num: string): number {
+    const date = new Date(num);
+    const utcDate = Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds()
+    );
+    return utcDate;
+  }
 }
