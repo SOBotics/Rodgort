@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Utilities;
@@ -20,65 +21,83 @@ namespace Rodgort.Services
     public class BurnakiFollowService : IHostedService
     {
         private readonly IServiceProvider _serviceProvider;
-        public BurnakiFollowService(IServiceProvider serviceProvider)
+        private readonly ILogger<BurnakiFollowService> _logger;
+
+        public BurnakiFollowService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
             _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            using (var scope = _serviceProvider.CreateScope())
+            try
             {
-                var chatClient = scope.ServiceProvider.GetRequiredService<ChatClient>();
-                var dateService = scope.ServiceProvider.GetRequiredService<DateService>();
-
-                using (var context = scope.ServiceProvider.GetRequiredService<RodgortContext>())
+                using (var scope = _serviceProvider.CreateScope())
                 {
-                    var burnakiFollows = context.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue).ToList();
-                    foreach (var burnakiFollow in burnakiFollows)
-                        FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, cancellationToken);
-                }
+                    var chatClient = scope.ServiceProvider.GetRequiredService<ChatClient>();
+                    var dateService = scope.ServiceProvider.GetRequiredService<DateService>();
 
-                await chatClient.SendMessage(ChatSite.StackOverflow, 167908, "o/");
-                await chatClient.SubscribeToEvents(ChatSite.StackOverflow, 167908)
-                    .Pinged()
-                    .SameRoomOnly()
-                    .Where(r => r.ChatEventDetails.UserId == 563532)
-                    .ForEachAsync(async m =>
+                    using (var context = scope.ServiceProvider.GetRequiredService<RodgortContext>())
                     {
-                        var splitContent = m.ChatEventDetails.Content.Split(" ");
-                        if (splitContent.Length != 4)
-                            return;
-                        if (!string.Equals(splitContent[1], "follow"))
-                            return;
+                        var burnakiFollows = context.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue).ToList();
+                        foreach (var burnakiFollow in burnakiFollows)
+                            FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted,
+                                cancellationToken);
+                    }
 
-                        if (!int.TryParse(splitContent[2], out var roomId))
-                            return;
-                        if (!int.TryParse(splitContent[2], out var burnakiUserId))
-                            return;
 
-                        using (var context = scope.ServiceProvider.GetRequiredService<RodgortContext>())
+                    var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, 167908);
+                    await events.FirstAsync();
+                    _logger.LogInformation("Successfully joined workshop room");
+                    await events
+                        .Pinged()
+                        .SameRoomOnly()
+                        .Where(r => r.ChatEventDetails.UserId == 563532)
+                        .ForEachAsync(async m =>
                         {
-                            if (context.BurnakiFollows.Any(bf => bf.BurnakiId == burnakiUserId && bf.RoomId == roomId && !bf.FollowEnded.HasValue))
+                            var splitContent = m.ChatEventDetails.Content.Split(" ");
+                            if (splitContent.Length != 4)
+                                return;
+                            if (!string.Equals(splitContent[1], "follow"))
+                                return;
+
+                            if (!int.TryParse(splitContent[2], out var roomId))
+                                return;
+                            if (!int.TryParse(splitContent[2], out var burnakiUserId))
+                                return;
+
+                            using (var context = scope.ServiceProvider.GetRequiredService<RodgortContext>())
                             {
-                                await chatClient.SendMessage(ChatSite.StackOverflow, 167908, $":{m.ChatEventDetails.UserId} That follow is already registered!");
-                            }
-                            else
-                            {
-                                context.BurnakiFollows.Add(new DbBurnakiFollow
+                                if (context.BurnakiFollows.Any(bf =>
+                                    bf.BurnakiId == burnakiUserId && bf.RoomId == roomId && !bf.FollowEnded.HasValue))
                                 {
-                                    BurnakiId = burnakiUserId,
-                                    RoomId = roomId,
-                                    FollowStarted = dateService.UtcNow
-                                });
-                                context.SaveChanges();
+                                    await chatClient.SendMessage(ChatSite.StackOverflow, 167908,
+                                        $":{m.ChatEventDetails.UserId} That follow is already registered!");
+                                }
+                                else
+                                {
+                                    context.BurnakiFollows.Add(new DbBurnakiFollow
+                                    {
+                                        BurnakiId = burnakiUserId,
+                                        RoomId = roomId,
+                                        FollowStarted = dateService.UtcNow
+                                    });
+                                    context.SaveChanges();
 
-                                await chatClient.SendMessage(ChatSite.StackOverflow, 167908, $"Okay, following {burnakiUserId} in {roomId}");
+                                    await chatClient.SendMessage(ChatSite.StackOverflow, 167908,
+                                        $"Okay, following {burnakiUserId} in {roomId}");
 
-                                FollowInRoom(roomId, burnakiUserId, DateTime.UtcNow, cancellationToken);
+                                    FollowInRoom(roomId, burnakiUserId, DateTime.UtcNow, cancellationToken);
+                                }
                             }
-                        }
-                    }, cancellationToken);
+                        }, cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed to watch burnaki", ex);
+                throw;
             }
         }
 
@@ -91,7 +110,11 @@ namespace Rodgort.Services
 
                 var questionIdRegex = new Regex(@"stackoverflow\.com\/q\/(\d+)");
 
-                await chatClient.SubscribeToEvents(ChatSite.StackOverflow, roomId)
+                var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, roomId);
+                await events.FirstAsync();
+                _logger.LogInformation($"Successfully joined room {roomId}");
+
+                await events
                     .OnlyMessages()
                     .SameRoomOnly()
                     .Where(r => r.ChatEventDetails.UserId == userId || r.ChatEventDetails.UserId == 563532)
@@ -100,8 +123,7 @@ namespace Rodgort.Services
                     {
                         var message = chatEvent.ChatEventDetails.Content;
                         var isTagRemoval = message.StartsWith("&#91; <a href=\"//stackapps.com/q/7027\">Burnaki</a> &#93; Tag removed:");
-                        var isDeletion = message.StartsWith("\\[ [Burnaki](//stackapps.com/q/7027) \\] Deleted: ");
-
+                        
                         var questionIds = questionIdRegex
                             .Matches(message)
                             .Select(m => int.Parse(m.Groups[1].Value));
