@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
@@ -18,10 +17,16 @@ namespace Rodgort.Controllers
         }
 
         [HttpGet]
-        public object Get(int page = 1, int pageSize = 30)
+        public object Get(string search, string level, int page = 1, int pageSize = 30)
         {
-            var query = _context.Logs.OrderByDescending(l => l.TimeLogged);
-            var result = query.Page(page, pageSize);
+            IQueryable<DbLog> query = _context.Logs;
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(q => q.Message.Contains(search) || q.Exception.Contains(search));
+            if (!string.IsNullOrWhiteSpace(level))
+                query = query.Where(q => q.Level == level);
+
+            var orderedQuery = query.OrderByDescending(l => l.TimeLogged);
+            var result = orderedQuery.Page(page, pageSize);
             return result;
         }
     }

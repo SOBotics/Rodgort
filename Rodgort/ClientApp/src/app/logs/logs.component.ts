@@ -12,6 +12,9 @@ export class LogsComponent implements OnInit {
 
   public pagingInfo: PagingInfo[];
   public filter = {
+    search: String,
+    level: String,
+
     pageNumber: 1,
   };
 
@@ -25,6 +28,8 @@ export class LogsComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
+      this.filter.search = params['search'] || '';
+      this.filter.level = params['level'] || '';
       this.filter.pageNumber = +params['pageNumber'] || 1;
       this.reloadData();
     });
@@ -34,14 +39,15 @@ export class LogsComponent implements OnInit {
   public reloadData() {
     const query =
       `/api/logs` +
-      `?page=${this.filter.pageNumber}`;
+      `?search=${this.filter.search}` +
+      `&level=${this.filter.level}` +
+      `&page=${this.filter.pageNumber}`;
 
     this.httpClient.get(query).subscribe((response: any) => {
       if (response.totalPages > 0 && response.pageNumber > response.totalPages) {
         this.filter.pageNumber = 1;
         this.reloadData();
       } else {
-        console.log(response);
         this.logs = response.data;
         this.pagingInfo = GetPagingInfo(response);
       }

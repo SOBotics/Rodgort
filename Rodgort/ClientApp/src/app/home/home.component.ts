@@ -13,7 +13,7 @@ export class HomeComponent implements OnInit {
 
       withApprovedTags: 0,
       requireApproval: 0,
-      
+
       declined: 0,
       completed: 0,
 
