@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MoreLinq;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using StackExchangeApi;
@@ -38,6 +37,12 @@ namespace Rodgort.Services
                 // If the request was declined, we don't need to watch the count
                 .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.All(mqmt => mqmt.TagName != DbMetaTag.STATUS_DECLINED))
                 .Select(mqt => mqt.Tag)
+
+                // Don't check the counts for synonymised tags.
+                // SE sometimes incorrectly returns the synonymised tag instead of the master
+                // This causes spikes in our graphs, alternating between the actual count, and zero.
+
+                .Where(tag => tag.SynonymOf == null) 
                 .Distinct()
                 .ToList();
 
@@ -82,12 +87,7 @@ namespace Rodgort.Services
                 foreach (var responseTag in response.Items)
                 {
                     if (tagLookup.ContainsKey(responseTag.Name))
-                    {
-                        if (tagLookup[responseTag.Name].NumberOfQuestions == 0 && responseTag.Count > 0)
-                        {
-                            _logger.LogWarning($"Possible bad synonynm response for {responseTag.Name}. {Environment.NewLine}URL: {response.RequestUrl}{Environment.NewLine}Payload: {response.RawData}");
-                        }
-                        
+                    {   
                         _context.TagStatistics.Add(new DbTagStatistics
                         {
                             QuestionCount = responseTag.Count,
