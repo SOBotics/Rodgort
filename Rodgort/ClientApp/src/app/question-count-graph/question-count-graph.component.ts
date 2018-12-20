@@ -103,7 +103,8 @@ export class QuestionCountGraphComponent implements OnInit {
       xAxis: {
         type: 'datetime',
         labels: {
-          format: '{value:%Y-%m-%d}'
+          format: '{value:%Y-%m-%d}',
+          rotation: 45
         },
         plotLines: lines,
         plotBands: bands,
