@@ -4,6 +4,11 @@
     public enum ChatEventType
     {
         /// <summary>
+        /// Custom event type, emitted when successfully joined the room
+        /// </summary>
+        ChatJoined = -10,
+
+        /// <summary>
         /// A new message has been posted.
         /// </summary>
         MessagePosted = 1,

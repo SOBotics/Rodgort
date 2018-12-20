@@ -108,6 +108,9 @@ namespace StackExchangeChat
 
             async Task<Cookie> GetAccountCookieInternal()
             {
+                if (!string.IsNullOrWhiteSpace(_chatCredentials.AcctCookie))
+                    return new Cookie("acct", _chatCredentials.AcctCookie, "/", chatSite.LoginDomain);
+
                 var cookieContainer = new CookieContainer();
                 using (var httpClient = _serviceProvider.GetService<HttpClientWithHandler>())
                 {

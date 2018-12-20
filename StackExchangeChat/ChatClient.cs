@@ -85,6 +85,16 @@ namespace StackExchangeChat
 
                 webSocket.Connect();
                 
+                observer.OnNext(new ChatEvent
+                {
+                    ChatEventDetails = new ChatEventDetails
+                    {
+                        ChatEventType = ChatEventType.ChatJoined,
+                        RoomId = roomId,
+                    },
+                    RoomDetails = roomDetails
+                });
+
                 return Disposable.Create(() =>
                 {
                     webSocket.Close();
