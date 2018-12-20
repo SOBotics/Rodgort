@@ -39,6 +39,7 @@ namespace Rodgort.Services
                         FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, cancellationToken);
                 }
 
+                await chatClient.SendMessage(ChatSite.StackOverflow, 167908, "o/");
                 await chatClient.SubscribeToEvents(ChatSite.StackOverflow, 167908)
                     .Pinged()
                     .SameRoomOnly()
