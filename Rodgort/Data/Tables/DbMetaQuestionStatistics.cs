@@ -10,6 +10,8 @@ namespace Rodgort.Data.Tables
        
         public int Score { get; set; }
 
+        public int ViewCount { get; set; }
+
         public DateTime DateTime { get; set; }
 
         public DbMetaQuestion MetaQuestion { get; set; }

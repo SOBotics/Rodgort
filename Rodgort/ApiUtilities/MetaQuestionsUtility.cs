@@ -14,7 +14,7 @@ namespace Rodgort.ApiUtilities
                 {
                     {"site", siteName},
                     {"tagged", tag},
-                    {"filter", "!1PVL*Tfn3U8E_DNqhT*s*BC)u-eMGS1)f"}
+                    {"filter", "!1PVN1yfHP2mFv5xsYE3Iaa)w(-d*V(48A"}
                 }, pagingOptions);
         }
     }

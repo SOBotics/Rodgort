@@ -93,12 +93,15 @@ namespace Rodgort.Services
 
                             if (!metaQuestion.Score.HasValue)
                                 throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.Score)}");
+                            if (!metaQuestion.ViewCount.HasValue)
+                                throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.ViewCount)}");
 
                             dbMetaQuestion.Title = WebUtility.HtmlDecode(metaQuestion.Title);
                             dbMetaQuestion.Body = WebUtility.HtmlDecode(metaQuestion.BodyMarkdown);
                             dbMetaQuestion.Link = metaQuestion.Link;
                             dbMetaQuestion.LastSeen = utcNow;
                             dbMetaQuestion.Score = metaQuestion.Score.Value;
+                            dbMetaQuestion.ViewCount = metaQuestion.ViewCount.Value;
                             dbMetaQuestion.CloseReason = metaQuestion.ClosedReason;
 
                             if (metaQuestion.ClosedDate.HasValue)
@@ -116,6 +119,7 @@ namespace Rodgort.Services
                             {
                                 DateTime = utcNow,
                                 Score = metaQuestion.Score.Value,
+                                ViewCount = metaQuestion.ViewCount.Value,
 
                                 MetaQuestion = dbMetaQuestion
                             };

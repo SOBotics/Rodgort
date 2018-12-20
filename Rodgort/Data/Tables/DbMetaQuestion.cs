@@ -15,6 +15,8 @@ namespace Rodgort.Data.Tables
 
         public int Score { get; set; }
 
+        public int ViewCount { get; set; }
+
         public string CloseReason { get; set; }
 
         public DateTime? ClosedDate { get; set; }
