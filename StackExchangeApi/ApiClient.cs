@@ -98,6 +98,9 @@ namespace StackExchangeApi
                     var payloadUntyped = JsonConvert.DeserializeObject<JObject>(content);
                     var payload = payloadUntyped.ToObject<TResponseType>();
 
+                    payload.RawData = content;
+                    payload.RequestUrl = url;
+
                     if (!string.IsNullOrWhiteSpace(payload.ErrorMessage))
                         throw new Exception($"Failed to request {url}.\n\n" + JsonConvert.SerializeObject(new
                         {

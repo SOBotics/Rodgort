@@ -83,6 +83,11 @@ namespace Rodgort.Services
                 {
                     if (tagLookup.ContainsKey(responseTag.Name))
                     {
+                        if (tagLookup[responseTag.Name].NumberOfQuestions == 0 && responseTag.Count > 0)
+                        {
+                            _logger.LogWarning($"Possible bad synonynm response. {Environment.NewLine}URL: {response.RequestUrl}{Environment.NewLine}Payload: {response.RawData}");
+                        }
+                        
                         _context.TagStatistics.Add(new DbTagStatistics
                         {
                             QuestionCount = responseTag.Count,

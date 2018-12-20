@@ -15,5 +15,10 @@ namespace StackExchangeApi.Responses
         public string ErrorMessage { get; set; }
         [JsonProperty("error_name")]
         public string ErrorName { get; set; }
+
+        [JsonIgnore]
+        public string RawData { get; set; }
+        [JsonIgnore]
+        public string RequestUrl { get; set; }
     }
 }
