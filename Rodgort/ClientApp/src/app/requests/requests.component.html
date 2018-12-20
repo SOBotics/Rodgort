@@ -81,7 +81,7 @@
     <div class="row pt-1" *ngFor="let question of questions">
         <div class="col-md-12">
             <h3>
-                <a>{{question.title}}</a>
+                <a>{{question.title}} <span class="closed-label" *ngIf="question.closed">(closed)</span></a>
                 <p *ngFor="let metaTag of question.metaStatusTags" class="post-statustag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
                 <p *ngFor="let metaTag of question.metaRequestTags" class="post-metatag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
             </h3>

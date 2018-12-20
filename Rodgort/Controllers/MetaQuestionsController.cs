@@ -77,6 +77,7 @@ namespace Rodgort.Controllers
                         .OrderByDescending(mqt => mqt)
                         .FirstOrDefault(),
                     ScoreOverTime = mq.Statistics.Select(s => new {s.DateTime, s.Score}),
+                    Closed = mq.ClosedDate.HasValue
                 });
 
             if (hasQuestions == "yes")
