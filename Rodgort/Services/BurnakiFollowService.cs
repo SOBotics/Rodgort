@@ -294,7 +294,7 @@ namespace Rodgort.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed chat: ", ex);
+                _logger.LogError(ex, "Failed chat");
             }
         }
 
