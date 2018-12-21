@@ -109,15 +109,20 @@ namespace Rodgort.Services
                                 if (!questionIdList.Any())
                                     return;
 
-                                chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, $"Processing {string.Join(", ", questionIdList)} from room {roomId}");
+                                await chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, $"Processing {string.Join(", ", questionIdList)} from room {roomId}");
 
                                 var apiClient = _serviceProvider.GetRequiredService<ApiClient>();
                                 var revisions = await apiClient.Revisions("stackoverflow.com", questionIdList);
 
                                 var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-                                foreach (var revision in revisions.Items.Where(r => Dates.UnixTimeStampToDateTime(r.CreationDate) > fromTime)
-                                )
+                                foreach (var revision in revisions.Items)
                                 {
+                                    if (Dates.UnixTimeStampToDateTime(revision.CreationDate) <= fromTime)
+                                    {
+                                        _logger.LogInformation($"Skipping revision {revision.RevisionGuid}, as it's too old");
+                                        continue;
+                                    }
+
                                     if (revision.LastTags != null)
                                     {
                                         // There was a retag
@@ -192,8 +197,11 @@ namespace Rodgort.Services
                                     if (!dbUsers.Contains(currentUserId))
                                         innerContext.SiteUsers.Add(new DbSiteUser { Id = currentUserId });
                                 }
-                                
+
+
+                                _logger.LogInformation("Saving user actions...");
                                 innerContext.SaveChanges();
+                                _logger.LogInformation("User actions saved");
                             }
                         });
                     }, cancellationToken);

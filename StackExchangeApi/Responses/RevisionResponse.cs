@@ -5,6 +5,9 @@ namespace StackExchangeApi.Responses
 {
     public class RevisionResponse
     {
+        [JsonProperty("revision_guid")]
+        public string RevisionGuid { get; set; }
+
         [JsonProperty("post_id")]
         public int PostId { get; set; }
 
