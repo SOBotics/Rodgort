@@ -1,0 +1,28 @@
+.post-tag {
+    display: inline;
+
+    padding: .4em .5em;
+    margin: 2px 2px 2px 0;
+    font-size: 11px;
+    line-height: 1;
+
+    white-space: nowrap;
+    text-decoration: none;
+    text-align: center;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 3px;
+
+    font-size: 12px;
+}
+
+.post-tag {
+    background-color: #ececec;
+    border-color: #ececec;
+}
+.post-tag > a {
+    color: #212529;
+}
+.post-tag > a:hover {
+    text-decoration: none;
+}

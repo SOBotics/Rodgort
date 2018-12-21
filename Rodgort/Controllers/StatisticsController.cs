@@ -75,5 +75,71 @@ namespace Rodgort.Controllers
                 }
             };
         }
+
+        [HttpGet("Leaderboard/Current")]
+        public object CurrentLeaderboard()
+        {
+            var burnsData = _context.MetaQuestions.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED))
+                .Select(mq => new
+                {
+                    mq.FeaturedStarted,
+                    mq.FeaturedEnded,
+                    mq.BurnStarted,
+                    mq.BurnEnded,
+                    BurningTags = mq.MetaQuestionTags.Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
+                        .Select(mqt =>
+                            new
+                            {
+                                Tag = mqt.TagName,
+                                mqt.Tag.NumberOfQuestions,
+                                QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount }).ToList(),
+                                Actions = _context.UserActions.Where(ua => ua.Tag == mqt.TagName).Select(ua => new
+                                {
+                                    User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
+                                    ua.Time,
+                                    Type = ua.UserActionType.Name
+                                }).ToList()
+                            }).ToList()
+                }).ToList();
+
+            return new
+            {
+                Burns = burnsData.Select(b => new
+                {
+                    Tags = b.BurningTags.Select(bt => new
+                    {
+                        bt.Tag,
+                        bt.NumberOfQuestions,
+                        bt.QuestionCountOverTime,
+                        Overtime = bt.Actions
+                            .GroupBy(a => new
+                            {
+                                a.User,
+                                a.Type
+                            }).Select(g => new
+                            {
+                                g.Key.User, g.Key.Type,
+                                Times = g.GroupBy(gg => gg.Time.Date).Select(gg => new {  gg.Key.Date, Total = gg.Count() })
+                            }),
+                        UserTotals = bt.Actions.GroupBy(g => new {g.Type, g.User}).Select(g => new
+                        {
+                            g.Key.User,
+                            g.Key.Type,
+                            Total = g.Count()
+                        }),
+                        Totals = bt.Actions.GroupBy(g => g.Type).Select(g => new
+                        {
+                            Type = g.Key,
+                            Total = g.Count()
+                        })
+                    }),
+
+                    b.FeaturedStarted,
+                    b.FeaturedEnded,
+                    b.BurnStarted,
+                    b.BurnEnded
+                })
+            };
+        }
     }
 }

@@ -1,0 +1,52 @@
+<ng-container *ngIf="burns">
+  <ng-container *ngFor="let burn of burns">
+    <ng-container *ngFor="let tag of burn.tags">
+      <!-- <p class="post-tag mb-3"><a href="https://stackoverflow.com/questions/tagged/{{tag.tag}}">{{tag.tag}}</a></p> -->
+      <h1>{{tag.tag}}</h1>
+      <h3>{{tag.numberOfQuestions}} questions</h3>
+
+      <h2>Tag Progress</h2>
+      <app-question-count-graph [data]="tag.questionCountOverTime" [featuredStarted]="burn.featuredStarted"
+        [featuredEnded]="burn.featuredEnded" [burnStarted]="burn.burnStarted" [burnEnded]="burn.burnEnded">
+
+      </app-question-count-graph>
+
+      <h2>User Activity</h2>
+      <div *ngIf="chart" [chart]="chart"></div>
+
+      <h2>User totals</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Type</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of tag.userTotals | sortAscending: 'total'">
+            <td>{{row.user}}</td>
+            <td>{{row.type}}</td>
+            <td>{{row.total}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Grand totals</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of tag.totals | sortAscending: 'total'">
+            <td>{{row.type}}</td>
+            <td>{{row.total}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+  </ng-container>
+</ng-container>

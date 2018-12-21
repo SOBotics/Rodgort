@@ -12,6 +12,8 @@ import { appRoutes } from './app.routes';
 import { LogsComponent } from './logs/logs.component';
 import { ArraySortPipe } from '../pipes/ArraySortPipe';
 import { RequestsComponent } from './requests/requests.component';
+import { ProgressComponent } from './progress/progress.component';
+import { ArraySortAscendingPipe } from '../pipes/ArraySortAscendingPipe';
 
 @NgModule({
   declarations: [
@@ -20,7 +22,9 @@ import { RequestsComponent } from './requests/requests.component';
     QuestionCountGraphComponent,
     LogsComponent,
     ArraySortPipe,
-    RequestsComponent
+    ArraySortAscendingPipe,
+    RequestsComponent,
+    ProgressComponent
   ],
   imports: [
     ChartModule,
