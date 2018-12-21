@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Chart } from 'angular-highcharts';
-import Highcharts = require('highcharts');
 
 @Component({
   selector: 'app-progress',
