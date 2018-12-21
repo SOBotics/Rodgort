@@ -19,7 +19,8 @@ namespace Rodgort.Data
         public DbSet<DbTagStatistics> TagStatistics { get; set; }
         public DbSet<DbLog> Logs { get; set; }
         public DbSet<DbBurnakiFollow> BurnakiFollows { get; set; }
-        public DbSet<DbUserRetag> UserRetags { get; set; }
+        public DbSet<DbUserAction> UserActions { get; set; }
+        public DbSet<DbSiteUser> SiteUsers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -71,9 +72,18 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbBurnakiFollow>().ToTable("BurnakiFollows");
             modelBuilder.Entity<DbBurnakiFollow>().HasKey(tag => tag.Id);
 
-            modelBuilder.Entity<DbUserRetag>().ToTable("UserRetags");
-            modelBuilder.Entity<DbUserRetag>().HasKey(tag => tag.Id);
-            
+            modelBuilder.Entity<DbUserAction>().ToTable("UserActions");
+            modelBuilder.Entity<DbUserAction>().HasKey(ua => ua.Id);
+            modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.UserActionType).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.UserActionTypeId);
+            modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.SiteUser).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.SiteUserId);
+
+            modelBuilder.Entity<DbUserActionType>().ToTable("UserActionTypes");
+            modelBuilder.Entity<DbUserActionType>().HasKey(uat => uat.Id);
+
+            modelBuilder.Entity<DbSiteUser>().ToTable("SiteUsers");
+            modelBuilder.Entity<DbSiteUser>().HasKey(su => su.Id);
+            modelBuilder.Entity<DbSiteUser>().Property(rt => rt.Id).ValueGeneratedNever();
+
             modelBuilder.Entity<DbLog>().ToTable("Logs");
             modelBuilder.Entity<DbLog>().HasKey(tag => tag.Id);
             modelBuilder.Entity<DbLog>().HasIndex(tag => tag.TimeLogged);
@@ -105,6 +115,16 @@ namespace Rodgort.Data
                     new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.PENDING, Name = "Pending"},
                     new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.APPROVED, Name = "Approved"},
                     new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.REJECTED, Name = "Rejected"}
+                );
+
+            modelBuilder.Entity<DbUserActionType>()
+                .HasData(
+                    new DbUserActionType {Id = DbUserActionType.REMOVED_TAG, Name = "Removed Tag"},
+                    new DbUserActionType {Id = DbUserActionType.ADDED_TAG, Name = "Added Tag"},
+                    new DbUserActionType {Id = DbUserActionType.CLOSED, Name = "Closed"},
+                    new DbUserActionType {Id = DbUserActionType.REOPENED, Name = "Reopened"},
+                    new DbUserActionType {Id = DbUserActionType.DELETED, Name = "Deleted"},
+                    new DbUserActionType {Id = DbUserActionType.UNDELETED, Name = "Undeleted"}
                 );
         }
     }

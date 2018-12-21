@@ -38,6 +38,10 @@
     <Compile Remove="Migrations\20181211045543_InitialMigration.Designer.cs" />
     <Compile Remove="Migrations\20181220070441_AddUserRetagTable.cs" />
     <Compile Remove="Migrations\20181220070441_AddUserRetagTable.Designer.cs" />
+    <Compile Remove="Migrations\20181221012629_ReworkUserActions.cs" />
+    <Compile Remove="Migrations\20181221012629_ReworkUserActions.Designer.cs" />
+    <Compile Remove="Migrations\20181221020531_ReworkUserActions.cs" />
+    <Compile Remove="Migrations\20181221020531_ReworkUserActions.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
