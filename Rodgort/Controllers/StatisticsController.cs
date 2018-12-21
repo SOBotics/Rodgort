@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
+using Rodgort.Services;
 
 namespace Rodgort.Controllers
 {
@@ -9,10 +10,12 @@ namespace Rodgort.Controllers
     public class StatisticsController : Controller
     {
         private readonly RodgortContext _context;
+        private readonly DateService _dateService;
 
-        public StatisticsController(RodgortContext context)
+        public StatisticsController(RodgortContext context, DateService dateService)
         {
             _context = context;
+            _dateService = dateService;
         }
 
         [HttpGet]
@@ -102,6 +105,7 @@ namespace Rodgort.Controllers
                             }).ToList()
                 }).ToList();
 
+            var firstTime = _dateService.UtcNow.AddMonths(-3);
             return new
             {
                 Burns = burnsData.Select(b => new
@@ -111,7 +115,7 @@ namespace Rodgort.Controllers
                         bt.Tag,
                         bt.NumberOfQuestions,
                         bt.QuestionCountOverTime,
-                        Overtime = bt.Actions
+                        Overtime = bt.Actions.Where(a => a.Time > firstTime)
                             .GroupBy(a => new
                             {
                                 a.User,
@@ -119,15 +123,15 @@ namespace Rodgort.Controllers
                             }).Select(g => new
                             {
                                 g.Key.User, g.Key.Type,
-                                Times = g.GroupBy(gg => gg.Time.Date).Select(gg => new {  gg.Key.Date, Total = gg.Count() })
+                                Times = g.GroupBy(gg => new { gg.Time.Date, gg.Time.Hour }).Select(gg => new { Date = gg.Key.Date.AddHours(gg.Key.Hour), Total = gg.Count() })
                             }),
-                        UserTotals = bt.Actions.GroupBy(g => new {g.Type, g.User}).Select(g => new
+                        UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new {g.Type, g.User}).Select(g => new
                         {
                             g.Key.User,
                             g.Key.Type,
                             Total = g.Count()
                         }),
-                        Totals = bt.Actions.GroupBy(g => g.Type).Select(g => new
+                        Totals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => g.Type).Select(g => new
                         {
                             Type = g.Key,
                             Total = g.Count()
