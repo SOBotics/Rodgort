@@ -124,7 +124,7 @@ namespace StackExchangeApi
         {
             var userIdsList = userIds.ToList();
             var postIdsString = string.Join(";", userIdsList);
-            return MakeRequest<ApiItemsResponse<UserResponse>>($"{BASE_URL}/users/{postIdsString}", new Dictionary<string, string>
+            return ApplyWithPaging<UserResponse>($"{BASE_URL}/users/{postIdsString}", new Dictionary<string, string>
             {
                 {"site", siteName},
                 {"filter", "!qGfMGCCrfTV2ZcZrapMx"},

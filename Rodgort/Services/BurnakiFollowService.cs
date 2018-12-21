@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -192,12 +193,21 @@ namespace Rodgort.Services
                                 
                                 var currentUserIds = innerContext.UserActions.Local.Select(mqmt => mqmt.SiteUserId).Distinct().ToList();
                                 var dbUsers = innerContext.SiteUsers.Where(t => currentUserIds.Contains(t.Id)).ToLookup(t => t.Id);
+
+                                var hasNewUser = false;
                                 foreach (var currentUserId in currentUserIds)
                                 {
                                     if (!dbUsers.Contains(currentUserId))
-                                        innerContext.SiteUsers.Add(new DbSiteUser { Id = currentUserId });
+                                    {
+                                        innerContext.SiteUsers.Add(new DbSiteUser {Id = currentUserId});
+                                        hasNewUser = true;
+                                    }
                                 }
 
+                                if (hasNewUser)
+                                {
+                                    RecurringJob.Trigger(UserDisplayNameService.SERVICE_NAME);
+                                }
 
                                 _logger.LogInformation("Saving user actions...");
                                 innerContext.SaveChanges();
