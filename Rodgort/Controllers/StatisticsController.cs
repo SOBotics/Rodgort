@@ -122,11 +122,11 @@ namespace Rodgort.Controllers
                             .Select(g => new
                             {
                                 User = g.Key,
-                                Times = g.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour), FullTime = gg.Time })
+                                Times = g.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
                                     .Select(gg => new
                                     {
                                         Date = gg.Key.Time,
-                                        Total = g.Where(ggg => ggg.Time <= gg.Key.FullTime).Select(ggg => ggg.PostId).Distinct().Count()
+                                        Total = g.Where(ggg => ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                                     })
                                     .OrderBy(gg => gg.Date)
                             })
