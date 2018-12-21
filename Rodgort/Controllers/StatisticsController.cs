@@ -95,7 +95,7 @@ namespace Rodgort.Controllers
                             {
                                 Tag = mqt.TagName,
                                 mqt.Tag.NumberOfQuestions,
-                                QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount }).ToList(),
+                                QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
                                 Actions = _context.UserActions.Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                 {
                                     User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
@@ -124,6 +124,7 @@ namespace Rodgort.Controllers
                             {
                                 g.Key.User, g.Key.Type,
                                 Times = g.GroupBy(gg => new { gg.Time.Date, gg.Time.Hour }).Select(gg => new { Date = gg.Key.Date.AddHours(gg.Key.Hour), Total = gg.Count() })
+                                    .OrderBy(gg => gg.Date)
                             }),
                         UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new {g.Type, g.User}).Select(g => new
                         {
