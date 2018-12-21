@@ -101,7 +101,7 @@ export class ProgressComponent implements OnInit {
 
         this.chart = new Chart({
           chart: {
-            type: 'line',
+            type: 'area',
           },
           title: {
             text: ''

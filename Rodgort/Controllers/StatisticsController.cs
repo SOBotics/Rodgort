@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
@@ -105,8 +106,8 @@ namespace Rodgort.Controllers
                             }).ToList()
                 }).ToList();
 
-            var firstTime = _dateService.UtcNow.AddMonths(-3);
-            return new
+            var firstTime = DateTime.MinValue;
+            var res = new
             {
                 Burns = burnsData.Select(b => new
                 {
@@ -119,16 +120,18 @@ namespace Rodgort.Controllers
                             .GroupBy(a => new
                             {
                                 a.User,
-                                a.Type
                             })
                             .Select(g => new
                             {
-                                g.Key.User, g.Key.Type,
-                                Times = g.GroupBy(gg => new { gg.Time.Date, gg.Time.Hour }).Select(gg => new { Date = gg.Key.Date.AddHours(gg.Key.Hour), Total = gg.Count() })
+                                g.Key.User,
+                                Times = g.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                                    .Select(gg => new
+                                    {
+                                        Date = gg.Key.Time,
+                                        Total = g.Count(ggg => ggg.Time <= gg.Key.Time)
+                                    })
                                     .OrderBy(gg => gg.Date)
                             })
-                            .OrderByDescending(g => g.Times.Count())
-                            .Take(10)
                         ,
                         UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new {g.Type, g.User}).Select(g => new
                         {
@@ -149,6 +152,7 @@ namespace Rodgort.Controllers
                     b.BurnEnded
                 })
             };
+            return res;
         }
     }
 }
