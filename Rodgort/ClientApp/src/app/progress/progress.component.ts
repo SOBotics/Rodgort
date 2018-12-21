@@ -26,7 +26,7 @@ export class ProgressComponent implements OnInit {
 
         if (firstTag.featuredStarted && firstTag.featuredEnded) {
           bands.push({
-            color: '#fbedb6d6',
+            color: 'rgb(251, 237, 182)',
             from: this.toUtcDateTime(firstTag.featuredStarted),
             to: this.toUtcDateTime(firstTag.featuredEnded),
             label: {
@@ -55,7 +55,7 @@ export class ProgressComponent implements OnInit {
 
         if (firstTag.burnStarted && firstTag.burnEnded) {
           bands.push({
-            color: '#fbbdb6d6',
+            color: 'rgb(251, 237, 182)',
             from: this.toUtcDateTime(firstTag.burnStarted),
             to: this.toUtcDateTime(firstTag.burnEnded),
             label: {

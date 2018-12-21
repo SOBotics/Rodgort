@@ -127,7 +127,8 @@ namespace Rodgort.Controllers
                                 Times = g.GroupBy(gg => new { gg.Time.Date, gg.Time.Hour }).Select(gg => new { Date = gg.Key.Date.AddHours(gg.Key.Hour), Total = gg.Count() })
                                     .OrderBy(gg => gg.Date)
                             })
-                            .Where(g => g.Times.Count() > 10)
+                            .OrderByDescending(g => g.Times.Count())
+                            .Take(10)
                         ,
                         UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new {g.Type, g.User}).Select(g => new
                         {
