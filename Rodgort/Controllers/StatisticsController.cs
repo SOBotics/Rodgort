@@ -99,6 +99,7 @@ namespace Rodgort.Controllers
                                 QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
                                 Actions = _context.UserActions.Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                 {
+                                    ua.PostId,
                                     User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
                                     ua.Time,
                                     Type = ua.UserActionType.Name
@@ -125,7 +126,7 @@ namespace Rodgort.Controllers
                                     .Select(gg => new
                                     {
                                         Date = gg.Key.Time,
-                                        Total = g.Count(ggg => ggg.Time <= gg.Key.Time)
+                                        Total = g.Where(ggg => ggg.Time <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                                     })
                                     .OrderBy(gg => gg.Date)
                             })
