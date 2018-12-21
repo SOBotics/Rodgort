@@ -36,7 +36,7 @@ namespace Rodgort.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var configuration = _serviceProvider.GetRequiredService<ChatCredentials>();
+            var configuration = _serviceProvider.GetRequiredService<IChatCredentials>();
             var hasCookies = !string.IsNullOrWhiteSpace(configuration.AcctCookie);
             var hasCredentials = !string.IsNullOrWhiteSpace(configuration.AcctCookie) && !string.IsNullOrWhiteSpace(configuration.Password);
 
