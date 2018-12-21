@@ -120,7 +120,10 @@ namespace Rodgort.Controllers
                             {
                                 a.User,
                                 a.Type
-                            }).Select(g => new
+                            })
+                            .OrderByDescending(g => g.Count())
+                            .Take(10)
+                            .Select(g => new
                             {
                                 g.Key.User, g.Key.Type,
                                 Times = g.GroupBy(gg => new { gg.Time.Date, gg.Time.Hour }).Select(gg => new { Date = gg.Key.Date.AddHours(gg.Key.Hour), Total = gg.Count() })
