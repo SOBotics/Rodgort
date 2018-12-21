@@ -119,7 +119,7 @@ export class ProgressComponent implements OnInit {
           },
           tooltip: {
             formatter: function () {
-              return `${Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)}: ${this.series.name}`;
+              return `${Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)}: ${this.series.name} (${this.y})`;
             }
           },
           yAxis: {
