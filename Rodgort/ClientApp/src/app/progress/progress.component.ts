@@ -91,7 +91,7 @@ export class ProgressComponent implements OnInit {
 
         const series: { name: string, data: [number, number][] }[] = this.burns[0].tags[0].overtime.map(o => {
           return {
-            name: o.user + ' - ' + o.type,
+            name: o.user,
             data: o.times.map((gd: any) => {
               const utcDate = this.toUtcDateTime(gd.date);
               return [utcDate, gd.total];

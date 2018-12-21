@@ -117,13 +117,10 @@ namespace Rodgort.Controllers
                         bt.NumberOfQuestions,
                         bt.QuestionCountOverTime,
                         Overtime = bt.Actions.Where(a => a.Time > firstTime)
-                            .GroupBy(a => new
-                            {
-                                a.User,
-                            })
+                            .GroupBy(a => a.User)
                             .Select(g => new
                             {
-                                g.Key.User,
+                                User = g.Key,
                                 Times = g.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
                                     .Select(gg => new
                                     {
