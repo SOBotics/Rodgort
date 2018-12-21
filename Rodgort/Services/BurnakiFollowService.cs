@@ -22,7 +22,7 @@ namespace Rodgort.Services
 {
     public class BurnakiFollowService : IHostedService
     {
-        private const int WorkshopRoom = 167908;
+        private const int Headquarters = 185585;
         private const int RobUserId = 563532;
 
         private readonly IServiceProvider _serviceProvider;
@@ -47,9 +47,10 @@ namespace Rodgort.Services
                 foreach (var burnakiFollow in burnakiFollows)
                     FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, cancellationToken);
 
-                var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, WorkshopRoom);
+                var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, Headquarters);
                 await events.FirstAsync();
-                _logger.LogInformation("Successfully joined workshop room");
+                chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, "o/");
+                _logger.LogInformation("Successfully joined headquarters");
                 await events
                     .Pinged()
                     .SameRoomOnly()
@@ -77,7 +78,7 @@ namespace Rodgort.Services
                 var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, roomId);
                 await events.FirstAsync();
                 _logger.LogInformation($"Successfully joined room {roomId}");
-
+                chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, $"I just joined {roomId}");
                 await events
                     .OnlyMessages()
                     .SameRoomOnly()
@@ -100,6 +101,8 @@ namespace Rodgort.Services
                                 var questionIdList = questionIdGroup.ToList();
                                 if (!questionIdList.Any())
                                     return;
+
+                                chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, $"Processing {string.Join(", ", questionIdList)} from room {roomId}");
 
                                 var apiClient = _serviceProvider.GetRequiredService<ApiClient>();
                                 var revisions = await apiClient.Revisions("stackoverflow.com", questionIdList);
