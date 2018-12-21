@@ -108,8 +108,7 @@ namespace Rodgort.Services
                                 var revisions = await apiClient.Revisions("stackoverflow.com", questionIdList);
 
                                 var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-                                foreach (var revision in revisions.Items
-                                    // .Where(r => Dates.UnixTimeStampToDateTime(r.CreationDate) > fromTime)
+                                foreach (var revision in revisions.Items.Where(r => Dates.UnixTimeStampToDateTime(r.CreationDate) > fromTime)
                                 )
                                 {
                                     if (revision.LastTags != null)
