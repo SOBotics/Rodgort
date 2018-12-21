@@ -119,7 +119,7 @@ namespace Rodgort.Services
                                 {
                                     if (Dates.UnixTimeStampToDateTime(revision.CreationDate) <= fromTime)
                                     {
-                                        _logger.LogInformation($"Skipping revision {revision.RevisionGuid}, as it's too old");
+                                        _logger.LogInformation($"Skipping revision {revision.RevisionNumber} on {revision.PostId}, as it's too old");
                                         continue;
                                     }
 

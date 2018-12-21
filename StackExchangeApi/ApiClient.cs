@@ -138,7 +138,7 @@ namespace StackExchangeApi
             return MakeRequest<ApiItemsResponse<RevisionResponse>>($"{BASE_URL}/posts/{postIdsString}/revisions", new Dictionary<string, string>
             {
                 {"site", siteName},
-                {"filter", "!)Q2B_A1P5n.P0gkJs(DKK6Qd"},
+                {"filter", "!FcbKgREm*513I8Z7LLLeTy.2SW"},
             });
         }
 
