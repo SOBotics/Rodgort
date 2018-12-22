@@ -225,7 +225,7 @@ namespace Rodgort.Services
 
                                 if (hasNewUser)
                                 {
-                                    RecurringJob.Trigger(UserDisplayNameService.SERVICE_NAME);
+                                    RecurringJob.Trigger(UserDisplayNameService.SYNC_USERS_NO_NAME);
                                 }
 
                                 _logger.LogInformation("Saving user actions...");
