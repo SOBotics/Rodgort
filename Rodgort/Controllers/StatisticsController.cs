@@ -145,7 +145,7 @@ namespace Rodgort.Controllers
                                     })
                                     .OrderBy(gg => gg.Date)
                             })
-                            .OrderByDescending(g => g.Times.Count())
+                            .OrderByDescending(g => g.Times.Max(tt => tt.Total))
                             .Take(10)
                         ,
                         UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new {g.Type, g.User}).Select(g => new
