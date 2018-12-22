@@ -53,6 +53,9 @@ namespace Rodgort.Services
             using (var context = new RodgortContext(_dbContextOptions))
             {
                 var dbUsers = context.SiteUsers.Where(su => su.DisplayName == null).ToList();
+                if (dbUsers.Any())
+                    return;
+
                 var userLookup = dbUsers.ToDictionary(u => u.Id, u => u);
 
                 var siteUsers = await _apiClient.Users("stackoverflow.com", dbUsers.Select(u => u.Id));
