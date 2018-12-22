@@ -137,12 +137,12 @@ namespace Rodgort.Controllers
                         {
                             g.Key.User,
                             g.Key.Type,
-                            Total = g.Count()
+                            Total = g.Select(gg => gg.PostId).Distinct().Count()
                         }), 
                         Totals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => g.Type).Select(g => new
                         {
                             Type = g.Key,
-                            Total = g.Count()
+                            Total = g.Select(gg => gg.PostId).Distinct().Count()
                         })
                     }),
 
