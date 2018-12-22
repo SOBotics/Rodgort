@@ -53,7 +53,7 @@ namespace Rodgort.Services
             using (var context = new RodgortContext(_dbContextOptions))
             {
                 var dbUsers = context.SiteUsers.Where(su => su.DisplayName == null).ToList();
-                if (dbUsers.Any())
+                if (!dbUsers.Any())
                     return;
 
                 var userLookup = dbUsers.ToDictionary(u => u.Id, u => u);
