@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
@@ -89,6 +90,7 @@ namespace Rodgort.Controllers
         [HttpGet("Leaderboard/Current")]
         public object CurrentLeaderboard()
         {
+            var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER, "true");
             var burnsData = _context.MetaQuestions.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED))
                 .Select(mq => new
                 {
@@ -103,7 +105,9 @@ namespace Rodgort.Controllers
                                 Tag = mqt.TagName,
                                 mqt.Tag.NumberOfQuestions,
                                 QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
-                                Actions = _context.UserActions.Where(ua => ua.Tag == mqt.TagName).Select(ua => new
+                                Actions = _context.UserActions
+                                    .Where(ua => isRoomOwner || ua.Time > mq.BurnStarted)
+                                    .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                 {
                                     ua.PostId,
                                     User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
