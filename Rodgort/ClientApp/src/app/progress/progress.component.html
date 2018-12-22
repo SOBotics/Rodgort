@@ -1,9 +1,12 @@
 <ng-container *ngIf="burns">
   <ng-container *ngFor="let burn of burns">
+    <h1>{{burn.metaQuestionTitle}}</h1>
     <ng-container *ngFor="let tag of burn.tags">
-      <!-- <p class="post-tag mb-3"><a href="https://stackoverflow.com/questions/tagged/{{tag.tag}}">{{tag.tag}}</a></p> -->
-      <h1>{{tag.tag}}</h1>
-      <h3>{{tag.numberOfQuestions}} questions</h3>
+      <div class="container mt-3 mb-3">
+          <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tag}}">{{tag.tag}}</a></p>
+          <p style="display: inline"> - {{tag.numberOfQuestions}} questions</p>
+          <p style="display: inline"> - <a href="{{burn.metaQuestionLink}}">View meta post</a></p>
+        </div>
 
       <h2>Tag Progress</h2>
       <app-question-count-graph [data]="tag.questionCountOverTime" [featuredStarted]="burn.featuredStarted"

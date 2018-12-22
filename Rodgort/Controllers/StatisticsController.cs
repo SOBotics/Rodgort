@@ -98,6 +98,8 @@ namespace Rodgort.Controllers
                     mq.FeaturedEnded,
                     mq.BurnStarted,
                     mq.BurnEnded,
+                    mq.Title,
+                    mq.Link,
                     BurningTags = mq.MetaQuestionTags.Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
                         .Select(mqt =>
                             new
@@ -122,6 +124,8 @@ namespace Rodgort.Controllers
             {
                 Burns = burnsData.Select(b => new
                 {
+                    MetaQuestionTitle = b.Title,
+                    MetaQuestionLink = b.Link,
                     Tags = b.BurningTags.Select(bt => new
                     {
                         bt.Tag,
