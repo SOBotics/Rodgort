@@ -53,13 +53,14 @@ namespace Rodgort.Services
 
                 var burnakiFollows = context.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue).ToList();
                 foreach (var burnakiFollow in burnakiFollows)
-                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, dateService, cancellationToken);
+                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, burnakiFollow.Tag, dateService, cancellationToken);
 
                 var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, Headquarters);
                 await events.FirstAsync();
                 chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, "o/");
                 _logger.LogInformation("Successfully joined headquarters");
                 await events
+                    .ReplyAlive()
                     .Pinged()
                     .SameRoomOnly()
                     .Where(r => r.ChatEventDetails.UserId == RobUserId)
@@ -74,7 +75,7 @@ namespace Rodgort.Services
             });
         }
 
-        private async Task FollowInRoom(int roomId, int followingUserId, DateTime fromTime, DateService dateService, CancellationToken cancellationToken)
+        private async Task FollowInRoom(int roomId, int followingUserId, DateTime fromTime, string followingTag, DateService dateService, CancellationToken cancellationToken)
         {
             await RunWithLogging(async () =>
             {
@@ -88,6 +89,7 @@ namespace Rodgort.Services
                 _logger.LogInformation($"Successfully joined room {roomId}");
                 chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, $"I just joined {roomId}");
                 await events
+                    .ReplyAlive()
                     .OnlyMessages()
                     .SameRoomOnly()
                     .Where(r => r.ChatEventDetails.UserId == followingUserId)
@@ -185,7 +187,7 @@ namespace Rodgort.Services
                                         AddIfNew(new DbUserAction
                                         {
                                             UserActionTypeId = DbUserActionType.UNKNOWN_DELETION,
-                                            Tag = null,
+                                            Tag = followingTag,
                                             PostId = questionId,
                                             Time = dateService.UtcNow,
                                             SiteUserId = -1
@@ -261,11 +263,17 @@ namespace Rodgort.Services
 
         private async Task ProcessFollow(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
         {
+            if (args.Count != 3)
+                return;
             if (!int.TryParse(args[0], out var burnakiUserId))
                 return;
             if (!int.TryParse(args[1], out var roomId))
                 return;
 
+            var followingTag = args[2];
+            if (string.IsNullOrWhiteSpace(followingTag))
+                return;
+            
             var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
             if (innerContext.BurnakiFollows.Any(bf => bf.BurnakiId == burnakiUserId && bf.RoomId == roomId && !bf.FollowEnded.HasValue))
             {
@@ -277,13 +285,14 @@ namespace Rodgort.Services
                 {
                     BurnakiId = burnakiUserId,
                     RoomId = roomId,
+                    Tag = followingTag,
                     FollowStarted = dateService.UtcNow
                 });
                 innerContext.SaveChanges();
 
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $"Okay, following {burnakiUserId} in {roomId}");
 
-                FollowInRoom(roomId, burnakiUserId, DateTime.UtcNow, dateService, cancellationToken);
+                FollowInRoom(roomId, burnakiUserId, DateTime.UtcNow, followingTag, dateService, cancellationToken);
             }
         }
 
@@ -314,7 +323,7 @@ namespace Rodgort.Services
             var allFollows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue);
             if (allFollows.Any())
             {
-                var followMessage = $"I'm following: {string.Join(", ", allFollows.Select(f => $"{f.BurnakiId} in {f.RoomId}"))}";
+                var followMessage = $"I'm following: {string.Join(", ", allFollows.Select(f => $"{f.BurnakiId} in {f.RoomId} for tag {f.Tag}"))}";
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {followMessage}");
             }
             else

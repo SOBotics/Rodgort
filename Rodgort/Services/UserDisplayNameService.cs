@@ -1,17 +1,8 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Net;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Rodgort.ApiUtilities;
 using Rodgort.Data;
-using Rodgort.Data.Tables;
-using Rodgort.Utilities;
 using StackExchangeApi;
-using StackExchangeApi.Responses;
 
 namespace Rodgort.Services
 {
@@ -23,7 +14,6 @@ namespace Rodgort.Services
         private readonly DbContextOptions<RodgortContext> _dbContextOptions;
         private readonly ApiClient _apiClient;
         
-
         public UserDisplayNameService(DbContextOptions<RodgortContext> dbContextOptions, ApiClient apiClient)
         {
             _dbContextOptions = dbContextOptions;

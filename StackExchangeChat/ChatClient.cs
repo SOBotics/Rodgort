@@ -16,6 +16,9 @@ namespace StackExchangeChat
         private readonly SiteAuthenticator _siteAuthenticator;
         private readonly HttpClientWithHandler _httpClient;
 
+        public static object TaskLocker = new object();
+        public static Task ExecutingTask = Task.CompletedTask;
+
         public ChatClient(SiteAuthenticator siteAuthenticator, HttpClientWithHandler httpClient)
         {
             _siteAuthenticator = siteAuthenticator;
@@ -24,15 +27,37 @@ namespace StackExchangeChat
 
         public async Task SendMessage(ChatSite chatSite, int roomId, string message)
         {
-            var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
-            await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-            await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
-                new FormUrlEncodedContent(
-                    new Dictionary<string, string>
-                    {
-                        {"text", message},
-                        {"fkey", fkey}
-                    }));
+            Task nextMessageTask;
+            lock (TaskLocker)
+            {
+                if (ExecutingTask.IsFaulted)
+                    ExecutingTask = Task.CompletedTask;
+
+                nextMessageTask = SendMessageInternal(ExecutingTask);
+                ExecutingTask = PostProcess(nextMessageTask);
+            }
+
+            await nextMessageTask;
+
+            async Task PostProcess(Task executingTask)
+            {
+                await executingTask;
+                await Task.Delay(TimeSpan.FromSeconds(5));
+            }
+
+            async Task SendMessageInternal(Task previousTask)
+            {
+                await previousTask;
+                var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
+                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
+                    new FormUrlEncodedContent(
+                        new Dictionary<string, string>
+                        {
+                            {"text", message},
+                            {"fkey", fkey}
+                        }));
+            }
         }
 
         public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, int roomId)
@@ -77,7 +102,8 @@ namespace StackExchangeChat
                         var chatEvent = new ChatEvent
                         {
                             RoomDetails = roomDetails,
-                            ChatEventDetails = @event
+                            ChatEventDetails = @event,
+                            ChatClient = this
                         };
                         observer.OnNext(chatEvent);
                     }
@@ -90,9 +116,10 @@ namespace StackExchangeChat
                     ChatEventDetails = new ChatEventDetails
                     {
                         ChatEventType = ChatEventType.ChatJoined,
-                        RoomId = roomId,
+                        RoomId = roomId
                     },
-                    RoomDetails = roomDetails
+                    RoomDetails = roomDetails,
+                    ChatClient = this
                 });
 
                 return Disposable.Create(() =>

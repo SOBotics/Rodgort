@@ -8,6 +8,8 @@ namespace Rodgort.Data.Tables
         public int RoomId { get; set; }
         public int BurnakiId { get; set; }
 
+        public string Tag { get; set; }
+
         public DateTime FollowStarted { get; set; }
         public DateTime? FollowEnded { get; set; }
     }
