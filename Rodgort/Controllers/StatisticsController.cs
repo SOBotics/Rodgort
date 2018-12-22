@@ -106,7 +106,8 @@ namespace Rodgort.Controllers
                             {
                                 Tag = mqt.TagName,
                                 mqt.Tag.NumberOfQuestions,
-                                QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
+                                QuestionCountOverTime = mqt.Tag.Statistics.Where(s => s.DateTime > (mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded))
+                                    .Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
                                 Actions = _context.UserActions
                                     .Where(ua => isRoomOwner || ua.Time > mq.BurnStarted)
                                     .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
