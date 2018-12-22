@@ -37,7 +37,7 @@ namespace StackExchangeChat.Console
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var apiThing = new ApiClient(serviceProvider, config, null);
+            var apiThing = new ApiClient(serviceProvider, null, null);
 
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();

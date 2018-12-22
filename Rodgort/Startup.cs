@@ -56,10 +56,15 @@ namespace Rodgort
             services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
             services.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
 
-            var credentials = new ChatCredentials();
-            Configuration.Bind("ChatCredentials", credentials);
+            var chatCredentials = new ChatCredentials();
+            Configuration.Bind("ChatCredentials", chatCredentials);
 
-            services.AddSingleton<IChatCredentials>(_ => credentials);
+            var stackExchangeApiCredentials = new StackExchangeApiCredentials();
+            Configuration.Bind("StackExchangeApiCredentials", stackExchangeApiCredentials);
+
+            services.AddSingleton<IChatCredentials>(_ => chatCredentials);
+            services.AddSingleton<IStackExchangeApiCredentials>(_ => stackExchangeApiCredentials);
+
             services.AddScoped<SiteAuthenticator>();
             services.AddScoped<ChatClient>();
             
@@ -85,6 +90,8 @@ namespace Rodgort
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseMiddleware(typeof(ExceptionHandlerMiddleware));
 
             app.UseMvc(routes =>
             {

@@ -88,6 +88,14 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbLog>().HasKey(tag => tag.Id);
             modelBuilder.Entity<DbLog>().HasIndex(tag => tag.TimeLogged);
 
+            modelBuilder.Entity<DbSiteUserRole>().ToTable("SiteUserRoles");
+            modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.User).WithMany(u => u.Roles).HasForeignKey(sur => sur.UserId);
+            modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.Role).WithMany(u => u.SiteUserRoles).HasForeignKey(sur => sur.RoleName);
+            modelBuilder.Entity<DbSiteUserRole>().HasKey(sur => new { sur.UserId, sur.RoleName });
+
+            modelBuilder.Entity<DbRole>().ToTable("Roles");
+            modelBuilder.Entity<DbRole>().HasKey(role => role.Name);
+
             modelBuilder.Entity<DbMetaQuestionMetaTag>().ToTable("MetaQuestionMetaTags");
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasKey(mqmt => new { mqmt.MetaQuestionId, mqmt.TagName });
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasOne(mqmt => mqmt.MetaQuestion).WithMany(mq => mq.MetaQuestionMetaTags);
@@ -126,6 +134,11 @@ namespace Rodgort.Data
                     new DbUserActionType {Id = DbUserActionType.DELETED, Name = "Deleted"},
                     new DbUserActionType {Id = DbUserActionType.UNDELETED, Name = "Undeleted"},
                     new DbUserActionType {Id = DbUserActionType.UNKNOWN_DELETION, Name = "Unknown deletion"}
+                );
+
+            modelBuilder.Entity<DbRole>()
+                .HasData(
+                    new DbRole {Name = DbRole.TROGDOR_ROOM_OWNER }
                 );
         }
     }

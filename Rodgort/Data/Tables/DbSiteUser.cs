@@ -8,5 +8,6 @@ namespace Rodgort.Data.Tables
         public string DisplayName { get; set; }
 
         public List<DbUserAction> UserActions { get; set; }
+        public List<DbSiteUserRole> Roles { get; set; }
     }
 }

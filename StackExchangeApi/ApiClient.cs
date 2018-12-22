@@ -8,7 +8,6 @@ using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -45,21 +44,17 @@ namespace StackExchangeApi
             QuotaRemaining.Subscribe(remaining => { Interlocked.Exchange(ref CurrentQuotaRemaining, remaining); });
         }
 
-        public ApiClient(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<ApiClient> logger)
+        public ApiClient(IServiceProvider serviceProvider, IStackExchangeApiCredentials configuration, ILogger<ApiClient> logger)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
-            _accessToken = configuration.GetSection("AccessToken").Value;
-            _appKey = configuration.GetSection("AppKey").Value;
+            _appKey = configuration.AppKey;
         }
 
         public async Task<TResponseType> MakeRequest<TResponseType>(string endpoint, Dictionary<string, string> parameters) where TResponseType: ApiBaseResponse
         {
             Task<TResponseType> nextTask;
             var copiedParameters = parameters.ToDictionary(d => d.Key, d => d.Value);
-            if (!string.IsNullOrWhiteSpace(_accessToken) && !copiedParameters.ContainsKey("access_token"))
-                copiedParameters["access_token"] = _accessToken;
-
             if (!string.IsNullOrWhiteSpace(_appKey) && !copiedParameters.ContainsKey("key"))
                 copiedParameters["key"] = _appKey;
 

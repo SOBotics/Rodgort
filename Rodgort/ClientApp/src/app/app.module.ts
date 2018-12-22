@@ -14,6 +14,7 @@ import { ArraySortPipe } from '../pipes/ArraySortPipe';
 import { RequestsComponent } from './requests/requests.component';
 import { ProgressComponent } from './progress/progress.component';
 import { ArraySortAscendingPipe } from '../pipes/ArraySortAscendingPipe';
+import { AuthService } from './services/auth.service';
 
 @NgModule({
   declarations: [
@@ -31,9 +32,11 @@ import { ArraySortAscendingPipe } from '../pipes/ArraySortAscendingPipe';
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpClientModule,
     FormsModule,
-    RouterModule.forRoot(appRoutes)
+    RouterModule.forRoot(appRoutes),
   ],
-  providers: [],
+  providers: [
+    AuthService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {
