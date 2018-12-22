@@ -11,6 +11,7 @@ namespace Rodgort.Data.Tables
         public const int REOPENED = 4;
         public const int DELETED = 5;
         public const int UNDELETED = 6;
+        public const int UNKNOWN_DELETION = 7;
 
         public int Id { get; set; }
 

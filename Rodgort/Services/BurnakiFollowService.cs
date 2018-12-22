@@ -53,7 +53,7 @@ namespace Rodgort.Services
 
                 var burnakiFollows = context.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue).ToList();
                 foreach (var burnakiFollow in burnakiFollows)
-                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, cancellationToken);
+                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, dateService, cancellationToken);
 
                 var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, Headquarters);
                 await events.FirstAsync();
@@ -74,7 +74,7 @@ namespace Rodgort.Services
             });
         }
 
-        private async Task FollowInRoom(int roomId, int followingUserId, DateTime fromTime, CancellationToken cancellationToken)
+        private async Task FollowInRoom(int roomId, int followingUserId, DateTime fromTime, DateService dateService, CancellationToken cancellationToken)
         {
             await RunWithLogging(async () =>
             {
@@ -177,6 +177,23 @@ namespace Rodgort.Services
                                     }
                                 }
 
+                                var returnedItemLookup = revisions.Items.ToDictionary(i => i.PostId, i => i);
+                                foreach (var questionId in questionIdList)
+                                {
+                                    if (!returnedItemLookup.ContainsKey(questionId))
+                                    {
+                                        AddIfNew(new DbUserAction
+                                        {
+                                            UserActionTypeId = DbUserActionType.CLOSED,
+                                            Tag = null,
+                                            PostId = questionId,
+                                            Time = dateService.UtcNow,
+                                            SiteUserId = -1
+                                        });
+                                    }
+
+                                }
+
                                 void AddIfNew(DbUserAction action)
                                 {
                                     if (!innerContext.UserActions.Any(
@@ -190,6 +207,8 @@ namespace Rodgort.Services
                                         innerContext.UserActions.Add(action);
                                     }
                                 }
+
+
                                 
                                 var currentUserIds = innerContext.UserActions.Local.Select(mqmt => mqmt.SiteUserId).Distinct().ToList();
                                 var dbUsers = innerContext.SiteUsers.Where(t => currentUserIds.Contains(t.Id)).ToLookup(t => t.Id);
@@ -264,7 +283,7 @@ namespace Rodgort.Services
 
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $"Okay, following {burnakiUserId} in {roomId}");
 
-                FollowInRoom(roomId, burnakiUserId, DateTime.UtcNow, cancellationToken);
+                FollowInRoom(roomId, burnakiUserId, DateTime.UtcNow, dateService, cancellationToken);
             }
         }
 

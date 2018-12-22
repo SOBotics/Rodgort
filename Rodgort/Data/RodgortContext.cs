@@ -124,7 +124,8 @@ namespace Rodgort.Data
                     new DbUserActionType {Id = DbUserActionType.CLOSED, Name = "Closed"},
                     new DbUserActionType {Id = DbUserActionType.REOPENED, Name = "Reopened"},
                     new DbUserActionType {Id = DbUserActionType.DELETED, Name = "Deleted"},
-                    new DbUserActionType {Id = DbUserActionType.UNDELETED, Name = "Undeleted"}
+                    new DbUserActionType {Id = DbUserActionType.UNDELETED, Name = "Undeleted"},
+                    new DbUserActionType {Id = DbUserActionType.UNKNOWN_DELETION, Name = "Unknown deletion"}
                 );
         }
     }
