@@ -184,7 +184,7 @@ namespace Rodgort.Services
                                     {
                                         AddIfNew(new DbUserAction
                                         {
-                                            UserActionTypeId = DbUserActionType.CLOSED,
+                                            UserActionTypeId = DbUserActionType.UNKNOWN_DELETION,
                                             Tag = null,
                                             PostId = questionId,
                                             Time = dateService.UtcNow,
