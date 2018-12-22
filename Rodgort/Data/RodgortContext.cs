@@ -21,6 +21,7 @@ namespace Rodgort.Data
         public DbSet<DbBurnakiFollow> BurnakiFollows { get; set; }
         public DbSet<DbUserAction> UserActions { get; set; }
         public DbSet<DbSiteUser> SiteUsers { get; set; }
+        public DbSet<DbSiteUserRole> SiteUserRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
