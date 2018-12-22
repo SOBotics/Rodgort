@@ -43,6 +43,8 @@
     <Compile Remove="Migrations\20181221012629_ReworkUserActions.Designer.cs" />
     <Compile Remove="Migrations\20181221020531_ReworkUserActions.cs" />
     <Compile Remove="Migrations\20181221020531_ReworkUserActions.Designer.cs" />
+    <Compile Remove="Migrations\20181222023730_SeedMyself.cs" />
+    <Compile Remove="Migrations\20181222023730_SeedMyself.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,6 +12,10 @@ export interface AuthDetails {
   GetClaim: (claim: string) => any;
 }
 
+export const TROGDOR_ROOM_OWNER = 'Trogdor Room Owner';
+export const RODGORT_ADMIN = 'Rodgort Admin';
+export const MODERATOR = 'Moderator';
+
 @Injectable()
 export class AuthService {
   public RawToken: string;
@@ -68,11 +72,11 @@ export class AuthService {
       if (timeToRefresh < 0) {
         return undefined;
       }
-    //   setTimeout(() => {
-    //     this.authenticationService.authenticationRefreshTokenPost().subscribe(token => {
-    //       this.Login(token);
-    //     });
-    //   }, timeToRefresh);
+      //   setTimeout(() => {
+      //     this.authenticationService.authenticationRefreshTokenPost().subscribe(token => {
+      //       this.Login(token);
+      //     });
+      //   }, timeToRefresh);
       return payload;
     }
   }

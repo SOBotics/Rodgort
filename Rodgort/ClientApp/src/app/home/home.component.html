@@ -7,6 +7,8 @@
         </li>
         of which
         <ul>
+            <li><a routerLink="/progress">{{statistics.requests.currentBurns}} {{statistics.requests.currentBurns == 1 ? 'is' : 'are'}} currently being burned</a></li>
+            <li><a routerLink="/requests" [queryParams]="{status:'featured'}">{{statistics.requests.proposedBurns}} {{statistics.requests.proposedBurns == 1 ? 'is' : 'are'}} featured</a></li>
             <li><a routerLink="/requests" [queryParams]="{approvalStatus:2}">{{statistics.requests.withApprovedTags}}
                     have an approved tag</a></li>
             <li><a routerLink="/requests" [queryParams]="{approvalStatus:1}">{{statistics.requests.requireApproval}}
@@ -36,10 +38,11 @@
     </ul>
 
     <hr />
-    <h2>Administration</h2>
-    <ul>
-        <li><a routerLink="/progress">Current burns</a></li>
-        <li><a routerLink="/logs">Logs</a></li>
-        <li><a href="/Hangfire">Hangfire</a></li>
-    </ul>
+    <ng-container *ngIf="isAdmin">
+        <h2>Administration</h2>
+        <ul>
+            <li><a routerLink="/logs">Logs</a></li>
+            <li><a href="/Hangfire">Hangfire</a></li>
+        </ul>
+    </ng-container>
 </div>

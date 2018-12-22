@@ -138,7 +138,9 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbRole>()
                 .HasData(
-                    new DbRole {Name = DbRole.TROGDOR_ROOM_OWNER }
+                    new DbRole {Name = DbRole.TROGDOR_ROOM_OWNER },
+                    new DbRole { Name = DbRole.MODERATOR },
+                    new DbRole { Name = DbRole.RODGORT_ADMIN }
                 );
         }
     }

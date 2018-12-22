@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService, TROGDOR_ROOM_OWNER } from '../services/auth.service';
 
 @Component({
   selector: 'app-requests',
@@ -9,10 +10,11 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./requests.component.scss'],
 })
 export class RequestsComponent implements OnInit {
-  public isAdmin = true;
   public loading = false;
   public pagingInfo: PagingInfo[];
   public showRejectedTags: boolean;
+
+  public isTrogdorRoomOwner = false;
 
   public filter = {
     tag: '',
@@ -30,7 +32,8 @@ export class RequestsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private httpClient: HttpClient
+    private httpClient: HttpClient,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
@@ -42,6 +45,10 @@ export class RequestsComponent implements OnInit {
       this.filter.pageNumber = +params['pageNumber'] || 1;
       this.filter.sortBy = params['sortBy'] || 'score';
       this.reloadData();
+    });
+
+    this.authService.GetAuthDetails().subscribe(d => {
+      this.isTrogdorRoomOwner = !!d.GetClaim(TROGDOR_ROOM_OWNER);
     });
   }
 

@@ -24,6 +24,9 @@ namespace Rodgort.Controllers
         {
             var burninationRequests = _context.MetaQuestions.Count();
 
+            var currentBurns = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED));
+            var proposedBurns = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_FEATURED));
+
             var burninationRequestsWithApproved = _context.MetaQuestions.Count(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED));
             var burninationRequestsRequireApproval = _context.MetaQuestions.Count(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == DbMetaQuestionTagStatus.PENDING));
             
@@ -60,6 +63,9 @@ namespace Rodgort.Controllers
                 Requests = new
                 {
                     Total = burninationRequests,
+
+                    CurrentBurns = currentBurns,
+                    ProposedBurns = proposedBurns,
 
                     WithApprovedTags = burninationRequestsWithApproved,
                     RequireApproval = burninationRequestsRequireApproval,
