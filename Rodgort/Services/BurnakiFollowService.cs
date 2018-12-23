@@ -179,10 +179,10 @@ namespace Rodgort.Services
                                     }
                                 }
 
-                                var returnedItemLookup = revisions.Items.ToDictionary(i => i.PostId, i => i);
+                                var returnedItemLookup = revisions.Items.Select(i => i.PostId).Distinct().ToLookup(a => a);
                                 foreach (var questionId in questionIdList)
                                 {
-                                    if (!returnedItemLookup.ContainsKey(questionId))
+                                    if (!returnedItemLookup.Contains(questionId))
                                     {
                                         AddIfNew(new DbUserAction
                                         {
