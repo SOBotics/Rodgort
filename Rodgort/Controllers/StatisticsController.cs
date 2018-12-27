@@ -153,8 +153,8 @@ namespace Rodgort.Controllers
                             {
                                 Date = gg.Key.Time,
                                 Total = 
-                                    bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.CLOSED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time) 
-                                    - bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.REOPENED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                                    bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.CLOSED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
+                                    - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.REOPENED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
                             .OrderBy(gg => gg.Date),
 
@@ -163,8 +163,8 @@ namespace Rodgort.Controllers
                             {
                                 Date = gg.Key.Time,
                                 Total =
-                                    bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
-                                    - bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.UNDELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                                    bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
+                                    - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.UNDELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
                             .OrderBy(gg => gg.Date),
 
@@ -173,8 +173,8 @@ namespace Rodgort.Controllers
                             {
                                 Date = gg.Key.Time,
                                 Total =
-                                    bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.REMOVED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
-                                    - bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.ADDED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                                    bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.REMOVED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
+                                    - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.ADDED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
                             .OrderBy(gg => gg.Date),
 
@@ -182,7 +182,7 @@ namespace Rodgort.Controllers
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
-                                Total = bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.UserId == -1 && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                                Total = bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.UserId == -1 && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
                             .OrderBy(gg => gg.Date),
 
