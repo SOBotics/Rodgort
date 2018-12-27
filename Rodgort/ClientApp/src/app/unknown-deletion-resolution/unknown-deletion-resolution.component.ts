@@ -71,6 +71,11 @@ export class UnknownDeletionResolutionComponent implements OnInit {
             const date = revisionDateInfo.getAttribute('title');
             const userInfo = element.querySelector('.revcell4 .user-details > a');
 
+            // Could be a deleted user
+            if (!userInfo) {
+              return;
+            }
+
             const match = userInfo.getAttribute('href').match(/\/users\/(\d+)/);
             const userId = parseInt(match[1], 10);
 
