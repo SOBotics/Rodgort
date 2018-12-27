@@ -1,0 +1,21 @@
+<div *ngIf="!getRevision">
+  Please install the userscript
+</div>
+
+<div *ngIf="getRevision">
+  Userscript detected!
+  <table *ngIf="postsToVisit" class="table">
+    <thead>
+      <tr>
+        <th>Post Id</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let postToVisit of postsToVisit">
+        <td>{{postToVisit.postId}}</td>
+        <td>{{postToVisit.status}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

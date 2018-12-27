@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
+using Rodgort.Utilities;
 
 namespace Rodgort.Controllers
 {
@@ -90,7 +91,7 @@ namespace Rodgort.Controllers
         [HttpGet("Leaderboard/Current")]
         public object CurrentLeaderboard()
         {
-            var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER, "true");
+            var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER);
             var burnsData = _context.MetaQuestions.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED))
                 .Select(mq => new
                 {
