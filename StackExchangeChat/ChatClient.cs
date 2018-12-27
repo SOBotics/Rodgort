@@ -13,6 +13,8 @@ namespace StackExchangeChat
 {
     public class ChatClient
     {
+        public const int MAX_MESSAGE_LENGTH = 500;
+
         private readonly SiteAuthenticator _siteAuthenticator;
         private readonly HttpClientWithHandler _httpClient;
 

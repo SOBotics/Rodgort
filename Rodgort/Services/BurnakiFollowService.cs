@@ -112,7 +112,29 @@ namespace Rodgort.Services
                                 if (!questionIdList.Any())
                                     return;
 
-                                await chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, $"Processing {string.Join(", ", questionIdList)} from room {roomId}");
+                                var messages = new List<string>();
+                                var tempIds = new List<int>();
+                                foreach (var questionId in questionIdList)
+                                {
+                                    var message = GetProcessingMessage(tempIds.Concat(new[] {questionId}));
+                                    if (message.Length > ChatClient.MAX_MESSAGE_LENGTH)
+                                    {
+                                        messages.Add(GetProcessingMessage(tempIds));
+                                        tempIds.Clear();
+                                    }
+
+                                    tempIds.Add(questionId);
+                                }
+                                if (tempIds.Any())
+                                    messages.Add(GetProcessingMessage(tempIds));
+
+                                string GetProcessingMessage(IEnumerable<int> qIds)
+                                {
+                                    return $"Processing {string.Join(", ", qIds)} from room {roomId}";
+                                }
+
+                                foreach (var message in messages)
+                                    await chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, message);
 
                                 var apiClient = _serviceProvider.GetRequiredService<ApiClient>();
                                 var revisions = await apiClient.Revisions("stackoverflow.com", questionIdList);
