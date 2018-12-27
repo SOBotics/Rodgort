@@ -189,7 +189,7 @@ export class QuestionCountGraphComponent implements OnInit {
         enabled: false
       },
       legend: {
-        enabled: false
+        enabled: this.closuresOverTime || this.deletionsOverTime || this.retagsOverTime || this.roombasOverTime
       },
       series: series
     });
