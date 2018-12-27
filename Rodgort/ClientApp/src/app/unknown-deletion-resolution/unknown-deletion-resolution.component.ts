@@ -117,7 +117,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
                 this.httpClient.post('/api/admin/ResolveUnresolvedDeletion', requests, {
                   headers: { 'Authorization': 'Bearer ' + d.RawToken }
                 })
-                  .subscribe(d => {
+                  .subscribe(_ => {
                     postToVisit.status = 'done';
                     setTimeout(processNext, 5000);
                   });
