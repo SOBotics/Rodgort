@@ -51,7 +51,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
   public startProcessing() {
     let i = 0;
     const processNext = () => {
-      if (i >= this.postsToVisit.length - 1) {
+      if (i > this.postsToVisit.length - 1) {
         return;
       }
 
