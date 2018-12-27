@@ -187,10 +187,10 @@ namespace Rodgort.Controllers
                             .OrderBy(gg => gg.Date),
 
                         Overtime = bt.Actions.Where(a => a.Time > firstTime)
-                            .GroupBy(a => a.User)
+                            .GroupBy(a => new { a.User, a.UserId })
                             .Select(g => new
                             {
-                                User = g.Key,
+                                g.Key.User,
                                 Times = g.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
                                     .Select(gg => new
                                     {
@@ -202,7 +202,7 @@ namespace Rodgort.Controllers
                             .OrderByDescending(g => g.Times.Max(tt => tt.Total))
                             .Take(10)
                         ,
-                        UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new { g.Type, g.User }).Select(g => new
+                        UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new { g.Type, g.User, g.UserId }).Select(g => new
                         {
                             g.Key.User,
                             g.Key.Type,
