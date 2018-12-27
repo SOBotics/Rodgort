@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
 using StackExchangeApi;
@@ -34,7 +35,7 @@ namespace Rodgort.Services
                 foreach (var siteUser in siteUsers.Items)
                 {
                     if (userLookup.ContainsKey(siteUser.UserId))
-                        userLookup[siteUser.UserId].DisplayName = siteUser.DisplayName;
+                        userLookup[siteUser.UserId].DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
                 }
 
                 context.SaveChanges();
@@ -55,7 +56,7 @@ namespace Rodgort.Services
                 foreach (var siteUser in siteUsers.Items)
                 {
                     if (userLookup.ContainsKey(siteUser.UserId))
-                        userLookup[siteUser.UserId].DisplayName = siteUser.DisplayName;
+                        userLookup[siteUser.UserId].DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
                 }
 
                 context.SaveChanges();
