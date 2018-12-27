@@ -15,6 +15,7 @@ import { RequestsComponent } from './requests/requests.component';
 import { ProgressComponent } from './progress/progress.component';
 import { ArraySortAscendingPipe } from '../pipes/ArraySortAscendingPipe';
 import { AuthService } from './services/auth.service';
+import { UnknownDeletionResolutionComponent } from './unknown-deletion-resolution/unknown-deletion-resolution.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { AuthService } from './services/auth.service';
     ArraySortPipe,
     ArraySortAscendingPipe,
     RequestsComponent,
-    ProgressComponent
+    ProgressComponent,
+    UnknownDeletionResolutionComponent
   ],
   imports: [
     ChartModule,

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
+using Rodgort.Utilities;
 
 namespace Rodgort.Controllers
 {
@@ -101,7 +102,7 @@ namespace Rodgort.Controllers
 
         private object GenerateBurnsData(IQueryable<DbMetaQuestion> query)
         {
-            var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER, "true");
+            var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER);
 
             var burnsData = query
                 .Select(mq => new

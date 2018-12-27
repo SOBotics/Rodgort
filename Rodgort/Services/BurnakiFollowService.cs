@@ -307,7 +307,7 @@ namespace Rodgort.Services
             var existingFollow = innerContext.BurnakiFollows.FirstOrDefault(bf => bf.BurnakiId == burnakiUserId && bf.RoomId == roomId && !bf.FollowEnded.HasValue);
             if (existingFollow != null)
             {
-                innerContext.BurnakiFollows.Remove(existingFollow);
+                existingFollow.FollowEnded = dateService.UtcNow;
                 innerContext.SaveChanges();
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $"Okay, unfollowing {burnakiUserId} in {roomId}");
             }
