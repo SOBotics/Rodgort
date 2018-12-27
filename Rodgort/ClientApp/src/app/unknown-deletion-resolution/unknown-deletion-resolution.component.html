@@ -3,7 +3,7 @@
 </div>
 
 <div *ngIf="getRevision">
-  Userscript detected!
+  <a href="javascript:void" (click)="StartProcessing()">Start Processing (This will make a request every 5 seconds using your account)</a>
   <table *ngIf="postsToVisit" class="table">
     <thead>
       <tr>
