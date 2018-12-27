@@ -90,8 +90,20 @@ namespace Rodgort.Controllers
         [HttpGet("Leaderboard/Current")]
         public object CurrentLeaderboard()
         {
+            return GenerateBurnsData(_context.MetaQuestions.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED)));
+        }
+
+        [HttpGet("Leaderboard")]
+        public object LeaderboardForId(int metaQuestionId)
+        {
+            return GenerateBurnsData(_context.MetaQuestions.Where(mq => mq.Id == metaQuestionId));
+        }
+
+        private object GenerateBurnsData(IQueryable<DbMetaQuestion> query)
+        {
             var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER, "true");
-            var burnsData = _context.MetaQuestions.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED))
+
+            var burnsData = query
                 .Select(mq => new
                 {
                     mq.FeaturedStarted,
@@ -111,12 +123,12 @@ namespace Rodgort.Controllers
                                 Actions = _context.UserActions
                                     .Where(ua => isRoomOwner || ua.Time > mq.BurnStarted)
                                     .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
-                                {
-                                    ua.PostId,
-                                    User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
-                                    ua.Time,
-                                    Type = ua.UserActionType.Name
-                                }).ToList()
+                                    {
+                                        ua.PostId,
+                                        User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
+                                        ua.Time,
+                                        Type = ua.UserActionType.Name
+                                    }).ToList()
                             }).ToList()
                 }).ToList();
 
@@ -148,12 +160,12 @@ namespace Rodgort.Controllers
                             .OrderByDescending(g => g.Times.Max(tt => tt.Total))
                             .Take(10)
                         ,
-                        UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new {g.Type, g.User}).Select(g => new
+                        UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new { g.Type, g.User }).Select(g => new
                         {
                             g.Key.User,
                             g.Key.Type,
                             Total = g.Select(gg => gg.PostId).Distinct().Count()
-                        }), 
+                        }),
                         Totals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => g.Type).Select(g => new
                         {
                             Type = g.Key,

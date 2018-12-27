@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
 import { AuthService } from '../services/auth.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-progress',
@@ -13,15 +14,31 @@ export class ProgressComponent implements OnInit {
   public burns: any;
   public chart: Chart;
 
+  public filter = {
+    metaQuestionId: -1
+  };
+
   constructor(
     private httpClient: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
+    private route: ActivatedRoute,
   ) { }
 
   ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      this.filter.metaQuestionId = +params['metaQuestionId'] || -1;
+      this.reloadData();
+    });
+  }
+
+  private reloadData() {
     this.authService.GetAuthDetails().subscribe(d => {
-      this.httpClient.get('/api/statistics/leaderboard/current', {
-        headers: { 'Authorization': 'Bearer ' + d.RawToken}
+      const endpoint = this.filter.metaQuestionId >= 0 ?
+        `/api/statistics/leaderboard?metaQuestionId=${this.filter.metaQuestionId}`
+        : '/api/statistics/leaderboard/current';
+
+      this.httpClient.get(endpoint, {
+        headers: { 'Authorization': 'Bearer ' + d.RawToken }
       })
         .subscribe((data: any) => {
           this.burns = data.burns;
@@ -33,7 +50,7 @@ export class ProgressComponent implements OnInit {
 
           if (firstTag.featuredStarted && firstTag.featuredEnded) {
             bands.push({
-              color: 'rgb(251, 237, 182)',
+              color: '#fbedb6d6',
               from: this.toUtcDateTime(firstTag.featuredStarted),
               to: this.toUtcDateTime(firstTag.featuredEnded),
               label: {
@@ -62,7 +79,7 @@ export class ProgressComponent implements OnInit {
 
           if (firstTag.burnStarted && firstTag.burnEnded) {
             bands.push({
-              color: 'rgb(251, 237, 182)',
+              color: '#fbbdb6d6',
               from: this.toUtcDateTime(firstTag.burnStarted),
               to: this.toUtcDateTime(firstTag.burnEnded),
               label: {
