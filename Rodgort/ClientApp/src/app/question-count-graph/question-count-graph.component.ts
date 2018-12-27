@@ -12,6 +12,15 @@ export class QuestionCountGraphComponent implements OnInit {
   @Input()
   public data: any;
   @Input()
+  public closuresOverTime: any;
+  @Input()
+  public deletionsOverTime: any;
+  @Input()
+  public retagsOverTime: any;
+  @Input()
+  public roombasOverTime: any;
+
+  @Input()
   public featuredStarted?: string;
   @Input()
   public featuredEnded?: string;
@@ -87,12 +96,50 @@ export class QuestionCountGraphComponent implements OnInit {
 
     const series: { name: string, data: [number, number][] }[] = [];
     series.push({
-      name: '',
+      name: 'Total',
       data: this.data.map(gd => {
         const utcDate = this.toUtcDateTime(gd.dateTime);
         return [utcDate, gd.questionCount];
       })
     });
+
+    if (this.closuresOverTime) {
+      series.push({
+        name: 'Closures',
+        data: this.closuresOverTime.map(gd => {
+          const utcDate = this.toUtcDateTime(gd.date);
+          return [utcDate, gd.total];
+        })
+      });
+    }
+    if (this.deletionsOverTime) {
+      series.push({
+        name: 'Deletions',
+        data: this.deletionsOverTime.map(gd => {
+          const utcDate = this.toUtcDateTime(gd.date);
+          return [utcDate, gd.total];
+        })
+      });
+    }
+    if (this.retagsOverTime) {
+      series.push({
+        name: 'Retags',
+        data: this.retagsOverTime.map(gd => {
+          const utcDate = this.toUtcDateTime(gd.date);
+          return [utcDate, gd.total];
+        })
+      });
+    }
+    if (this.roombasOverTime) {
+      series.push({
+        name: 'Roombas',
+        data: this.roombasOverTime.map(gd => {
+          const utcDate = this.toUtcDateTime(gd.date);
+          return [utcDate, gd.total];
+        })
+      });
+    }
+
     this.chart = new Chart({
       chart: {
         type: 'line',
@@ -112,7 +159,24 @@ export class QuestionCountGraphComponent implements OnInit {
       },
       tooltip: {
         formatter: function () {
-          return `${this.y} questions seen on ${Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)}`;
+          console.log(this.series.name);
+          const actionType =
+            this.series.name === 'Total'
+              ? 'seen on'
+              : this.series.name === 'Closures'
+                ? 'closed by'
+                : this.series.name === 'Deletions'
+                  ? 'deleted by'
+                  : this.series.name === 'Retags'
+                    ? 'retagged by'
+                    : this.series.name === 'Roombas'
+                      ? 'roomba\'d by'
+                      : null;
+
+          if (actionType) {
+            return `${this.y} questions ${actionType} ${Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)}`;
+          }
+          return '';
         }
       },
       yAxis: {

@@ -126,8 +126,10 @@ namespace Rodgort.Controllers
                                     .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                     {
                                         ua.PostId,
+                                        UserId = ua.SiteUserId,
                                         User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
                                         ua.Time,
+                                        TypeId = ua.UserActionTypeId,
                                         Type = ua.UserActionType.Name
                                     }).ToList()
                             }).ToList()
@@ -145,6 +147,45 @@ namespace Rodgort.Controllers
                         bt.Tag,
                         bt.NumberOfQuestions,
                         bt.QuestionCountOverTime,
+
+                        ClosuresOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                            .Select(gg => new
+                            {
+                                Date = gg.Key.Time,
+                                Total = 
+                                    bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.CLOSED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time) 
+                                    - bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.REOPENED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                            })
+                            .OrderBy(gg => gg.Date),
+
+                        DeletionsOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                            .Select(gg => new
+                            {
+                                Date = gg.Key.Time,
+                                Total =
+                                    bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                                    - bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.UNDELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                            })
+                            .OrderBy(gg => gg.Date),
+
+                        RetagsOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                            .Select(gg => new
+                            {
+                                Date = gg.Key.Time,
+                                Total =
+                                    bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.REMOVED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                                    - bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.ADDED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                            })
+                            .OrderBy(gg => gg.Date),
+
+                        RoombasOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                            .Select(gg => new
+                            {
+                                Date = gg.Key.Time,
+                                Total = bt.Actions.Count(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.UserId == -1 && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
+                            })
+                            .OrderBy(gg => gg.Date),
+
                         Overtime = bt.Actions.Where(a => a.Time > firstTime)
                             .GroupBy(a => a.User)
                             .Select(g => new
