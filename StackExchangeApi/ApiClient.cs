@@ -20,7 +20,6 @@ namespace StackExchangeApi
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ApiClient> _logger;
-        private readonly string _accessToken;
         private readonly string _appKey;
 
         public static IObservable<int> QuotaRemaining;
@@ -29,14 +28,14 @@ namespace StackExchangeApi
         public static object TaskLocker = new object();
         public static Task ExecutingTask = Task.CompletedTask;
 
-        private static Action<int> m_UpdateQuota;
+        private static Action<int> _updateQuota;
 
         static ApiClient()
         {
             var replaySubject = new ReplaySubject<int>(1);
             Observable.Create<int>(o =>
             {
-                m_UpdateQuota = o.OnNext;
+                _updateQuota = o.OnNext;
                 return Disposable.Empty;
             }).Subscribe(replaySubject);
 
@@ -74,7 +73,7 @@ namespace StackExchangeApi
             async Task PostProcess(Task<TResponseType> executingTask)
             {
                 var returnedItem = await executingTask;
-                m_UpdateQuota(returnedItem.QuotaRemaining);
+                _updateQuota(returnedItem.QuotaRemaining);
                 _logger.LogInformation($"Finished request {url}. Remaining quota: " + returnedItem.QuotaRemaining);
                 if (returnedItem.Backoff.HasValue)
                     await Task.Delay(TimeSpan.FromSeconds(returnedItem.Backoff.Value));
