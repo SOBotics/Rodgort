@@ -64,7 +64,8 @@ namespace Rodgort.Controllers
                         continue;
 
                     var tag = requestItem.Tag ?? matchedUnknown.Tag;
-                    _context.UserActions.Add(new DbUserAction
+
+                    AddIfNew(new DbUserAction
                     {
                         PostId = matchedUnknown.PostId,
                         Tag = tag,
@@ -72,6 +73,21 @@ namespace Rodgort.Controllers
                         Time = requestItem.DateTime,
                         UserActionTypeId = requestItem.ActionTypeId
                     });
+
+
+                    void AddIfNew(DbUserAction action)
+                    {
+                        if (!_context.UserActions.Any(
+                            ua => ua.UserActionTypeId == action.UserActionTypeId
+                                  && ua.Tag == action.Tag
+                                  && ua.PostId == action.PostId
+                                  && ua.Time == action.Time
+                                  && ua.SiteUserId == action.SiteUserId
+                        ))
+                        {
+                            _context.UserActions.Add(action);
+                        }
+                    }
                 }
 
                 _context.UserActions.Remove(matchedUnknown);
