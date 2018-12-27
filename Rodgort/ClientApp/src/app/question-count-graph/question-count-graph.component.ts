@@ -38,7 +38,7 @@ export class QuestionCountGraphComponent implements OnInit {
     const lines = [];
     if (this.featuredStarted && this.featuredEnded) {
       bands.push({
-        color: '#fbedb6d6',
+        color: 'rgb(251, 237, 182)',
         from: this.toUtcDateTime(this.featuredStarted),
         to: this.toUtcDateTime(this.featuredEnded),
         label: {
@@ -67,7 +67,7 @@ export class QuestionCountGraphComponent implements OnInit {
 
     if (this.burnStarted && this.burnEnded) {
       bands.push({
-        color: '#fbbdb6d6',
+        color: 'rgb(251, 189, 182)',
         from: this.toUtcDateTime(this.burnStarted),
         to: this.toUtcDateTime(this.burnEnded),
         label: {
