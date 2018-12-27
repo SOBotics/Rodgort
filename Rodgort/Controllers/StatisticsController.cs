@@ -123,6 +123,7 @@ namespace Rodgort.Controllers
                                     .Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
                                 Actions = _context.UserActions
                                     .Where(ua => isRoomOwner || ua.Time > mq.BurnStarted)
+                                    .Where(s => s.Time > (mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded))
                                     .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                     {
                                         ua.PostId,
