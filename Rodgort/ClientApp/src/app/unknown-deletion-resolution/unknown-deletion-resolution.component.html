@@ -1,9 +1,10 @@
 <div *ngIf="!getRevision">
   Please install the userscript <a href="https://gitlab.com/rjrudman/Rodgort/raw/master/unknown-deletion-resolver.user.js">here</a>.
+  <b>Warning, this userscript gives rodgort access to access https://stackoverflow.com/posts/{id}/revisions VIA YOUR STACK OVERFLOW ACCOUNT.</b>
 </div>
 
 <div *ngIf="getRevision">
-  <a href="javascript:void" (click)="StartProcessing()">Start Processing (This will make a request every 5 seconds using your account)</a>
+  <a href="javascript:void" (click)="startProcessing()">Start Processing (This will make a request every 5 seconds to a posts revision page using your account)</a>
   <table *ngIf="postsToVisit" class="table">
     <thead>
       <tr>
