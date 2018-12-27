@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -145,7 +146,13 @@ namespace Rodgort.Controllers
 
             var token = CreateJwtToken(claims, signingKey);
 
-            return Redirect($"{loginState.RedirectUri}?access_token={token}");
+            var uriBuilder = new UriBuilder(loginState.RedirectUri);
+            var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+            query["access_token"] = token;
+            uriBuilder.Query = query.ToString();
+            var redirectUrl = uriBuilder.ToString();
+
+            return Redirect($"{redirectUrl}?access_token={token}");
         }
 
         private byte[] GetSigningKey()
