@@ -12,7 +12,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
 
   public postsToVisit = [];
 
-  private userIdRegex = /\/users\/(\d+)/g;
+  private userIdRegex = /\/users\/(\-?\d+)/g;
 
   private authDetails: AuthDetails;
 
@@ -76,7 +76,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
               return;
             }
 
-            const match = userInfo.getAttribute('href').match(/\/users\/(\d+)/);
+            const match = userInfo.getAttribute('href').match(/\/users\/(\-?\d+)/);
             const userId = parseInt(match[1], 10);
 
             const postTags = Array.from(element.nextElementSibling.querySelectorAll('.post-tag > span'));
@@ -136,6 +136,8 @@ export class UnknownDeletionResolutionComponent implements OnInit {
               postToVisit.status = 'done';
               setTimeout(processNext, 5000);
             });
+        } else {
+          console.error('Could not find any revisions for post ' + postToVisit.postId);
         }
       });
     };
