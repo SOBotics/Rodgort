@@ -4,7 +4,7 @@
 </div>
 
 <div *ngIf="getRevision">
-  <a href="javascript:void" (click)="startProcessing()">Start Processing (This will make a request every 5 seconds to a posts revision page using your account)</a>
+  <a href="javascript:void(0);" (click)="startProcessing()">Start Processing (This will make a request every 5 seconds to a posts revision page using your account)</a>
   <table *ngIf="postsToVisit" class="table">
     <thead>
       <tr>
