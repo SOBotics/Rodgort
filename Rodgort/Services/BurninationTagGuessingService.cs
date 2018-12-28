@@ -68,7 +68,9 @@ namespace Rodgort.Services
                         metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
                     else
                     {
-                        var trackedElsewhere = _context.MetaQuestionTags.Any(t => t.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED);
+                        var trackedElsewhere = _context.MetaQuestionTags.Any(t => 
+                            t.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
+                            && t.TagName == matchedTagName);
                         
                         // If we find a tag marked 'tracked elsewhere', but can't find any other tracked tags, put it back to requires approval
                         if (metaQuestionTag.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE && !trackedElsewhere)
