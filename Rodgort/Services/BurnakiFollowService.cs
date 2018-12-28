@@ -247,14 +247,12 @@ namespace Rodgort.Services
                                     }
                                 }
 
-                                if (hasNewUser)
-                                {
-                                    RecurringJob.Trigger(UserDisplayNameService.SYNC_USERS_NO_NAME);
-                                }
-
                                 _logger.LogInformation("Saving user actions...");
                                 innerContext.SaveChanges();
                                 _logger.LogInformation("User actions saved");
+
+                                if (hasNewUser)
+                                    RecurringJob.Trigger(UserDisplayNameService.SYNC_USERS_NO_NAME);
                             }
                         });
                     }, cancellationToken);
