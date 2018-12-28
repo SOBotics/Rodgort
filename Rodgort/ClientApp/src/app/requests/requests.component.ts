@@ -84,6 +84,9 @@ export class RequestsComponent implements OnInit {
       tracked
     }).subscribe(_ => {
       tag.trackingStatusName = tracked ? 'Tracked' : 'Ignored';
+      if (!tracked) {
+        tag.visibleIgnored = true;
+      }
     });
   }
 

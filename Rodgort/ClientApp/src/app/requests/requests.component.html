@@ -106,7 +106,7 @@
             </div>
             <div class="tags">
                 <ng-container *ngFor="let tag of question.mainTags | sort:'statusId'">
-                    <div *ngIf="showIgnoredTags || tag.trackingStatusName !== 'Ignored'" class="mt-3 p-2" [class.tag-ignored]="tag.trackingStatusName === 'Ignored'">
+                    <div *ngIf="showIgnoredTags || tag.visibleIgnored || tag.trackingStatusName !== 'Ignored'" class="mt-3 p-2" [class.tag-ignored]="tag.trackingStatusName === 'Ignored'">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="row pb-3">
