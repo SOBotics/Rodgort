@@ -7,8 +7,10 @@
         </li>
         of which
         <ul>
-            <li><a routerLink="/progress">{{statistics.requests.currentBurns}} {{statistics.requests.currentBurns == 1 ? 'is' : 'are'}} currently being burned</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'featured'}">{{statistics.requests.proposedBurns}} {{statistics.requests.proposedBurns == 1 ? 'is' : 'are'}} featured</a></li>
+            <li><a routerLink="/progress">{{statistics.requests.currentBurns}} {{statistics.requests.currentBurns
+                    == 1 ? 'is' : 'are'}} currently being burned</a></li>
+            <li><a routerLink="/requests" [queryParams]="{status:'featured'}">{{statistics.requests.proposedBurns}}
+                    {{statistics.requests.proposedBurns == 1 ? 'is' : 'are'}} featured</a></li>
             <li><a routerLink="/requests" [queryParams]="{trackingStatusId:2}">{{statistics.requests.withTrackedTags}}
                     have a tracked tag</a></li>
             <li><a routerLink="/requests" [queryParams]="{trackingStatusId:1}">{{statistics.requests.requireTrackingApproval}}
@@ -32,7 +34,8 @@
         <ul>
             <li>{{statistics.tags.noQuestions}} have no questions attached to them</li>
             <li>{{statistics.tags.synonymised}} were synonomised</li>
-            <li>{{statistics.tags.hasQuestionsAndAttachedToCompletedRequest}} have questions despite being found on a
+            <li>{{statistics.tags.hasQuestionsAndAttachedToCompletedRequest}} have questions despite being found on
+                a
                 status-completed request</li>
         </ul>
     </ul>
@@ -43,7 +46,8 @@
         <ul>
             <li><a routerLink="/logs">Logs</a></li>
             <li><a href="/Hangfire">Hangfire</a></li>
-            <li><a href="/unknown-deletion-resolution">Unknown deletion resolution ({{statistics.admin.unknownDeletions}})</a></li>
+            <li><a href="/unknown-deletion-resolution">Unknown deletion resolution
+                    ({{statistics.admin.unknownDeletions}})</a></li>
         </ul>
     </ng-container>
 </div>

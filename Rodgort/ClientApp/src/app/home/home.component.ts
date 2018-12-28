@@ -26,6 +26,9 @@ export class HomeComponent implements OnInit {
       noQuestions: 0,
       synonymised: 0,
       hasQuestionsAndAttachedToCompletedRequest: 0
+    },
+    admin: {
+      unknownDeletions: 0
     }
   };
 
