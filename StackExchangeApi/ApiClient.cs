@@ -129,7 +129,7 @@ namespace StackExchangeApi
         {
             var postIdsList = postIds.ToList();
             var postIdsString = string.Join(";", postIdsList);
-            return MakeRequest<ApiItemsResponse<RevisionResponse>>($"{BASE_URL}/posts/{postIdsString}/revisions", new Dictionary<string, string>
+            return ApplyWithPaging<RevisionResponse>($"{BASE_URL}/posts/{postIdsString}/revisions", new Dictionary<string, string>
             {
                 {"site", siteName},
                 {"filter", "!FcbKgREm*513I8Z7LLLeTy.2SW"},
