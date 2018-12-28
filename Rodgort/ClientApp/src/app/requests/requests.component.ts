@@ -12,14 +12,14 @@ import { AuthService, TROGDOR_ROOM_OWNER } from '../services/auth.service';
 export class RequestsComponent implements OnInit {
   public loading = false;
   public pagingInfo: PagingInfo[];
-  public showRejectedTags: boolean;
+  public showIgnoredTags: boolean;
 
   public isTrogdorRoomOwner = false;
 
   public filter = {
     tag: '',
-    approvalStatus: -1,
-    status: '',
+    trackingStatusId: -1,
+    trackingStatusName: '',
     pageNumber: 1,
     hasQuestions: 'true',
     sortBy: 'score'
@@ -39,8 +39,8 @@ export class RequestsComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.filter.tag = params['tag'] || '';
-      this.filter.approvalStatus = +params['approvalStatus'] || -1;
-      this.filter.status = params['status'] || '';
+      this.filter.trackingStatusId = +params['trackingStatusId'] || -1;
+      this.filter.trackingStatusName = params['trackingStatusName'] || '';
       this.filter.hasQuestions = params['hasQuestions'] || 'any';
       this.filter.pageNumber = +params['pageNumber'] || 1;
       this.filter.sortBy = params['sortBy'] || 'score';
@@ -56,8 +56,8 @@ export class RequestsComponent implements OnInit {
     const query =
       `/api/MetaQuestions` +
       `?tag=${this.filter.tag}` +
-      `&approvalStatus=${this.filter.approvalStatus}` +
-      `&status=${this.filter.status}` +
+      `&trackingStatusId=${this.filter.trackingStatusId}` +
+      `&trackingStatusName=${this.filter.trackingStatusName}` +
       `&hasQuestions=${this.filter.hasQuestions}` +
       `&sortBy=${this.filter.sortBy}` +
       `&page=${this.filter.pageNumber}` +
@@ -77,13 +77,13 @@ export class RequestsComponent implements OnInit {
       });
   }
 
-  public setApprovalStatus(metaQuestionId: number, tag: any, approved: boolean) {
-    this.httpClient.post('/api/MetaQuestions/SetTagApprovalStatus', {
+  public setTagTrackingStatus(metaQuestionId: number, tag: any, tracked: boolean) {
+    this.httpClient.post('/api/MetaQuestions/SetTagTrackingStatus', {
       metaQuestionId,
       tagName: tag.tagName,
-      approved
+      tracked
     }).subscribe(_ => {
-      tag.status = approved ? 'Approved' : 'Rejected';
+      tag.trackingStatusName = tracked ? 'Tracked' : 'Ignored';
     });
   }
 
@@ -104,7 +104,7 @@ export class RequestsComponent implements OnInit {
 
       const matchedTag = question.mainTags.find((mt: any) => mt.tagName === newTagName);
 
-      if (matchedTag && matchedTag.status !== 'Rejected') {
+      if (matchedTag && matchedTag.status !== 'Ignored') {
         return;
       }
 
@@ -116,15 +116,14 @@ export class RequestsComponent implements OnInit {
         requestType: 'Burninate'
       }).subscribe(_ => {
         if (matchedTag) {
-          matchedTag.status = 'Approved';
+          matchedTag.status = 'Tracked';
           matchedTag.statusId = 2;
         } else {
           question.mainTags = question.mainTags.concat([{
             questionCountOverTime: [],
-            status: 'Approved',
+            status: 'Tracked',
             statusId: 2,
-            tagName: newTagName,
-            type: 'Burninate'
+            tagName: newTagName
           }]);
         }
       });

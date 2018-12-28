@@ -9,18 +9,18 @@
         <ul>
             <li><a routerLink="/progress">{{statistics.requests.currentBurns}} {{statistics.requests.currentBurns == 1 ? 'is' : 'are'}} currently being burned</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'featured'}">{{statistics.requests.proposedBurns}} {{statistics.requests.proposedBurns == 1 ? 'is' : 'are'}} featured</a></li>
-            <li><a routerLink="/requests" [queryParams]="{approvalStatus:2}">{{statistics.requests.withApprovedTags}}
-                    have an approved tag</a></li>
-            <li><a routerLink="/requests" [queryParams]="{approvalStatus:1}">{{statistics.requests.requireApproval}}
-                    require tag approval</a></li>
+            <li><a routerLink="/requests" [queryParams]="{trackingStatusId:2}">{{statistics.requests.withTrackedTags}}
+                    have a tracked tag</a></li>
+            <li><a routerLink="/requests" [queryParams]="{trackingStatusId:1}">{{statistics.requests.requireTrackingApproval}}
+                    require tag tracking approval</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined}}
                     were declined</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed}}
                     were completed</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}}
-                    are completed but still have approved tags with questions</a></li>
+                    are completed but still have tracked tags with questions</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'none', hasQuestions: 'no'}">{{statistics.requests.noStatusButCompleted}}
-                    have no status but none of the approved tags have questions</a></li>
+                    have no status but none of the tracked tags have questions</a></li>
         </ul>
     </ul>
 

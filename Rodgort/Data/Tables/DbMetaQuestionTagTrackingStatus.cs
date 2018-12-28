@@ -2,14 +2,14 @@
 
 namespace Rodgort.Data.Tables
 {
-    public class DbRequestType
+    public class DbMetaQuestionTagTrackingStatus
     {
-        public const int UNKNOWN = 1;
-        public const int SYNONYM = 2;
-        public const int MERGE = 3;
-        public const int BURNINATE = 4;
+        public const int REQUIRES_TRACKING_APPROVAL = 1;
+        public const int TRACKED = 2;
+        public const int IGNORED = 3;
         
         public int Id { get; set; }
+
         public string Name { get; set; }
 
         public List<DbMetaQuestionTag> MetaQuestionTags { get; set; }

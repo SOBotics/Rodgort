@@ -22,7 +22,7 @@ namespace Rodgort.Controllers
         [HttpGet]
         public object Get(
             string tag = null,
-            int approvalStatus = -1,
+            int trackingStatusId = -1,
             string status = null,
             string hasQuestions = null,
             string sortBy = null,
@@ -33,8 +33,8 @@ namespace Rodgort.Controllers
             if (!string.IsNullOrWhiteSpace(tag))
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == tag));
 
-            if (approvalStatus > 0)
-                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.StatusId == approvalStatus));
+            if (trackingStatusId > 0)
+                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == trackingStatusId));
 
             var statusFlags = DbMetaTag.StatusFlags;
             var requestTypes = DbMetaTag.RequestTypes;
@@ -58,8 +58,8 @@ namespace Rodgort.Controllers
                     MainTags = mq.MetaQuestionTags.Select(mqt => new
                     {
                         mqt.TagName,
-                        mqt.StatusId,
-                        Status = mqt.Status.Name,
+                        mqt.TrackingStatusId,
+                        TrackingStatusName = mqt.TrackingStatus.Name,
                         NumQuestions = mqt.Tag.NumberOfQuestions,
                         SynonymOf = mqt.Tag.SynonymOfTagName,
                         QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount}).OrderBy(s => s.DateTime)
@@ -72,7 +72,7 @@ namespace Rodgort.Controllers
                     {
                         mqt.TagName
                     }),
-                    NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.StatusId == DbMetaQuestionTagStatus.APPROVED)
+                    NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
                         .Select(mqt => mqt.Tag.NumberOfQuestions)
                         .OrderByDescending(mqt => mqt)
                         .FirstOrDefault(),
@@ -102,61 +102,32 @@ namespace Rodgort.Controllers
             return result;
         }
 
-        [HttpPost("SetTagApprovalStatus")]
-        public void SetTagApprovalStatus([FromBody] SetApprovalStatusRequest request)
+        [HttpPost("SetTagTrackingStatus")]
+        public void SetTagTrackingStatus([FromBody] SetTagTrackingStatusRequest request)
         {
             var matchingQuestionMetaTag = _context.MetaQuestionTags.FirstOrDefault(mqt => mqt.MetaQuestionId == request.MetaQuestionId && mqt.TagName == request.TagName);
             if (matchingQuestionMetaTag != null)
             {
                 var newStatusId =
-                    request.Approved
-                        ? DbMetaQuestionTagStatus.APPROVED
-                        : DbMetaQuestionTagStatus.REJECTED;
+                    request.Tracked
+                        ? DbMetaQuestionTagTrackingStatus.TRACKED
+                        : DbMetaQuestionTagTrackingStatus.IGNORED;
 
-                if (matchingQuestionMetaTag.StatusId != newStatusId)
+                if (matchingQuestionMetaTag.TrackingStatusId != newStatusId)
                 {
-                    matchingQuestionMetaTag.StatusId = newStatusId;
+                    matchingQuestionMetaTag.TrackingStatusId = newStatusId;
                     _context.SaveChanges();
                 }
             }
         }
 
-        public class SetApprovalStatusRequest
+        public class SetTagTrackingStatusRequest
         {
             public int MetaQuestionId { get; set; }
             public string TagName { get; set; }
-            public bool Approved { get; set; }
+            public bool Tracked { get; set; }
         }
-
-
-        [HttpPost("SetTagRequestType")]
-        public void SetTagRequestType([FromBody] SetTagRequestTypeRequest request)
-        {
-            var matchingQuestionMetaTag = _context.MetaQuestionTags.FirstOrDefault(mqt => mqt.MetaQuestionId == request.MetaQuestionId && mqt.TagName == request.TagName);
-            if (matchingQuestionMetaTag != null)
-            {
-                var matchingRequestType = _context.RequestTypes.FirstOrDefault(rt => rt.Name == request.RequestType);
-                if (matchingRequestType == null)
-                    throw new ArgumentException($"Request type {request.RequestType} invalid.");
-
-                var newRequestTypeId = matchingRequestType.Id;
-                
-                if (matchingQuestionMetaTag.RequestTypeId != newRequestTypeId)
-                {
-                    matchingQuestionMetaTag.RequestTypeId = newRequestTypeId;
-                    _context.SaveChanges();
-                }
-            }
-        }
-
-        public class SetTagRequestTypeRequest
-        {
-            public int MetaQuestionId { get; set; }
-            public string TagName { get; set; }
-            public string RequestType { get; set; }
-        }
-
-
+        
         [HttpPost("AddTag")]
         public void AddTag([FromBody] AddTagRequest request)
         {
@@ -166,14 +137,10 @@ namespace Rodgort.Controllers
 
             if (matchingQuestionMetaTag != null)
             {
-                var matchingRequestType = _context.RequestTypes.FirstOrDefault(rt => rt.Name == request.RequestType);
-                if (matchingRequestType == null)
-                    throw new ArgumentException($"Request type {request.RequestType} invalid.");
-
                 var alreadyExistingTag = matchingQuestionMetaTag.MetaQuestionTags.FirstOrDefault(mqt => mqt.TagName == request.TagName);
                 if (alreadyExistingTag != null)
                 {
-                    alreadyExistingTag.StatusId = DbMetaQuestionTagStatus.APPROVED;
+                    alreadyExistingTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
                 }
                 else
                 {
@@ -184,8 +151,7 @@ namespace Rodgort.Controllers
                     _context.MetaQuestionTags.Add(new DbMetaQuestionTag
                     {
                         MetaQuestionId = request.MetaQuestionId,
-                        RequestTypeId = matchingRequestType.Id,
-                        StatusId = DbMetaQuestionTagStatus.APPROVED,
+                        TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED,
                         TagName = request.TagName
                     });
                 }
@@ -198,7 +164,6 @@ namespace Rodgort.Controllers
         {
             public int MetaQuestionId { get; set; }
             public string TagName { get; set; }
-            public string RequestType { get; set; }
         }
     }
 }

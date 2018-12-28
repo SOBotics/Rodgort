@@ -15,7 +15,6 @@ namespace Rodgort.Data
         public DbSet<DbMetaQuestionMetaTag> MetaQuestionMetaTags { get; set; }
         public DbSet<DbTag> Tags { get; set; }
         public DbSet<DbMetaTag> MetaTags { get; set; }
-        public DbSet<DbRequestType> RequestTypes { get; set; }
         public DbSet<DbTagStatistics> TagStatistics { get; set; }
         public DbSet<DbLog> Logs { get; set; }
         public DbSet<DbBurnakiFollow> BurnakiFollows { get; set; }
@@ -46,18 +45,13 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbMetaQuestionTag>().ToTable("MetaQuestionTags");
             modelBuilder.Entity<DbMetaQuestionTag>().HasKey(mqt => new { mqt.MetaQuestionId, mqt.TagName });
-            modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.RequestType).WithMany(rt => rt.MetaQuestionTags).HasForeignKey(mqt => mqt.RequestTypeId);
-            modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.Status).WithMany(rt => rt.MetaQuestionTags).HasForeignKey(mqt => mqt.StatusId);
+            modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.TrackingStatus).WithMany(rt => rt.MetaQuestionTags).HasForeignKey(mqt => mqt.TrackingStatusId);
             modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.Tag).WithMany(t => t.MetaQuestionTags).HasForeignKey(mqt => mqt.TagName);
             modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.MetaQuestion).WithMany(mq => mq.MetaQuestionTags).HasForeignKey(mqt => mqt.MetaQuestionId);
             modelBuilder.Entity<DbMetaQuestionTag>().HasOne(mqt => mqt.SecondaryTag).WithMany(t => t.MetaQuestionSecondaryTags).IsRequired(false).HasForeignKey(mqt => mqt.SecondaryTagName);
 
-            modelBuilder.Entity<DbMetaQuestionTagStatus>().ToTable("MetaQuestionTagStatuses");
-            modelBuilder.Entity<DbMetaQuestionTagStatus>().HasKey(mqts => mqts.Id);
-
-            modelBuilder.Entity<DbRequestType>().ToTable("RequestTypes");
-            modelBuilder.Entity<DbRequestType>().HasKey(rt => rt.Id);
-            modelBuilder.Entity<DbRequestType>().Property(rt => rt.Id).ValueGeneratedNever();
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatus>().ToTable("MetaQuestionTagStatuses");
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatus>().HasKey(mqts => mqts.Id);
 
             modelBuilder.Entity<DbTag>().ToTable("Tags");
             modelBuilder.Entity<DbTag>().HasKey(tag => tag.Name);
@@ -102,15 +96,6 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasOne(mqmt => mqmt.MetaQuestion).WithMany(mq => mq.MetaQuestionMetaTags);
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasOne(mqmt => mqmt.MetaTag).WithMany(mq => mq.MetaQuestionMetaTags).HasForeignKey(mqmt => mqmt.TagName);
 
-            modelBuilder
-                .Entity<DbRequestType>()
-                .HasData(
-                    new DbRequestType {Id = DbRequestType.UNKNOWN, Name = "Unknown"},
-                    new DbRequestType {Id = DbRequestType.SYNONYM, Name = "Synonym"},
-                    new DbRequestType {Id = DbRequestType.MERGE, Name = "Merge"},
-                    new DbRequestType {Id = DbRequestType.BURNINATE, Name = "Burninate"}
-                );
-
             modelBuilder.Entity<DbMetaTag>()
                 .HasData(
                     new DbMetaTag {Name = DbMetaTag.STATUS_COMPLETED},
@@ -119,11 +104,11 @@ namespace Rodgort.Data
                     new DbMetaTag {Name = DbMetaTag.STATUS_FEATURED}
                 );
 
-            modelBuilder.Entity<DbMetaQuestionTagStatus>()
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatus>()
                 .HasData(
-                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.PENDING, Name = "Pending"},
-                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.APPROVED, Name = "Approved"},
-                    new DbMetaQuestionTagStatus {Id = DbMetaQuestionTagStatus.REJECTED, Name = "Rejected"}
+                    new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL, Name = "Requires Tracking Approval" },
+                    new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.TRACKED, Name = "Tracked"},
+                    new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.IGNORED, Name = "Ignored"}
                 );
 
             modelBuilder.Entity<DbUserActionType>()

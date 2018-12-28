@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rodgort.Data;
@@ -9,9 +10,10 @@ using Rodgort.Data;
 namespace Rodgort.Migrations
 {
     [DbContext(typeof(RodgortContext))]
-    partial class RodgortContextModelSnapshot : ModelSnapshot
+    [Migration("20181228005705_RenameApprovalStatusToTrackingStatusAndRemoveRequestType")]
+    partial class RenameApprovalStatusToTrackingStatusAndRemoveRequestType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -197,7 +199,7 @@ namespace Rodgort.Migrations
                     b.ToTable("MetaQuestionTagStatuses");
 
                     b.HasData(
-                        new { Id = 1, Name = "Requires Tracking Approval" },
+                        new { Id = 1, Name = "None" },
                         new { Id = 2, Name = "Tracked" },
                         new { Id = 3, Name = "Ignored" }
                     );

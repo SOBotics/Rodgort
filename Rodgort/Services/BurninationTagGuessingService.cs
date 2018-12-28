@@ -48,7 +48,7 @@ namespace Rodgort.Services
                     if (existingTags.ContainsKey(matchedTagName))
                     {
                         var matchedTag = existingTags[matchedTagName];
-                        if (matchedTag.StatusId == DbMetaQuestionTagStatus.PENDING)
+                        if (matchedTag.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
                             metaQuestionTag = matchedTag;
                         else
                             continue;
@@ -59,29 +59,14 @@ namespace Rodgort.Services
                         isNew = true;
                     }
 
-                    var metaTags = question.MetaQuestionMetaTags.ToLookup(t => t.TagName);
-                    var requestType = DbRequestType.UNKNOWN;
-
-                    var burnination = metaTags.Contains(DbMetaTag.BURNINATE_REQUEST);
-                    var synonym = metaTags.Contains(DbMetaTag.SYNONYM_REQUEST);
-                    var retag = metaTags.Contains(DbMetaTag.RETAG_REQUEST);
-
-                    if (burnination && !synonym)
-                        requestType = DbRequestType.BURNINATE;
-                    else if (synonym && !burnination)
-                        requestType = DbRequestType.SYNONYM;
-                    else if (retag && !burnination)
-                        requestType = DbRequestType.MERGE;
-
                     metaQuestionTag.MetaQuestion = question;
                     metaQuestionTag.TagName = matchedTagName;
-                    metaQuestionTag.RequestTypeId = requestType;
-
+                    
                     // If there's only one tag, and that tag is found in the title in the form of [tag], we can just approve it.
                     if (matchedTagNames.Count == 1 && question.Title.Contains($"[{matchedTagName}]"))
-                        metaQuestionTag.StatusId = DbMetaQuestionTagStatus.APPROVED;
+                        metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
                     else
-                        metaQuestionTag.StatusId = DbMetaQuestionTagStatus.PENDING;
+                        metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL;
                     
                     if (isNew)
                         _context.MetaQuestionTags.Add(metaQuestionTag); 
