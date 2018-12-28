@@ -35,6 +35,8 @@ namespace Rodgort.Controllers
             var declinedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_DECLINED));
             var completedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED));
 
+            var unknownDeletions = _context.UserActions.Count(ua => ua.UserActionTypeId == DbUserActionType.UNKNOWN_DELETION);
+
             var completedRequestsWithQuestions = _context.MetaQuestions.Count(mq => 
                 mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED)
                 && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).Any(mqt => mqt.Tag.NumberOfQuestions > 0)
@@ -84,6 +86,10 @@ namespace Rodgort.Controllers
                     noQuestions = tagsNoQuestions,
                     synonymised = synonomisedTags,
                     hasQuestionsAndAttachedToCompletedRequest = tagsQuestionsOnCompleted
+                },
+                Admin = new
+                {
+                    UnknownDeletions = unknownDeletions
                 }
             };
         }
