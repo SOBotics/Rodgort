@@ -48,7 +48,8 @@ namespace Rodgort.Services
                     if (existingTags.ContainsKey(matchedTagName))
                     {
                         var matchedTag = existingTags[matchedTagName];
-                        if (matchedTag.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
+                        if (matchedTag.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL 
+                            || matchedTag.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE)
                             metaQuestionTag = matchedTag;
                         else
                             continue;
@@ -62,11 +63,23 @@ namespace Rodgort.Services
                     metaQuestionTag.MetaQuestion = question;
                     metaQuestionTag.TagName = matchedTagName;
                     
-                    // If there's only one tag, and that tag is found in the title in the form of [tag], we can just approve it.
+                    // If there's only one tag, and that tag is found in the title in the form of [tag], we can just track it.
                     if (matchedTagNames.Count == 1 && question.Title.Contains($"[{matchedTagName}]"))
                         metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
                     else
-                        metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL;
+                    {
+                        var trackedElsewhere = _context.MetaQuestionTags.Any(t => t.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED);
+                        
+                        // If we find a tag marked 'tracked elsewhere', but can't find any other tracked tags, put it back to requires approval
+                        if (metaQuestionTag.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE && !trackedElsewhere)
+                            metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL;
+                        // Otherwise, if it's tracked elsewhere, mark it as such
+                        else if (trackedElsewhere)
+                            metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE;
+                        else
+                            metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL;
+                    }
+                        
                     
                     if (isNew)
                         _context.MetaQuestionTags.Add(metaQuestionTag); 

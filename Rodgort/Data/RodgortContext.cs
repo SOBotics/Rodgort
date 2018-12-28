@@ -106,9 +106,10 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatus>()
                 .HasData(
-                    new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL, Name = "Requires Tracking Approval" },
+                    new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL, Name = "Requires tracking approval" },
                     new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.TRACKED, Name = "Tracked"},
-                    new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.IGNORED, Name = "Ignored"}
+                    new DbMetaQuestionTagTrackingStatus {Id = DbMetaQuestionTagTrackingStatus.IGNORED, Name = "Ignored"},
+                    new DbMetaQuestionTagTrackingStatus { Id = DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE, Name = "Tracked elsewhere" }
                 );
 
             modelBuilder.Entity<DbUserActionType>()

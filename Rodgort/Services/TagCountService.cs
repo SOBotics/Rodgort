@@ -33,7 +33,7 @@ namespace Rodgort.Services
         {
             var tagsToCheck = _context.MetaQuestionTags
                 // The tag was approved
-                .Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
+                .Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE)
                 // If the request was declined, we don't need to watch the count
                 .Where(mqt => mqt.MetaQuestion.MetaQuestionMetaTags.All(mqmt => mqmt.TagName != DbMetaTag.STATUS_DECLINED))
                 .Select(mqt => mqt.Tag)

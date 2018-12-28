@@ -34,7 +34,11 @@ namespace Rodgort.Controllers
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == tag));
 
             if (trackingStatusId > 0)
-                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == trackingStatusId));
+            {
+                query = trackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
+                    ? query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE))
+                    : query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == trackingStatusId));
+            }
 
             var statusFlags = DbMetaTag.StatusFlags;
             var requestTypes = DbMetaTag.RequestTypes;
@@ -72,7 +76,8 @@ namespace Rodgort.Controllers
                     {
                         mqt.TagName
                     }),
-                    NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
+                    NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED 
+                                                                    || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE)
                         .Select(mqt => mqt.Tag.NumberOfQuestions)
                         .OrderByDescending(mqt => mqt)
                         .FirstOrDefault(),

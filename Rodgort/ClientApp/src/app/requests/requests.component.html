@@ -14,7 +14,7 @@
                     <option value="-1">Any</option>
                     <option value="2">Tracked</option>
                     <option value="3">Ignored</option>
-                    <option value="1">Requires Tracking Approval</option>
+                    <option value="1">Requires tracking approval</option>
                 </select>
             </div>
         </div>
@@ -135,7 +135,7 @@
                                         Status
                                     </div>
                                     <div class="col-md-6">
-                                        <div [class.tag-tracked]="tag.trackingStatusName==='Tracked'" [class.tag-pending]="tag.trackingStatusName==='Requires Tracking Approval'">
+                                        <div [class.tag-tracked]="tag.trackingStatusId===2 || tag.trackingStatusId===4" [class.tag-pending]="tag.trackingStatusName==='Requires tracking approval'">
                                             {{tag.trackingStatusName}}
                                         </div>
                                     </div>
