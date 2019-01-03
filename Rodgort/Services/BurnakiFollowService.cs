@@ -116,7 +116,8 @@ namespace Rodgort.Services
 
         public async Task ProcessQuestionIds(IEnumerable<int> questionIds, ChatClient chatClient, string followingTag, DateTime fromTime, DateService dateService, int? roomId)
         {
-            foreach (var questionIdGroup in questionIds.Batch(100))
+            var distinctQuestionIds = questionIds.Distinct();
+            foreach (var questionIdGroup in distinctQuestionIds.Batch(100))
             {
                 var questionIdList = questionIdGroup.ToList();
                 if (!questionIdList.Any())
