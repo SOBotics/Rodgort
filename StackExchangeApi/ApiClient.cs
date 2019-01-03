@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MoreLinq.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchangeApi.Responses;
@@ -114,15 +115,26 @@ namespace StackExchangeApi
 
         public const string BASE_URL = "https://api.stackexchange.com/2.2";
 
-        public Task<ApiItemsResponse<UserResponse>> Users(string siteName, IEnumerable<int> userIds)
+        public async Task<ApiItemsResponse<UserResponse>> Users(string siteName, IEnumerable<int> userIds)
         {
-            var userIdsList = userIds.ToList();
-            var postIdsString = string.Join(";", userIdsList);
-            return ApplyWithPaging<UserResponse>($"{BASE_URL}/users/{postIdsString}", new Dictionary<string, string>
+            ApiItemsResponse<UserResponse> finalResult = null;
+
+            foreach (var batch in userIds.Batch(100))
             {
-                {"site", siteName},
-                {"filter", "!qGfMGCCrfTV2ZcZrapMx"},
-            });
+                var postIdsString = string.Join(";", batch);
+                
+                var currentResult = await ApplyWithPaging<UserResponse>($"{BASE_URL}/users/{postIdsString}", new Dictionary<string, string>
+                {
+                    {"site", siteName},
+                    {"filter", "!qGfMGCCrfTV2ZcZrapMx"}
+                });
+                if (finalResult == null)
+                    finalResult = currentResult;
+                else
+                    finalResult.Items.AddRange(currentResult.Items);
+            }
+
+            return finalResult;
         }
 
         public Task<ApiItemsResponse<RevisionResponse>> Revisions(string siteName, IEnumerable<int> postIds)
