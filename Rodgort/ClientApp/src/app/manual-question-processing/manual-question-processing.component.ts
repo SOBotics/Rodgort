@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-manual-question-processing',
@@ -15,11 +16,15 @@ export class ManualQuestionProcessingComponent implements OnInit {
   };
 
   public isLoading = false;
+  private rawToken: string;
 
-  constructor(private httpClient: HttpClient) {
+  constructor(private httpClient: HttpClient, private authService: AuthService) {
   }
 
   ngOnInit() {
+    this.authService.GetAuthDetails().subscribe(d => {
+      this.rawToken = d.RawToken;
+    });
   }
 
   public process() {
@@ -30,16 +35,16 @@ export class ManualQuestionProcessingComponent implements OnInit {
     if (isNaN(roomId)) { return; }
     if (isNaN(followingId)) { return; }
 
-    console.log();
-
     this.isLoading = true;
+
     this.httpClient.post('/api/admin/ManuallyProcessQuestions', {
       roomId,
       followingId,
       questionIds
-    }).subscribe(_ => {
-      this.isLoading = false;
-    });
+    }, {
+        headers: { 'Authorization': 'Bearer ' + this.rawToken }
+      }).subscribe(_ => {
+        this.isLoading = false;
+      });
   }
-
 }
