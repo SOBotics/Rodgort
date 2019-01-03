@@ -1,0 +1,12 @@
+<div class="form-group">
+  <input id="followingInput" class="form-control" placeholder="Following Id" [(ngModel)]="request.following">
+</div>
+<div class="form-group">
+  <input id="followingInput" class="form-control" placeholder="Room Id" [(ngModel)]="request.roomId">
+</div>
+<div class="form-group">
+  <textarea class="form-control" [(ngModel)]="request.questionIds" placeholder="Enter question ids (separated by ,)">
+    </textarea>
+</div>
+
+<a class="btn btn-primary" [class.disabled]="isLoading" href="javascript:void(0);" (click)="process()">{{isLoading ? 'Processing...' : 'Process!'}}</a>

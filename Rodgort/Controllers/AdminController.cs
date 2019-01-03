@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
 using Rodgort.Utilities;
+using StackExchangeChat;
 
 namespace Rodgort.Controllers
 {
@@ -15,10 +19,16 @@ namespace Rodgort.Controllers
     public class AdminController : Controller
     {
         private readonly RodgortContext _context;
+        private readonly BurnakiFollowService _burnakiFollowService;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<AdminController> _logger;
 
-        public AdminController(RodgortContext context)
+        public AdminController(RodgortContext context, BurnakiFollowService burnakiFollowService, IServiceProvider serviceProvider, ILogger<AdminController> logger)
         {
             _context = context;
+            _burnakiFollowService = burnakiFollowService;
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
         [HttpGet("UnresolvedDeletions")]
@@ -112,6 +122,41 @@ namespace Rodgort.Controllers
             return null;
         }
 
+        [HttpPost("ManuallyProcessQuestions")]
+        public async Task ManuallyProcessQuestions([FromBody] ManuallyProcessQuestionsRequest request)
+        {
+            var isAdmin = User.HasClaim(DbRole.RODGORT_ADMIN);
+            if (!isAdmin)
+                throw new HttpStatusException(HttpStatusCode.Unauthorized);
+
+            var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
+            var dateService = _serviceProvider.GetRequiredService<DateService>();
+
+            var follows = _context.BurnakiFollows.Where(bf => bf.BurnakiId == request.FollowingId && bf.RoomId == request.RoomId).ToList();
+            if (follows.Count == 0)
+            {
+                _logger.LogWarning($"Could not find any follows for following {request.FollowingId} in room {request.RoomId}");
+                return;
+            }
+
+            if (follows.Count > 1)
+            {
+                _logger.LogWarning($"Found multiple follows ({follows.Count}) for following {request.FollowingId} in room {request.RoomId}");
+                return;
+            }
+
+            var follow = follows.First();
+
+            await _burnakiFollowService.ProcessQuestionIds(
+                request.QuestionIds,
+                chatClient,
+                follow.Tag,
+                follow.FollowStarted,
+                dateService,
+                null
+            );
+        }
+        
         public class ResolveUnresolvedDeletionRequest
         {
             public int ActionId { get; set; }
@@ -119,6 +164,13 @@ namespace Rodgort.Controllers
             public int ActionTypeId { get; set; }
             public string Tag { get; set; }
             public DateTime DateTime { get; set; }
+        }
+
+        public class ManuallyProcessQuestionsRequest
+        {
+            public int RoomId { get; set; }
+            public int FollowingId { get; set; }
+            public List<int> QuestionIds { get; set; }
         }
     }
 }

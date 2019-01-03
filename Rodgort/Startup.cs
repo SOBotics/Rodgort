@@ -74,6 +74,7 @@ namespace Rodgort
 
             services.AddTransient<DateService>();
             services.AddTransient<ApiClient>();
+            services.AddTransient<BurnakiFollowService>();
             services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
             services.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
 
