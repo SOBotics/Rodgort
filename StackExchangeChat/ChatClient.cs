@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchangeChat.Utilities;
-using WebSocketSharp;
 
 namespace StackExchangeChat
 {
@@ -90,10 +89,10 @@ namespace StackExchangeChat
 
                 var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
 
-                var webSocket = new WebSocket($"{wsAuthUrl}?l={lastEventTime}") {Origin = $"https://{chatSite.ChatDomain}"};
-                webSocket.OnMessage += (sender, args) =>
+                var webSocket = new PlainWebSocket($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}"} });
+                webSocket.OnTextMessage += (message) =>
                 {
-                    var dataObject = JsonConvert.DeserializeObject<JObject>(args.Data);
+                    var dataObject = JsonConvert.DeserializeObject<JObject>(message);
                     var eventsObject = dataObject.First.First["e"];
                     if (eventsObject == null)
                         return;
@@ -111,7 +110,7 @@ namespace StackExchangeChat
                     }
                 };
 
-                webSocket.Connect();
+                await webSocket.ConnectAsync();
                 
                 observer.OnNext(new ChatEvent
                 {
@@ -126,7 +125,7 @@ namespace StackExchangeChat
 
                 return Disposable.Create(() =>
                 {
-                    webSocket.Close();
+                    // webSocket.Dispose();
                 });
             });
         }

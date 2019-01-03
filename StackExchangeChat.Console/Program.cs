@@ -53,22 +53,22 @@ namespace StackExchangeChat.Console
             var events = chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421);
             events.Subscribe(System.Console.WriteLine);
 
-            chatClient
-                .SubscribeToEvents(ChatSite.StackExchange, 86421)
-                .OnlyMessages()
-                .SameRoomOnly()
-                .SkipMyMessages()
-                .Subscribe(async chatEvent =>
-                {
-                    try
-                    {
-                        await chatClient.SendMessage(chatEvent.RoomDetails.ChatSite, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} Replying to message..");
-                    }
-                    catch (Exception ex) { }
-                }, exception =>
-                {
-                    System.Console.WriteLine(exception);
-                });
+            //chatClient
+            //    .SubscribeToEvents(ChatSite.StackExchange, 86421)
+            //    .OnlyMessages()
+            //    .SameRoomOnly()
+            //    .SkipMyMessages()
+            //    .Subscribe(async chatEvent =>
+            //    {
+            //        try
+            //        {
+            //            await chatClient.SendMessage(chatEvent.RoomDetails.ChatSite, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} Replying to message..");
+            //        }
+            //        catch (Exception) { }
+            //    }, exception =>
+            //    {
+            //        System.Console.WriteLine(exception);
+            //    });
 
             System.Console.ReadKey();
         }
