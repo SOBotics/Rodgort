@@ -14,6 +14,7 @@ using MoreLinq.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchangeApi.Responses;
+using Utilities.Throttling;
 
 namespace StackExchangeApi
 {
@@ -26,9 +27,6 @@ namespace StackExchangeApi
         public static IObservable<int> QuotaRemaining;
         public static int CurrentQuotaRemaining = int.MaxValue;
         
-        public static object TaskLocker = new object();
-        public static Task ExecutingTask = Task.CompletedTask;
-
         private static Action<int> _updateQuota;
 
         static ApiClient()
@@ -53,51 +51,29 @@ namespace StackExchangeApi
 
         public async Task<TResponseType> MakeRequest<TResponseType>(string endpoint, Dictionary<string, string> parameters) where TResponseType: ApiBaseResponse
         {
-            Task<TResponseType> nextTask;
             var copiedParameters = parameters.ToDictionary(d => d.Key, d => d.Value);
             if (!string.IsNullOrWhiteSpace(_appKey) && !copiedParameters.ContainsKey("key"))
                 copiedParameters["key"] = _appKey;
 
-            lock (TaskLocker)
+            var url = QueryHelpers.AddQueryString(endpoint, copiedParameters);
+
+            return await ThrottlingUtils.Throttle(ApiThrottleGroups.ApiThrottleGroup, async () =>
             {
-                if (ExecutingTask.IsFaulted)
-                    ExecutingTask = Task.CompletedTask;
-
-                var url = QueryHelpers.AddQueryString(endpoint, copiedParameters);
-                nextTask = MakeRequestInternal(ExecutingTask, url);
-                ExecutingTask = PostProcess(nextTask, url);
-            }
-
-            var result = await nextTask;            
-            return result;
-
-            async Task PostProcess(Task<TResponseType> executingTask, string capturedUrl)
-            {
-                var returnedItem = await executingTask;
-                _updateQuota(returnedItem.QuotaRemaining);
-                _logger.LogInformation($"Finished request {capturedUrl}. Remaining quota: " + returnedItem.QuotaRemaining);
-                if (returnedItem.Backoff.HasValue)
-                    await Task.Delay(TimeSpan.FromSeconds(returnedItem.Backoff.Value));
-            }
-
-            async Task<TResponseType> MakeRequestInternal(Task previousTask, string capturedUrl)
-            {
-                await previousTask;
                 if (CurrentQuotaRemaining <= 0)
                     throw new Exception("No more quota!");
 
                 using (var httpClient = _serviceProvider.GetService<HttpClient>())
                 {
-                    var response = await httpClient.GetAsync(capturedUrl);
+                    var response = await httpClient.GetAsync(url);
                     var content = await response.Content.ReadAsStringAsync();
                     var payloadUntyped = JsonConvert.DeserializeObject<JObject>(content);
                     var payload = payloadUntyped.ToObject<TResponseType>();
 
                     payload.RawData = content;
-                    payload.RequestUrl = capturedUrl;
+                    payload.RequestUrl = url;
 
                     if (!string.IsNullOrWhiteSpace(payload.ErrorMessage))
-                        throw new Exception($"Failed to request {capturedUrl}.\n\n" + JsonConvert.SerializeObject(new
+                        throw new Exception($"Failed to request {url}.\n\n" + JsonConvert.SerializeObject(new
                         {
                             payload.ErrorId,
                             payload.ErrorName,
@@ -110,7 +86,13 @@ namespace StackExchangeApi
 
                     return payload;
                 }
-            }
+            }, async returnedItem =>
+            {
+                _updateQuota(returnedItem.QuotaRemaining);
+                _logger.LogInformation($"Finished request {url}. Remaining quota: " + returnedItem.QuotaRemaining);
+                if (returnedItem.Backoff.HasValue)
+                    await Task.Delay(TimeSpan.FromSeconds(returnedItem.Backoff.Value));
+            });
         }
 
         public const string BASE_URL = "https://api.stackexchange.com/2.2";

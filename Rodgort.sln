@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StackExchangeApi", "StackEx
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rodgort", "Rodgort\Rodgort.csproj", "{8D72D24C-5A3C-4D3C-B6D7-9D3E484F5BDE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "Utilities\Utilities.csproj", "{6DB7E359-3536-4DAE-90C7-5BC88583F5DA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{8D72D24C-5A3C-4D3C-B6D7-9D3E484F5BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D72D24C-5A3C-4D3C-B6D7-9D3E484F5BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D72D24C-5A3C-4D3C-B6D7-9D3E484F5BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DB7E359-3536-4DAE-90C7-5BC88583F5DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DB7E359-3536-4DAE-90C7-5BC88583F5DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DB7E359-3536-4DAE-90C7-5BC88583F5DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DB7E359-3536-4DAE-90C7-5BC88583F5DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

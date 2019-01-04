@@ -1,10 +1,8 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchangeApi;
 using StackExchangeChat.Utilities;
 
 namespace StackExchangeChat.Console
@@ -37,8 +35,6 @@ namespace StackExchangeChat.Console
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var apiThing = new ApiClient(serviceProvider, null, null);
-
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
             //apiThing.TotalQuestionsByTag("stackoverflow", "design").GetAwaiter().GetResult();
@@ -50,8 +46,9 @@ namespace StackExchangeChat.Console
             // var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
 
             var chatClient = serviceProvider.GetService<ChatClient>();
-            var events = chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421);
-            events.Subscribe(System.Console.WriteLine);
+            var roomId = chatClient.CreateRoom(ChatSite.StackOverflow, 167908, "This is a testing room", "This is a testing description").GetAwaiter().GetResult();
+            //var events = chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421);
+            //events.Subscribe(System.Console.WriteLine);
 
             //chatClient
             //    .SubscribeToEvents(ChatSite.StackExchange, 86421)

@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchangeChat.Utilities;
+using StackExchangeChat.Utilities.Throttling;
+using Utilities.Throttling;
 
 namespace StackExchangeChat
 {
@@ -17,9 +20,6 @@ namespace StackExchangeChat
         private readonly SiteAuthenticator _siteAuthenticator;
         private readonly HttpClientWithHandler _httpClient;
 
-        public static object TaskLocker = new object();
-        public static Task ExecutingTask = Task.CompletedTask;
-
         public ChatClient(SiteAuthenticator siteAuthenticator, HttpClientWithHandler httpClient)
         {
             _siteAuthenticator = siteAuthenticator;
@@ -28,27 +28,8 @@ namespace StackExchangeChat
 
         public async Task SendMessage(ChatSite chatSite, int roomId, string message)
         {
-            Task nextMessageTask;
-            lock (TaskLocker)
+            await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
-                if (ExecutingTask.IsFaulted)
-                    ExecutingTask = Task.CompletedTask;
-
-                nextMessageTask = SendMessageInternal(ExecutingTask);
-                ExecutingTask = PostProcess(nextMessageTask);
-            }
-
-            await nextMessageTask;
-
-            async Task PostProcess(Task executingTask)
-            {
-                await executingTask;
-                await Task.Delay(TimeSpan.FromSeconds(5));
-            }
-
-            async Task SendMessageInternal(Task previousTask)
-            {
-                await previousTask;
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
                 await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
@@ -58,7 +39,32 @@ namespace StackExchangeChat
                             {"text", message},
                             {"fkey", fkey}
                         }));
-            }
+            }, Task.Delay(TimeSpan.FromSeconds(5)));
+        }
+
+        private readonly Regex _roomRegex = new Regex(@"\/rooms\/info\/(\d+)\/");
+        public async Task<int> CreateRoom(ChatSite chatSite, int currentRoomId, string roomName, string roomDescription)
+        {
+            return await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
+            {
+                var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, currentRoomId)).FKey;
+                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/save",
+                    new FormUrlEncodedContent(
+                        new Dictionary<string, string>
+                        {
+                            {"fkey", fkey},
+                            {"defaultAccess", "read-write"},
+                            {"name", roomName},
+                            {"description", roomDescription},
+                            {"tags", string.Empty},
+                            {"noDupeCheck", "true"}
+                        }));
+
+                var requestUri = response.RequestMessage.RequestUri;
+                var roomId = int.Parse(_roomRegex.Match(requestUri.AbsolutePath).Groups[1].Value);
+                return roomId;
+            }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
         public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, int roomId)
