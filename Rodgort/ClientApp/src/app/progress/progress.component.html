@@ -23,8 +23,24 @@
 
       <h2>User Activity</h2>
       <div *ngIf="chart" [chart]="chart"></div>
+     
+      <h2>User grand totals</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of tag.userGrandTotals | sortAscending: 'total'">
+            <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
+            <td>{{row.total}}</td>
+          </tr>
+        </tbody>
+      </table>
 
-      <h2>User totals</h2>
+      <h2>User total breakdown</h2>
       <table class="table">
         <thead>
           <tr>
@@ -37,23 +53,6 @@
           <tr *ngFor="let row of tag.userTotals | sortAscending: 'total'">
             <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
             <td>{{row.type}}</td>
-            <td>{{row.total}}</td>
-          </tr>
-        </tbody>
-      </table>
-
-      
-      <h2>User grand totals</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let row of tag.userGrandTotals | sortAscending: 'total'">
-            <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
             <td>{{row.total}}</td>
           </tr>
         </tbody>
