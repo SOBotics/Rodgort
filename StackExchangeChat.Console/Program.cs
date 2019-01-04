@@ -3,6 +3,8 @@ using System.Net;
 using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Rodgort.Services;
+using Rodgort.Utilities;
 using StackExchangeChat.Utilities;
 
 namespace StackExchangeChat.Console
@@ -27,7 +29,8 @@ namespace StackExchangeChat.Console
             
             serviceCollection.AddScoped<SiteAuthenticator>();
             serviceCollection.AddScoped<ChatClient>();
-
+            serviceCollection.AddScoped<NewBurninationService>();
+            
             serviceCollection.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
 
             serviceCollection.AddSingleton(_ => config);
@@ -46,7 +49,11 @@ namespace StackExchangeChat.Console
             // var result = apiThing.TotalQuestionsByTag("design").GetAwaiter().GetResult();
 
             var chatClient = serviceProvider.GetService<ChatClient>();
-            var roomId = chatClient.CreateRoom(ChatSite.StackOverflow, 167908, "This is a testing room", "This is a testing description").GetAwaiter().GetResult();
+
+            var newBurninationService = serviceProvider.GetService<NewBurninationService>();
+
+            newBurninationService.CreateRoomForBurn(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, "priority", "https://meta.stackoverflow.com/questions/285084/should-we-burninate-the-priority-tag").GetAwaiter().GetResult();
+            // var roomId = chatClient.CreateRoom(ChatSite.StackOverflow, 167908, "This is a testing room", "This is a testing description").GetAwaiter().GetResult();
             //var events = chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421);
             //events.Subscribe(System.Console.WriteLine);
 

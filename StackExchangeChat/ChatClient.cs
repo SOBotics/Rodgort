@@ -26,20 +26,25 @@ namespace StackExchangeChat
             _httpClient = httpClient;
         }
 
-        public async Task SendMessage(ChatSite chatSite, int roomId, string message)
+        public async Task<int> SendMessage(ChatSite chatSite, int roomId, string message)
         {
-            await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
+            return await ThrottlingUtils.Throttle<int>(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
                             {"text", message},
                             {"fkey", fkey}
                         }));
-            }, Task.Delay(TimeSpan.FromSeconds(5)));
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var responsePayload = JsonConvert.DeserializeObject<JObject>(responseString);
+                return int.Parse(responsePayload["id"].ToString());
+                
+            }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
         private readonly Regex _roomRegex = new Regex(@"\/rooms\/info\/(\d+)\/");
@@ -65,6 +70,21 @@ namespace StackExchangeChat
                 var roomId = int.Parse(_roomRegex.Match(requestUri.AbsolutePath).Groups[1].Value);
                 return roomId;
             }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
+        }
+
+        public async Task PinMessage(ChatSite chatSite, int currentRoomId, int messageId)
+        {
+            await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
+            {
+                var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, currentRoomId)).FKey;
+                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/messages/{messageId}/owner-star  ",
+                    new FormUrlEncodedContent(
+                        new Dictionary<string, string>
+                        {
+                            {"fkey", fkey},
+                        }));
+            }, Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
         public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, int roomId)

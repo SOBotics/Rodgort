@@ -23,8 +23,7 @@ namespace Rodgort.Services
 {
     public class BurnakiFollowService : IHostedService
     {
-        private const int Headquarters = 185585;
-        private const int RobUserId = 563532;
+        public const int RobUserId = 563532;
 
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<BurnakiFollowService> _logger;
@@ -55,9 +54,9 @@ namespace Rodgort.Services
                 foreach (var burnakiFollow in burnakiFollows)
                     FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, burnakiFollow.Tag, dateService, cancellationToken);
 
-                var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, Headquarters);
+                var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS);
                 await events.FirstAsync();
-                chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, "o/");
+                chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, "o/");
                 _logger.LogInformation("Successfully joined headquarters");
                 await events
                     .ReplyAlive()
@@ -89,7 +88,7 @@ namespace Rodgort.Services
                 var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, roomId);
                 await events.FirstAsync();
                 _logger.LogInformation($"Successfully joined room {roomId}");
-                chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, $"I just joined {roomId}");
+                chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, $"I just joined {roomId}");
                 await events
                     .ReplyAlive()
                     .OnlyMessages()
@@ -148,7 +147,7 @@ namespace Rodgort.Services
                 }
 
                 foreach (var message in messages)
-                    await chatClient.SendMessage(ChatSite.StackOverflow, Headquarters, message);
+                    await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, message);
 
                 var apiClient = _serviceProvider.GetRequiredService<ApiClient>();
                 var revisions = await apiClient.Revisions("stackoverflow.com", questionIdList);
