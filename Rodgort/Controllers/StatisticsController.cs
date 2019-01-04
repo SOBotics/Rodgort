@@ -218,8 +218,15 @@ namespace Rodgort.Controllers
                         ,
                         UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new { g.Type, g.User, g.UserId }).Select(g => new
                         {
-                            g.Key.User,
+                            UserName = g.Key.User,
+                            g.Key.UserId,
                             g.Key.Type,
+                            Total = g.Select(gg => gg.PostId).Distinct().Count()
+                        }),
+                        UserGrandTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new { g.User, g.UserId }).Select(g => new
+                        {
+                            UserName = g.Key.User,
+                            g.Key.UserId,
                             Total = g.Select(gg => gg.PostId).Distinct().Count()
                         }),
                         Totals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => g.Type).Select(g => new
