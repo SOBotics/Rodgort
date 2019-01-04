@@ -37,7 +37,7 @@ namespace Rodgort.Services
             if (!Enabled)
                 return;
 
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"Discussion for the burnination of {metaPostUrl} started, but there are multiple tracked tags: {string.Join(", ", trackedTags)}");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Discussion for the burnination of {metaPostUrl} started, but there are multiple tracked tags: {string.Join(", ", trackedTags)}");
         }
 
         public async Task AnnounceNoTrackedTags(string metaPostUrl)
@@ -45,7 +45,7 @@ namespace Rodgort.Services
             if (!Enabled)
                 return;
 
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"Discussion for the burnination of {metaPostUrl} started, but there are no tracked tags");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Discussion for the burnination of {metaPostUrl} started, but there are no tracked tags");
         }
 
         public async Task StopBurn(string tag)
@@ -54,7 +54,7 @@ namespace Rodgort.Services
                 return;
 
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"The burnination of [tag:{tag}] has finished!");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [tag:{tag}] has finished!");
 
             var follows = _rodgortContext.BurnakiFollows.Where(bf => bf.BurnakiId == 8300708 && bf.Tag == tag).ToList();
             foreach (var follow in follows)
@@ -76,7 +76,7 @@ namespace Rodgort.Services
 
             var burninationMessage = $"The burnination of [tag:{tag}] is now being discussed {metaPostUrl}";
 
-            var burninationMessageId = await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, burninationMessage);
+            var burninationMessageId = await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
             await _chatClient.PinMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, burninationMessageId);
 
             var burnakiFollow = new DbBurnakiFollow
