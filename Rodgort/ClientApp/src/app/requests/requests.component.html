@@ -37,7 +37,7 @@
                 <div class="input-group-prepend">
                     <label class="input-group-text" for="statusSelector">Status</label>
                 </div>
-                <select class="custom-select" id="statusSelector" [(ngModel)]="filter.trackingStatusName" [ngModelOptions]="{standalone: true}">
+                <select class="custom-select" id="statusSelector" [(ngModel)]="filter.status" [ngModelOptions]="{standalone: true}">
                     <option value="">Any</option>
                     <option value="none">None</option>
                     <option value="status-completed">Completed</option>

@@ -19,7 +19,7 @@ export class RequestsComponent implements OnInit {
   public filter = {
     tag: '',
     trackingStatusId: -1,
-    trackingStatusName: '',
+    status: '',
     pageNumber: 1,
     hasQuestions: 'true',
     sortBy: 'score'
@@ -40,7 +40,7 @@ export class RequestsComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.filter.tag = params['tag'] || '';
       this.filter.trackingStatusId = +params['trackingStatusId'] || -1;
-      this.filter.trackingStatusName = params['trackingStatusName'] || '';
+      this.filter.status = params['status'] || '';
       this.filter.hasQuestions = params['hasQuestions'] || 'any';
       this.filter.pageNumber = +params['pageNumber'] || 1;
       this.filter.sortBy = params['sortBy'] || 'score';
@@ -57,7 +57,7 @@ export class RequestsComponent implements OnInit {
       `/api/MetaQuestions` +
       `?tag=${this.filter.tag}` +
       `&trackingStatusId=${this.filter.trackingStatusId}` +
-      `&trackingStatusName=${this.filter.trackingStatusName}` +
+      `&status=${this.filter.status}` +
       `&hasQuestions=${this.filter.hasQuestions}` +
       `&sortBy=${this.filter.sortBy}` +
       `&page=${this.filter.pageNumber}` +
