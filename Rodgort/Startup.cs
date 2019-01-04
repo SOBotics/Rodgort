@@ -89,7 +89,8 @@ namespace Rodgort
 
             services.AddScoped<SiteAuthenticator>();
             services.AddScoped<ChatClient>();
-            
+            services.AddScoped<NewBurninationService>();
+
             services.AddHostedService<BurnakiFollowService>();
         }
 

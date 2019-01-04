@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
@@ -12,6 +13,7 @@ using Rodgort.Data.Tables;
 using Rodgort.Utilities;
 using StackExchangeApi;
 using StackExchangeApi.Responses;
+using StackExchangeChat;
 
 namespace Rodgort.Services
 {
@@ -23,16 +25,22 @@ namespace Rodgort.Services
         private readonly ApiClient _apiClient;
         private readonly DateService _dateService;
         private readonly ILogger<MetaCrawlerService> _logger;
+        private readonly NewBurninationService _newBurninationService;
 
         private static readonly object _locker = new object();
         private static bool _alreadyProcessing;
 
-        public MetaCrawlerService(DbContextOptions<RodgortContext> dbContextOptions, ApiClient apiClient, DateService dateService, ILogger<MetaCrawlerService> logger)
+        public MetaCrawlerService(DbContextOptions<RodgortContext> dbContextOptions, 
+            ApiClient apiClient, 
+            DateService dateService, 
+            ILogger<MetaCrawlerService> logger,
+            NewBurninationService newBurninationService)
         {
             _dbContextOptions = dbContextOptions;
             _apiClient = apiClient;
             _dateService = dateService;
             _logger = logger;
+            _newBurninationService = newBurninationService;
         }
 
         [SuppressMessage("ReSharper", "InconsistentlySynchronizedField", Justification = "Flagged _logger, but in both blocks we're guaranteed to run on a single thread")]
@@ -67,6 +75,7 @@ namespace Rodgort.Services
                     
                     var questionLookup = context.MetaQuestions.Where(q => questionIds.Contains(q.Id))
                         .Include(mq => mq.MetaQuestionMetaTags)
+                        .Include(mq => mq.MetaQuestionTags)
                         .ToDictionary(q => q.Id, q => q);
 
                     var answerIds = metaQuestions.Items.Where(q => q.Answers != null).SelectMany(q => q.Answers.Select(a => a.AnswerId)).Distinct().ToList();
@@ -81,7 +90,7 @@ namespace Rodgort.Services
 
                         if (!questionLookup.ContainsKey(metaQuestion.QuestionId.Value))
                         {
-                            dbMetaQuestion = new DbMetaQuestion {Id = metaQuestion.QuestionId.Value};
+                            dbMetaQuestion = new DbMetaQuestion {Id = metaQuestion.QuestionId.Value, MetaQuestionTags = new List<DbMetaQuestionTag>()};
                             context.MetaQuestions.Add(dbMetaQuestion);
 
                             questionLookup[dbMetaQuestion.Id] = dbMetaQuestion;
@@ -107,21 +116,35 @@ namespace Rodgort.Services
                         if (metaQuestion.ClosedDate.HasValue)
                             dbMetaQuestion.ClosedDate = Dates.UnixTimeStampToDateTime(metaQuestion.ClosedDate.Value);
 
+                        var trackedTags = dbMetaQuestion.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).ToList();
                         foreach (var tag in metaQuestion.Tags)
                         {
                             if (!dbMetaQuestion.MetaQuestionMetaTags.Any(t => string.Equals(t.TagName, tag, StringComparison.OrdinalIgnoreCase)))
                             {
                                 context.MetaQuestionMetaTags.Add(new DbMetaQuestionMetaTag { TagName = tag, MetaQuestion = dbMetaQuestion });
-
                                 if (tag == DbMetaTag.STATUS_FEATURED)
+                                {
                                     dbMetaQuestion.FeaturedStarted = utcNow;
+                                    if (!trackedTags.Any())
+                                    {
+                                        await _newBurninationService.AnnounceNoTrackedTags(metaQuestion.Link);
+                                    }
+                                    else if (trackedTags.Count > 1)
+                                    {
+                                        await _newBurninationService.AnnounceMultipleTrackedTags(metaQuestion.Link, trackedTags.Select(t => t.TagName));
+                                    }
+                                    else
+                                    {
+                                        await _newBurninationService.CreateRoomForBurn(trackedTags.First().TagName, metaQuestion.Link);
+                                    }
+                                }
                                 if (tag == DbMetaTag.STATUS_PLANNED)
                                     dbMetaQuestion.BurnStarted = utcNow;
                             }
                         }
-
-
-                        foreach (var dbTag in dbMetaQuestion.MetaQuestionMetaTags.ToList())
+                        
+                        var metaQuestionList = dbMetaQuestion.MetaQuestionMetaTags.ToList();
+                        foreach (var dbTag in metaQuestionList)
                         {
                             if (!metaQuestion.Tags.Any(t => string.Equals(t, dbTag.TagName, StringComparison.OrdinalIgnoreCase)))
                             {
@@ -130,7 +153,11 @@ namespace Rodgort.Services
                                 if (dbTag.TagName == DbMetaTag.STATUS_FEATURED)
                                     dbMetaQuestion.FeaturedEnded = utcNow;
                                 if (dbTag.TagName == DbMetaTag.STATUS_PLANNED)
+                                {
                                     dbMetaQuestion.BurnEnded = utcNow;
+                                    foreach (var trackedTag in trackedTags)
+                                        await _newBurninationService.StopBurn(trackedTag.TagName);
+                                }
                             }
                         }
 

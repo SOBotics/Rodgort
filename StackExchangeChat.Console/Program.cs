@@ -52,7 +52,7 @@ namespace StackExchangeChat.Console
 
             var newBurninationService = serviceProvider.GetService<NewBurninationService>();
 
-            newBurninationService.CreateRoomForBurn(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, "priority", "https://meta.stackoverflow.com/questions/285084/should-we-burninate-the-priority-tag").GetAwaiter().GetResult();
+            // newBurninationService.CreateRoomForBurn(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, "priority", "https://meta.stackoverflow.com/questions/285084/should-we-burninate-the-priority-tag").GetAwaiter().GetResult();
             // var roomId = chatClient.CreateRoom(ChatSite.StackOverflow, 167908, "This is a testing room", "This is a testing description").GetAwaiter().GetResult();
             //var events = chatClient.SubscribeToEvents(ChatSite.StackExchange, 86421);
             //events.Subscribe(System.Console.WriteLine);

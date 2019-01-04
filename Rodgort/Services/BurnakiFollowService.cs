@@ -76,7 +76,7 @@ namespace Rodgort.Services
 
         private static readonly Regex _userIdRegex = new Regex(@"\/users\/(\d+)");
 
-        private async Task FollowInRoom(int roomId, int followingUserId, DateTime fromTime, string followingTag, DateService dateService, CancellationToken cancellationToken)
+        public async Task FollowInRoom(int roomId, int followingUserId, DateTime fromTime, string followingTag, DateService dateService, CancellationToken cancellationToken)
         {
             await RunWithLogging(async () =>
             {

@@ -28,7 +28,7 @@ namespace StackExchangeChat
 
         public async Task<int> SendMessage(ChatSite chatSite, int roomId, string message)
         {
-            return await ThrottlingUtils.Throttle<int>(ChatThrottleGroups.WebRequestThrottle, async () =>
+            return await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
