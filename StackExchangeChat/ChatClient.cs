@@ -30,20 +30,42 @@ namespace StackExchangeChat
         {
             return await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
-                var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
-                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
-                    new FormUrlEncodedContent(
-                        new Dictionary<string, string>
-                        {
-                            {"text", message},
-                            {"fkey", fkey}
-                        }));
+                async Task<int> SendMessage()
+                {
+                    var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
+                    await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+                    var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/messages/new",
+                        new FormUrlEncodedContent(
+                            new Dictionary<string, string>
+                            {
+                                {"text", message},
+                                {"fkey", fkey}
+                            }));
 
-                var responseString = await response.Content.ReadAsStringAsync();
-                var responsePayload = JsonConvert.DeserializeObject<JObject>(responseString);
-                return int.Parse(responsePayload["id"].ToString());
-                
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    var responsePayload = JsonConvert.DeserializeObject<JObject>(responseString);
+                    return int.Parse(responsePayload["id"].ToString());
+                }
+
+                const int maxNumTries = 3;
+                var currentTryCount = 0;
+
+                try
+                {
+                    return await SendMessage();
+                }
+                catch (Exception)
+                {
+                    // We failed to deserialize the response, we probably got throttled.
+                    await Task.Delay(TimeSpan.FromSeconds(15));
+
+                    currentTryCount++;
+                    if (currentTryCount >= maxNumTries)
+                        throw;
+
+                    return await SendMessage();
+                }
+
             }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
