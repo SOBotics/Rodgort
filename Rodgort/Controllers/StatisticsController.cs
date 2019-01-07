@@ -137,6 +137,7 @@ namespace Rodgort.Controllers
                                 Actions = _context.UserActions
                                     .Where(ua => isRoomOwner || ua.Time > mq.BurnStarted)
                                     .Where(s => s.Time > (mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded))
+                                    .Where(a => a.UserActionTypeId != DbUserActionType.UNKNOWN_DELETION)
                                     .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                     {
                                         ua.PostId,
