@@ -54,7 +54,7 @@ namespace StackExchangeChat
                 {
                     return await SendMessage();
                 }
-                catch (Exception)
+                catch (JsonReaderException)
                 {
                     // We failed to deserialize the response, we probably got throttled.
                     await Task.Delay(TimeSpan.FromSeconds(15));
