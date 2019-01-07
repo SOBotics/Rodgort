@@ -37,7 +37,7 @@ namespace Rodgort
             if (exception is HttpStatusException requestException)
                 code = (int)requestException.StatusCode;
 
-            _logger.LogError($"{context.Request?.Path.Value} - {code} - {exception.Message}");
+            _logger.LogError(exception, $"{context.Request?.Path.Value} - {code} - {exception.Message}");
 
             var result = JsonConvert.SerializeObject(new ErrorWrapper { Error = exception.Message });
             context.Response.ContentType = "application/json";
