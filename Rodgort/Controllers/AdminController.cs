@@ -147,6 +147,8 @@ namespace Rodgort.Controllers
 
             var follow = follows.First();
 
+            _logger.LogInformation($"Starting manual process for {string.Join(", ", request.QuestionIds)}");
+
             await _burnakiFollowService.ProcessQuestionIds(
                 request.QuestionIds,
                 chatClient,
@@ -155,6 +157,8 @@ namespace Rodgort.Controllers
                 dateService,
                 null
             );
+
+            _logger.LogInformation($"Finished manual processing for {request.QuestionIds.Count} questions");
         }
         
         public class ResolveUnresolvedDeletionRequest

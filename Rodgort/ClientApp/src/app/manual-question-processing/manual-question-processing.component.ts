@@ -30,7 +30,9 @@ export class ManualQuestionProcessingComponent implements OnInit {
   public process() {
     const roomId = parseInt(this.request.roomId, 10);
     const followingId = parseInt(this.request.following, 10);
-    const questionIds = this.request.questionIds.split(';').map(v => parseInt(v, 10));
+    const questionIds = this.request.questionIds.split(';')
+      .filter(v => v !== '')
+      .map(v => parseInt(v, 10));
 
     if (isNaN(roomId)) { return; }
     if (isNaN(followingId)) { return; }

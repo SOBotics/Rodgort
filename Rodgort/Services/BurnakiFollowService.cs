@@ -26,11 +26,13 @@ namespace Rodgort.Services
         public const int RobUserId = 563532;
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly IChatCredentials _chatCredentials;
         private readonly ILogger<BurnakiFollowService> _logger;
 
-        public BurnakiFollowService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
+        public BurnakiFollowService(IServiceProvider serviceProvider, IChatCredentials chatCredentials, ILogger<BurnakiFollowService> logger)
         {
             _serviceProvider = serviceProvider.CreateScope().ServiceProvider;
+            _chatCredentials = chatCredentials;
             _logger = logger;
         }
 
@@ -146,8 +148,11 @@ namespace Rodgort.Services
                         : $"Processing {string.Join(", ", qIds)} from manual start";
                 }
 
-                foreach (var message in messages)
-                    await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, message);
+                if (!string.IsNullOrEmpty(_chatCredentials.AcctCookie) || (!string.IsNullOrEmpty(_chatCredentials.Email) && !string.IsNullOrEmpty(_chatCredentials.Password)))
+                {
+                    foreach (var message in messages)
+                        await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, message);
+                }
 
                 var apiClient = _serviceProvider.GetRequiredService<ApiClient>();
                 var revisions = await apiClient.Revisions("stackoverflow.com", questionIdList);
