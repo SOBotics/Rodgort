@@ -28,6 +28,8 @@ namespace StackExchangeChat
 
         public async Task<int> SendMessage(ChatSite chatSite, int roomId, string message)
         {
+            var backoffRegex = new Regex(@"You can perform this action again in (\d+) seconds?");
+
             return await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
                 async Task<int> SendMessage()
@@ -43,29 +45,24 @@ namespace StackExchangeChat
                             }));
 
                     var responseString = await response.Content.ReadAsStringAsync();
+                    var matchesBackoff = backoffRegex.Match(responseString);
+                    if (matchesBackoff.Success)
+                    {
+                        var backoffSeconds = int.Parse(matchesBackoff.Groups[1].Value);
+                        await Task.Delay(TimeSpan.FromSeconds(backoffSeconds + 5));
+
+                        var messageId = await SendMessage();
+
+                        await Task.Delay(TimeSpan.FromSeconds(15));
+
+                        return messageId;
+                    }
+
                     var responsePayload = JsonConvert.DeserializeObject<JObject>(responseString);
                     return int.Parse(responsePayload["id"].ToString());
                 }
 
-                const int maxNumTries = 3;
-                var currentTryCount = 0;
-
-                try
-                {
-                    return await SendMessage();
-                }
-                catch (JsonReaderException)
-                {
-                    // We failed to deserialize the response, we probably got throttled.
-                    await Task.Delay(TimeSpan.FromSeconds(15));
-
-                    currentTryCount++;
-                    if (currentTryCount >= maxNumTries)
-                        throw;
-
-                    return await SendMessage();
-                }
-
+                return await SendMessage();
             }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
