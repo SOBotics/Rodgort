@@ -10,7 +10,7 @@ namespace Rodgort.Services
 {
     public class BurnCatchupService
     {
-        public const string SERVICE_NAME = "Burn catchup";
+        public const string SERVICE_NAME = "Burn catchup no announce";
 
         private readonly ApiClient _apiClient;
         private readonly IServiceProvider _serviceProvider;

@@ -39,8 +39,7 @@ namespace Rodgort.Services
 
         private static readonly Regex USER_ID_REGEX = new Regex(@"\/users\/(\d+)");
 
-        public async Task ProcessQuestionIds(IEnumerable<int> questionIds, string followingTag, 
-            DateTime? fromTime, int? roomId, bool announce)
+        public async Task ProcessQuestionIds(IEnumerable<int> questionIds, string followingTag, DateTime? fromTime, int? roomId, bool announce)
         {
             var distinctQuestionIds = questionIds.Distinct();
             foreach (var questionIdGroup in distinctQuestionIds.Batch(100))
@@ -49,32 +48,32 @@ namespace Rodgort.Services
                 if (!questionIdList.Any())
                     return;
 
-                var messages = new List<string>();
-                var tempIds = new List<int>();
-                foreach (var questionId in questionIdList)
-                {
-                    var message = GetProcessingMessage(tempIds.Concat(new[] { questionId }));
-                    if (message.Length > ChatClient.MAX_MESSAGE_LENGTH)
-                    {
-                        messages.Add(GetProcessingMessage(tempIds));
-                        tempIds.Clear();
-                    }
-
-                    tempIds.Add(questionId);
-                }
-
-                if (tempIds.Any())
-                    messages.Add(GetProcessingMessage(tempIds));
-
-                string GetProcessingMessage(IEnumerable<int> qIds)
-                {
-                    return roomId.HasValue
-                        ? $"Processing {string.Join(", ", qIds)} from room {roomId}"
-                        : $"Processing {string.Join(", ", qIds)} from manual start";
-                }
-
                 if (announce && !string.IsNullOrEmpty(_chatCredentials.AcctCookie) || (!string.IsNullOrEmpty(_chatCredentials.Email) && !string.IsNullOrEmpty(_chatCredentials.Password)))
                 {
+                    var messages = new List<string>();
+                    var tempIds = new List<int>();
+                    foreach (var questionId in questionIdList)
+                    {
+                        var message = GetProcessingMessage(tempIds.Concat(new[] { questionId }));
+                        if (message.Length > ChatClient.MAX_MESSAGE_LENGTH)
+                        {
+                            messages.Add(GetProcessingMessage(tempIds));
+                            tempIds.Clear();
+                        }
+
+                        tempIds.Add(questionId);
+                    }
+
+                    if (tempIds.Any())
+                        messages.Add(GetProcessingMessage(tempIds));
+
+                    string GetProcessingMessage(IEnumerable<int> qIds)
+                    {
+                        return roomId.HasValue
+                            ? $"Processing {string.Join(", ", qIds)} from room {roomId}"
+                            : $"Processing {string.Join(", ", qIds)} from manual start";
+                    }
+
                     foreach (var message in messages)
                         await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, message);
                 }
