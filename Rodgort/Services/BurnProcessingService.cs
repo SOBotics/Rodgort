@@ -40,7 +40,7 @@ namespace Rodgort.Services
         private static readonly Regex USER_ID_REGEX = new Regex(@"\/users\/(\d+)");
 
         public async Task ProcessQuestionIds(IEnumerable<int> questionIds, string followingTag, 
-            DateTime? fromTime, int? roomId, bool announce = true)
+            DateTime? fromTime, int? roomId, bool announce)
         {
             var distinctQuestionIds = questionIds.Distinct();
             foreach (var questionIdGroup in distinctQuestionIds.Batch(100))

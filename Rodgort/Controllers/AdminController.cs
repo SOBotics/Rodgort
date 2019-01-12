@@ -153,7 +153,8 @@ namespace Rodgort.Controllers
                 request.QuestionIds,
                 follow.Tag,
                 follow.FollowStarted,
-                null
+                null,
+                true
             );
 
             _logger.LogInformation($"Finished manual processing for {request.QuestionIds.Count} questions");

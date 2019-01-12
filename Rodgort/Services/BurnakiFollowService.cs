@@ -104,7 +104,7 @@ namespace Rodgort.Services
                                     )
                                     .Distinct();
 
-                            await _burnProcessingService.ProcessQuestionIds(questionIds, followingTag, fromTime, roomId);
+                            await _burnProcessingService.ProcessQuestionIds(questionIds, followingTag, fromTime, roomId, true);
                         });
                     }, cancellationToken);
             });
