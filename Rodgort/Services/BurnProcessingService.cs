@@ -39,7 +39,8 @@ namespace Rodgort.Services
 
         private static readonly Regex USER_ID_REGEX = new Regex(@"\/users\/(\d+)");
 
-        public async Task ProcessQuestionIds(IEnumerable<int> questionIds, string followingTag, DateTime? fromTime, int? roomId)
+        public async Task ProcessQuestionIds(IEnumerable<int> questionIds, string followingTag, 
+            DateTime? fromTime, int? roomId, bool announce = true)
         {
             var distinctQuestionIds = questionIds.Distinct();
             foreach (var questionIdGroup in distinctQuestionIds.Batch(100))
@@ -72,7 +73,7 @@ namespace Rodgort.Services
                         : $"Processing {string.Join(", ", qIds)} from manual start";
                 }
 
-                if (!string.IsNullOrEmpty(_chatCredentials.AcctCookie) || (!string.IsNullOrEmpty(_chatCredentials.Email) && !string.IsNullOrEmpty(_chatCredentials.Password)))
+                if (announce && !string.IsNullOrEmpty(_chatCredentials.AcctCookie) || (!string.IsNullOrEmpty(_chatCredentials.Email) && !string.IsNullOrEmpty(_chatCredentials.Password)))
                 {
                     foreach (var message in messages)
                         await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, message);
