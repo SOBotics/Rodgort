@@ -19,14 +19,14 @@ namespace Rodgort.Controllers
     public class AdminController : Controller
     {
         private readonly RodgortContext _context;
-        private readonly BurnakiFollowService _burnakiFollowService;
+        private readonly BurnProcessingService _burnProcessingService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AdminController> _logger;
 
-        public AdminController(RodgortContext context, BurnakiFollowService burnakiFollowService, IServiceProvider serviceProvider, ILogger<AdminController> logger)
+        public AdminController(RodgortContext context, BurnProcessingService burnProcessingService, IServiceProvider serviceProvider, ILogger<AdminController> logger)
         {
             _context = context;
-            _burnakiFollowService = burnakiFollowService;
+            _burnProcessingService = burnProcessingService;
             _serviceProvider = serviceProvider;
             _logger = logger;
         }
@@ -149,12 +149,10 @@ namespace Rodgort.Controllers
 
             _logger.LogInformation($"Starting manual process for {string.Join(", ", request.QuestionIds)}");
 
-            await _burnakiFollowService.ProcessQuestionIds(
+            await _burnProcessingService.ProcessQuestionIds(
                 request.QuestionIds,
-                chatClient,
                 follow.Tag,
                 follow.FollowStarted,
-                dateService,
                 null
             );
 

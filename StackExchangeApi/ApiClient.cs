@@ -130,6 +130,15 @@ namespace StackExchangeApi
             });
         }
 
+        public Task<ApiItemsResponse<QuestionIdResponse>> QuestionsBy(string siteName, string tag)
+        {
+            return ApplyWithPaging<QuestionIdResponse>($"{BASE_URL}/questions?tagged={tag}", new Dictionary<string, string>
+            {
+                {"site", siteName},
+                {"filter", "!-W2eZXqTF)pIrxsccZvx"}
+            });
+        }
+
         public Task<ApiItemsResponse<TagResponse>> TotalQuestionsByTag(string siteName, IEnumerable<string> tags)
         {
             var tagsList = tags.ToList();

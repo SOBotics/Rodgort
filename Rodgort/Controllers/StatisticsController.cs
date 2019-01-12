@@ -135,8 +135,6 @@ namespace Rodgort.Controllers
                                 QuestionCountOverTime = mqt.Tag.Statistics.Where(s => s.DateTime > (mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded))
                                     .Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
                                 Actions = _context.UserActions
-                                    .Where(ua => isRoomOwner || ua.Time > mq.BurnStarted)
-                                    .Where(s => s.Time > (mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded))
                                     .Where(a => a.UserActionTypeId != DbUserActionType.UNKNOWN_DELETION)
                                     .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                     {
@@ -150,7 +148,6 @@ namespace Rodgort.Controllers
                             }).ToList()
                 }).ToList();
 
-            var firstTime = DateTime.MinValue;
             var res = new
             {
                 Burns = burnsData.Select(b => new
@@ -163,7 +160,7 @@ namespace Rodgort.Controllers
                         bt.NumberOfQuestions,
                         bt.QuestionCountOverTime,
 
-                        ClosuresOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                        ClosuresOverTime = bt.Actions.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
@@ -171,9 +168,10 @@ namespace Rodgort.Controllers
                                     bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.CLOSED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                                     - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.REOPENED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
+                            .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
 
-                        DeletionsOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                        DeletionsOverTime = bt.Actions.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
@@ -181,9 +179,10 @@ namespace Rodgort.Controllers
                                     bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                                     - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.UNDELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
+                            .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
 
-                        RetagsOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                        RetagsOverTime = bt.Actions.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
@@ -191,17 +190,21 @@ namespace Rodgort.Controllers
                                     bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.REMOVED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                                     - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.ADDED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
+                            .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
 
-                        RoombasOverTime = bt.Actions.Where(a => a.Time > firstTime).GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
+                        RoombasOverTime = bt.Actions.GroupBy(gg => new { Time = gg.Time.Date.AddHours(gg.Time.Hour) })
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
                                 Total = bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.UserId == -1 && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
                             })
+                            .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
 
-                        Overtime = bt.Actions.Where(a => a.Time > firstTime)
+                        Overtime = bt.Actions
+                            .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
+                            .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
                             .GroupBy(a => new { a.User, a.UserId })
                             .Select(g => new
                             {
@@ -217,20 +220,28 @@ namespace Rodgort.Controllers
                             .OrderByDescending(g => g.Times.Max(tt => tt.Total))
                             .Take(10)
                         ,
-                        UserTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new { g.Type, g.User, g.UserId }).Select(g => new
+                        UserTotals = bt.Actions
+                            .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
+                            .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
+                            .GroupBy(g => new { g.Type, g.User, g.UserId }).Select(g => new
                         {
                             UserName = g.Key.User,
                             g.Key.UserId,
                             g.Key.Type,
                             Total = g.Select(gg => gg.PostId).Distinct().Count()
                         }),
-                        UserGrandTotals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => new { g.User, g.UserId }).Select(g => new
+                        UserGrandTotals = bt.Actions
+                            .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
+                            .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
+                            .GroupBy(g => new { g.User, g.UserId }).Select(g => new
                         {
                             UserName = g.Key.User,
                             g.Key.UserId,
                             Total = g.Select(gg => gg.PostId).Distinct().Count()
                         }),
-                        Totals = bt.Actions.Where(a => a.Time > firstTime).GroupBy(g => g.Type).Select(g => new
+                        Totals = bt.Actions
+                            .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
+                            .GroupBy(g => g.Type).Select(g => new
                         {
                             Type = g.Key,
                             Total = g.Select(gg => gg.PostId).Distinct().Count()
