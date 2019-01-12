@@ -74,8 +74,9 @@ namespace Rodgort.Services
                             : $"Processing {string.Join(", ", qIds)} from manual start";
                     }
 
-                    foreach (var message in messages)
-                        await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, message);
+                    if (roomId.HasValue)
+                        foreach (var message in messages)
+                            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, message);
                 }
 
                 var apiClient = _serviceProvider.GetRequiredService<ApiClient>();
