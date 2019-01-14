@@ -38,7 +38,7 @@ namespace Rodgort.Services
         {
             var currentBurnTags =
                 _context.MetaQuestions
-                    .Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED))
+                    .Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED && mqmt.TagName == DbMetaTag.STATUS_FEATURED))
                     .SelectMany(
                         mq => mq.MetaQuestionTags.Where(mqt =>
                                 mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
