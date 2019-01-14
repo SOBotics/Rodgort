@@ -31,7 +31,7 @@ namespace Rodgort.Services
             _enabled = hasCookies || hasCredentials;
         }
 
-        public async Task AnnounceMultipleTrackedTags(string metaPostUrl, IEnumerable<string> trackedTags)
+        private async Task AnnounceFeaturedMultipleTrackedTags(string metaPostUrl, IEnumerable<string> trackedTags)
         {
             if (!_enabled)
                 return;
@@ -39,7 +39,7 @@ namespace Rodgort.Services
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Discussion for the burnination of {metaPostUrl} started, but there are multiple tracked tags: {string.Join(", ", trackedTags)}");
         }
 
-        public async Task AnnounceNoTrackedTags(string metaPostUrl)
+        private async Task AnnounceFeaturedNoTrackedTags(string metaPostUrl)
         {
             if (!_enabled)
                 return;
@@ -47,6 +47,30 @@ namespace Rodgort.Services
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Discussion for the burnination of {metaPostUrl} started, but there are no tracked tags");
         }
 
+        private async Task AnnounceBurningMultipleTrackedTags(string metaPostUrl, IEnumerable<string> trackedTags)
+        {
+            if (!_enabled)
+                return;
+
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burn of {metaPostUrl} started, but there are multiple tracked tags: {string.Join(", ", trackedTags)}");
+        }
+
+        private async Task AnnounceBurningNoTrackedTags(string metaPostUrl)
+        {
+            if (!_enabled)
+                return;
+
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burn of {metaPostUrl} started, but there are no tracked tags");
+        }
+
+        private async Task AnnounceBurningMultipleRooms(string metaPostUrl, List<int> roomIds)
+        {
+            if (!_enabled)
+                return;
+
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burn of {metaPostUrl} started, but there are multiple observation rooms: {string.Join(", ", roomIds)}");
+        }
+        
         public async Task StopBurn(string tag)
         {
             if (!_enabled)
@@ -63,24 +87,96 @@ namespace Rodgort.Services
 
             _rodgortContext.SaveChanges();
         }
-        
-        public async Task CreateRoomForBurn(string tag, string metaPostUrl)
+
+        public async Task NewBurnStarted(string metaPostUrl, List<string> tags)
         {
             if (!_enabled)
                 return;
 
-            var roomName = $"Observation room for [{tag}] burnination";
+            if (!tags.Any())
+            {
+                await AnnounceBurningNoTrackedTags(metaPostUrl);
+                return;
+            }
+
+            if (tags.Count > 1)
+            {
+                await AnnounceBurningMultipleTrackedTags(metaPostUrl, tags);
+                return;
+            }
+
+            var tag = tags.First();
+
+            var observationRooms = 
+                _rodgortContext.BurnakiFollows
+                .Where(b => b.BurnakiId == 8300708 && !b.FollowEnded.HasValue && b.Tag == tag)
+                .Select(bf => bf.RoomId)
+                .Distinct()
+                .ToList();
+
+            if (observationRooms.Count > 1)
+            {
+                await AnnounceBurningMultipleRooms(metaPostUrl, observationRooms);
+                return;
+            }
+
+            var roomId = observationRooms.FirstOrDefault();
+            if (roomId == 0)
+                roomId = await CreateBurnRoom(tag);
+            else
+                await RenameObservationRoom(roomId);
+            
+            var burninationMessage = $"The burnination of [tag:{tag}] has STARTED! [Meta post]({metaPostUrl}). [Burnination progress room](https://chat.stackoverflow.com/rooms/{roomId}).";
+            await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
+        }
+
+        private async Task RenameObservationRoom(int roomId)
+        {
+            await Task.CompletedTask;
+        }
+
+        private async Task<int> CreateBurnRoom(string tag)
+        {
+            var roomName = $"Burnination progress for the [{tag}] tag";
             var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, string.Empty);
 
             var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} https://chat.stackoverflow.com/rooms/{roomId}";
 
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, gemmyMessage);
+            return roomId;
+        }
 
-            var burninationMessage = $"The burnination of [tag:{tag}] is now being discussed {metaPostUrl}";
+        public async Task NewTagsFeatured(int metaQuestionId, string metaPostUrl, List<string> tags)
+        {
+            if (!_enabled)
+                return;
 
-            var burninationMessageId = await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
-            await _chatClient.PinMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, burninationMessageId);
+            if (!tags.Any())
+            {
+                await AnnounceFeaturedNoTrackedTags(metaPostUrl);
+                return;
+            }
 
+            if (tags.Count > 1)
+            {
+                await AnnounceFeaturedMultipleTrackedTags(metaPostUrl, tags);
+                return;
+            }
+
+            var tag = tags.First();
+            
+            var roomName = $"Observation room for [{tag}] burnination";
+            var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, string.Empty);
+
+            await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, roomId, $"[Rodgort tag progress](https://rodgort.sobotics.org/progress?metaQuestionId={metaQuestionId})");
+            
+            var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} https://chat.stackoverflow.com/rooms/{roomId}";
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, gemmyMessage);
+
+            var burninationMessage = $"The burnination of [tag:{tag}] is now being discussed. [Meta post]({metaPostUrl}). [Observation room](https://chat.stackoverflow.com/rooms/{roomId}).";
+
+            await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
+            
             var burnakiFollow = new DbBurnakiFollow
             {
                 BurnakiId = 8300708,

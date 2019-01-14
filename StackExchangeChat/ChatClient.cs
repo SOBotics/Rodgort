@@ -26,6 +26,13 @@ namespace StackExchangeChat
             _httpClient = httpClient;
         }
 
+        public async Task<int> SendMessageAndPin(ChatSite chatSite, int roomId, string message)
+        {
+            var messageId = await SendMessage(chatSite, roomId, message);
+            await PinMessage(chatSite, roomId, messageId);
+            return messageId;
+        }
+
         public async Task<int> SendMessage(ChatSite chatSite, int roomId, string message)
         {
             var backoffRegex = new Regex(@"You can perform this action again in (\d+) seconds?");

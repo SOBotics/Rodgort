@@ -46,6 +46,7 @@ namespace Rodgort.Services
 
         private class NewFeature
         {
+            public int MetaQuestionId { get; set; }
             public string MetaUrl { get; set; }
             public List<string> Tags { get; set; }
         }
@@ -53,6 +54,12 @@ namespace Rodgort.Services
         private class BurnFinished
         {
             public string Tag { get; set; }
+        }
+
+        private class BurnStarted
+        {
+            public string MetaUrl { get; set; }
+            public List<string> Tags { get; set; }
         }
 
         public void CrawlMetaSync()
@@ -78,6 +85,7 @@ namespace Rodgort.Services
             {
                 var newFeatures = new List<NewFeature>();
                 var finishedBurns = new List<BurnFinished>();
+                var burnsStarted = new List<BurnStarted>();
 
                 _logger.LogInformation("Starting meta crawl");
 
@@ -145,10 +153,14 @@ namespace Rodgort.Services
                                 if (tag == DbMetaTag.STATUS_FEATURED)
                                 {
                                     dbMetaQuestion.FeaturedStarted = utcNow;
-                                    newFeatures.Add(new NewFeature { MetaUrl = metaQuestion.Link, Tags = trackedTags.Select(t => t.TagName).ToList() });
+                                    newFeatures.Add(new NewFeature { MetaQuestionId = metaQuestion.QuestionId.Value, MetaUrl = metaQuestion.Link, Tags = trackedTags.Select(t => t.TagName).ToList() });
                                 }
+
                                 if (tag == DbMetaTag.STATUS_PLANNED)
+                                {
                                     dbMetaQuestion.BurnStarted = utcNow;
+                                    burnsStarted.Add(new BurnStarted { MetaUrl = metaQuestion.Link, Tags = trackedTags.Select(t => t.TagName).ToList() });
+                                }
                             }
                         }
 
@@ -232,20 +244,10 @@ namespace Rodgort.Services
                     await _newBurninationService.StopBurn(finishedBurn.Tag);
 
                 foreach (var newFeature in newFeatures.GroupBy(g => g.MetaUrl).Select(g => g.First()))
-                {
-                    if (!newFeature.Tags.Any())
-                    {
-                        await _newBurninationService.AnnounceNoTrackedTags(newFeature.MetaUrl);
-                    }
-                    else if (newFeature.Tags.Count > 1)
-                    {
-                        await _newBurninationService.AnnounceMultipleTrackedTags(newFeature.MetaUrl, newFeature.Tags);
-                    }
-                    else
-                    {
-                        await _newBurninationService.CreateRoomForBurn(newFeature.Tags.First(), newFeature.MetaUrl);
-                    }
-                }
+                    await _newBurninationService.NewTagsFeatured(newFeature.MetaUrl, newFeature.Tags);
+
+                foreach (var burnStarted in burnsStarted.GroupBy(g => g.MetaUrl).Select(g => g.First()))
+                    await _newBurninationService.NewBurnStarted(burnStarted.MetaUrl, burnStarted.Tags);
 
                 _logger.LogInformation("Meta crawl completed");
                 RecurringJob.Trigger(BurninationTagGuessingService.SERVICE_NAME);
