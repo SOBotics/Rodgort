@@ -33,6 +33,7 @@ namespace Rodgort.Services
 
         public async Task AnnounceMultipleTrackedTags(string metaPostUrl, IEnumerable<string> trackedTags)
         {
+            return;
             if (!Enabled)
                 return;
 
@@ -41,6 +42,7 @@ namespace Rodgort.Services
 
         public async Task AnnounceNoTrackedTags(string metaPostUrl)
         {
+            return;
             if (!Enabled)
                 return;
 
@@ -49,6 +51,7 @@ namespace Rodgort.Services
 
         public async Task StopBurn(string tag)
         {
+            return;
             if (!Enabled)
                 return;
 
@@ -66,6 +69,10 @@ namespace Rodgort.Services
         
         public async Task CreateRoomForBurn(string tag, string metaPostUrl)
         {
+            return;
+            if (!Enabled)
+                return;
+
             var roomName = $"Observation room for [{tag}] burnination";
             var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, string.Empty);
 
