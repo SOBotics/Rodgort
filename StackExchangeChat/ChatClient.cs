@@ -98,6 +98,26 @@ namespace StackExchangeChat
             }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
+        public async Task EditRoom(ChatSite chatSite, int roomId, string roomName, string roomDescription)
+        {
+            await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
+            {
+                var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
+                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+
+                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/save",
+                    new FormUrlEncodedContent(
+                        new Dictionary<string, string>
+                        {
+                            {"fkey", fkey},
+                            {"roomId", roomId.ToString()},
+                            {"name", roomName},
+                            {"description", roomDescription},
+                            {"tags", string.Empty},
+                        }));
+            });
+        }
+
         public async Task PinMessage(ChatSite chatSite, int currentRoomId, int messageId)
         {
             await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>

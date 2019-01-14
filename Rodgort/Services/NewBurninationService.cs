@@ -122,23 +122,23 @@ namespace Rodgort.Services
 
             var roomId = observationRooms.FirstOrDefault();
             if (roomId == 0)
-                roomId = await CreateBurnRoom(tag);
+                roomId = await CreateBurnRoom(metaPostUrl, tag);
             else
-                await RenameObservationRoom(roomId);
+                await RenameObservationRoom(roomId, metaPostUrl, tag);
             
             var burninationMessage = $"The burnination of [tag:{tag}] has STARTED! [Meta post]({metaPostUrl}). [Burnination progress room](https://chat.stackoverflow.com/rooms/{roomId}).";
             await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
         }
 
-        private async Task RenameObservationRoom(int roomId)
+        private async Task RenameObservationRoom(int roomId, string metaPostUrl, string tag)
         {
-            await Task.CompletedTask;
+            await _chatClient.EditRoom(ChatSite.StackOverflow, roomId, $"Burnination progress for the [{tag}] tag", metaPostUrl);
         }
 
-        private async Task<int> CreateBurnRoom(string tag)
+        private async Task<int> CreateBurnRoom(string metaPostUrl, string tag)
         {
             var roomName = $"Burnination progress for the [{tag}] tag";
-            var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, string.Empty);
+            var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, metaPostUrl);
 
             var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} https://chat.stackoverflow.com/rooms/{roomId}";
 
@@ -166,7 +166,7 @@ namespace Rodgort.Services
             var tag = tags.First();
             
             var roomName = $"Observation room for [{tag}] burnination";
-            var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, string.Empty);
+            var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, metaPostUrl);
 
             await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, roomId, $"[Rodgort tag progress](https://rodgort.sobotics.org/progress?metaQuestionId={metaQuestionId})");
             
