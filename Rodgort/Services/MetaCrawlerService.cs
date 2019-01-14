@@ -244,7 +244,7 @@ namespace Rodgort.Services
                     await _newBurninationService.StopBurn(finishedBurn.Tag);
 
                 foreach (var newFeature in newFeatures.GroupBy(g => g.MetaUrl).Select(g => g.First()))
-                    await _newBurninationService.NewTagsFeatured(newFeature.MetaUrl, newFeature.Tags);
+                    await _newBurninationService.NewTagsFeatured(newFeature.MetaQuestionId, newFeature.MetaUrl, newFeature.Tags);
 
                 foreach (var burnStarted in burnsStarted.GroupBy(g => g.MetaUrl).Select(g => g.First()))
                     await _newBurninationService.NewBurnStarted(burnStarted.MetaUrl, burnStarted.Tags);
