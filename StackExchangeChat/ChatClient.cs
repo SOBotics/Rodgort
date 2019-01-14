@@ -74,7 +74,7 @@ namespace StackExchangeChat
         }
 
         private readonly Regex _roomRegex = new Regex(@"\/rooms\/info\/(\d+)\/");
-        public async Task<int> CreateRoom(ChatSite chatSite, int currentRoomId, string roomName, string roomDescription)
+        public async Task<int> CreateRoom(ChatSite chatSite, int currentRoomId, string roomName, string roomDescription, IEnumerable<string> tags)
         {
             return await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
@@ -88,7 +88,7 @@ namespace StackExchangeChat
                             {"defaultAccess", "read-write"},
                             {"name", roomName},
                             {"description", roomDescription},
-                            {"tags", string.Empty},
+                            {"tags", string.Join(" ", tags)},
                             {"noDupeCheck", "true"}
                         }));
 
@@ -98,7 +98,7 @@ namespace StackExchangeChat
             }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
-        public async Task EditRoom(ChatSite chatSite, int roomId, string roomName, string roomDescription)
+        public async Task EditRoom(ChatSite chatSite, int roomId, string roomName, string roomDescription, IEnumerable<string> tags)
         {
             await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
@@ -113,7 +113,7 @@ namespace StackExchangeChat
                             {"roomId", roomId.ToString()},
                             {"name", roomName},
                             {"description", roomDescription},
-                            {"tags", string.Empty},
+                            {"tags", string.Join(" ", tags)},
                         }));
             });
         }

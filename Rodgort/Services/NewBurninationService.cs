@@ -132,13 +132,13 @@ namespace Rodgort.Services
 
         private async Task RenameObservationRoom(int roomId, string metaPostUrl, string tag)
         {
-            await _chatClient.EditRoom(ChatSite.StackOverflow, roomId, $"Burnination progress for the [{tag}] tag", metaPostUrl);
+            await _chatClient.EditRoom(ChatSite.StackOverflow, roomId, $"Burnination progress for the [{tag}] tag", metaPostUrl, new[] { tag });
         }
 
         private async Task<int> CreateBurnRoom(string metaPostUrl, string tag)
         {
             var roomName = $"Burnination progress for the [{tag}] tag";
-            var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, metaPostUrl);
+            var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, metaPostUrl, new[] { tag });
 
             var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} https://chat.stackoverflow.com/rooms/{roomId}";
 
