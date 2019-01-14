@@ -138,7 +138,7 @@ namespace Rodgort
                     context.Database.Migrate();
             
             // Every hour
-            RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMeta(), "0 * * * *");
+            RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMetaSync(), "0 * * * *");
 
             // Every hour
             RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ALL_TAGS, service => service.GetQuestionCountForApprovedTags(), "5 * * * *");

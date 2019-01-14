@@ -21,7 +21,12 @@ namespace Rodgort.Services
             _apiClient = apiClient;
         }
 
-        public async Task SyncAllUsers()
+        public void SyncAllUsersSync()
+        {
+            SyncAllUsers().Wait();
+        }
+
+        private async Task SyncAllUsers()
         {
             using (var context = new RodgortContext(_dbContextOptions))
             {
@@ -42,7 +47,12 @@ namespace Rodgort.Services
             }
         }
 
-        public async Task SyncUsersWithNoName()
+        public void SyncUsersWithNoNameSync()
+        {
+            SyncUsersWithNoName().Wait();
+        }
+
+        private async Task SyncUsersWithNoName()
         {
             using (var context = new RodgortContext(_dbContextOptions))
             {

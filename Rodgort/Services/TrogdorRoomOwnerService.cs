@@ -21,6 +21,11 @@ namespace Rodgort.Services
             _context = context;
         }
 
+        public void SyncTrogdorRoomOwnersSync()
+        {
+            SyncTrogdorRoomOwners().Wait();
+        }
+
         public async Task SyncTrogdorRoomOwners()
         {
             var restClient = new RestClient(STACKOVERFLOW_CHAT_URL);

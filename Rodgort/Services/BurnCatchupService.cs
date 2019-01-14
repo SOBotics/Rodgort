@@ -29,7 +29,12 @@ namespace Rodgort.Services
             _context = context;
         }
 
-        public async Task Catchup()
+        public void CatchupSync()
+        {
+            Catchup().Wait();
+        }
+
+        private async Task Catchup()
         {
             var currentBurnTags =
                 _context.MetaQuestions

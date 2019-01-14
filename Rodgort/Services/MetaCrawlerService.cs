@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Rodgort.ApiUtilities;
 using Rodgort.Data;
@@ -43,172 +44,176 @@ namespace Rodgort.Services
             _newBurninationService = newBurninationService;
         }
 
+        private class NewFeature
+        {
+            public string MetaUrl { get; set; }
+            public List<string> Tags { get; set; }
+        }
+
+        private class BurnFinished
+        {
+            public string Tag { get; set; }
+        }
+
+        public void CrawlMetaSync()
+        {
+            CrawlMeta().Wait();
+        }
+
         [SuppressMessage("ReSharper", "InconsistentlySynchronizedField", Justification = "Flagged _logger, but in both blocks we're guaranteed to run on a single thread")]
-        public Task CrawlMeta()
+        private async Task CrawlMeta()
         {
             lock (_locker)
             {
                 if (_alreadyProcessing)
                 {
                     _logger.LogWarning("Attempted to crawl meta while process already running");
-                    return Task.CompletedTask;
+                    return;
                 }
                     
                 _alreadyProcessing = true;
             }
-
-            return CrawlMetaInternal();
-            async Task CrawlMetaInternal()
+            
+            try
             {
-                try
+                var newFeatures = new List<NewFeature>();
+                var finishedBurns = new List<BurnFinished>();
+
+                _logger.LogInformation("Starting meta crawl");
+
+                foreach (var tagToCrawl in DbMetaTag.RequestTypes)
                 {
-                    _logger.LogInformation("Starting meta crawl");
+                    _logger.LogInformation($"Crawling {tagToCrawl}");
 
-                    foreach (var tagToCrawl in DbMetaTag.RequestTypes)
+                    var metaQuestions = await _apiClient.MetaQuestionsByTag("meta.stackoverflow.com", tagToCrawl);
+
+                    _logger.LogInformation($"{metaQuestions.Items.Count} meta questions retrieved for {tagToCrawl}. Processing...");
+
+                    var questionIds = metaQuestions.Items.Select(q => q.QuestionId).Distinct().ToList();
+
+                    var context = new RodgortContext(_dbContextOptions);
+
+                    var questionLookup = context.MetaQuestions.Where(q => questionIds.Contains(q.Id))    
+                        .Include(mq => mq.MetaQuestionMetaTags)
+                        .Include(mq => mq.MetaQuestionTags)
+                        .ToDictionary(q => q.Id, q => q);
+
+                    var answerIds = metaQuestions.Items.Where(q => q.Answers != null).SelectMany(q => q.Answers.Select(a => a.AnswerId)).Distinct().ToList();
+                    var answerLookup = context.MetaAnswers.Where(q => answerIds.Contains(q.Id)).ToDictionary(a => a.Id, a => a);
+
+                    var utcNow = _dateService.UtcNow;
+                    foreach (var metaQuestion in metaQuestions.Items)
                     {
-                        _logger.LogInformation($"Crawling {tagToCrawl}");
+                        DbMetaQuestion dbMetaQuestion;
+                        if (!metaQuestion.QuestionId.HasValue)
+                            throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.QuestionId)}");
 
-                        var metaQuestions = await _apiClient.MetaQuestionsByTag("meta.stackoverflow.com", tagToCrawl);
-
-                        _logger.LogInformation($"{metaQuestions.Items.Count} meta questions retrieved for {tagToCrawl}. Processing...");
-
-                        var questionIds = metaQuestions.Items.Select(q => q.QuestionId).Distinct().ToList();
-
-                        var context = new RodgortContext(_dbContextOptions);
-
-                        var questionLookup = context.MetaQuestions.Where(q => questionIds.Contains(q.Id))
-                            .Include(mq => mq.MetaQuestionMetaTags)
-                            .Include(mq => mq.MetaQuestionTags)
-                            .ToDictionary(q => q.Id, q => q);
-
-                        var answerIds = metaQuestions.Items.Where(q => q.Answers != null).SelectMany(q => q.Answers.Select(a => a.AnswerId)).Distinct().ToList();
-                        var answerLookup = context.MetaAnswers.Where(q => answerIds.Contains(q.Id)).ToDictionary(a => a.Id, a => a);
-
-                        var utcNow = _dateService.UtcNow;
-                        foreach (var metaQuestion in metaQuestions.Items)
+                        if (!questionLookup.ContainsKey(metaQuestion.QuestionId.Value))
                         {
-                            DbMetaQuestion dbMetaQuestion;
-                            if (!metaQuestion.QuestionId.HasValue)
-                                throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.QuestionId)}");
+                            dbMetaQuestion = new DbMetaQuestion { Id = metaQuestion.QuestionId.Value, MetaQuestionTags = new List<DbMetaQuestionTag>() };
+                            context.MetaQuestions.Add(dbMetaQuestion);
 
-                            if (!questionLookup.ContainsKey(metaQuestion.QuestionId.Value))
+                            questionLookup[dbMetaQuestion.Id] = dbMetaQuestion;
+                        }
+                        else
+                        {
+                            dbMetaQuestion = questionLookup[metaQuestion.QuestionId.Value];
+                        }
+
+                        if (!metaQuestion.Score.HasValue)
+                            throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.Score)}");
+                        if (!metaQuestion.ViewCount.HasValue)
+                            throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.ViewCount)}");
+
+                        dbMetaQuestion.Title = WebUtility.HtmlDecode(metaQuestion.Title);
+                        dbMetaQuestion.Body = WebUtility.HtmlDecode(metaQuestion.BodyMarkdown);
+                        dbMetaQuestion.Link = metaQuestion.Link;
+                        dbMetaQuestion.LastSeen = utcNow;
+                        dbMetaQuestion.Score = metaQuestion.Score.Value;
+                        dbMetaQuestion.ViewCount = metaQuestion.ViewCount.Value;
+                        dbMetaQuestion.CloseReason = metaQuestion.ClosedReason;
+
+                        if (metaQuestion.ClosedDate.HasValue)
+                            dbMetaQuestion.ClosedDate = Dates.UnixTimeStampToDateTime(metaQuestion.ClosedDate.Value);
+
+                        var trackedTags = dbMetaQuestion.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).ToList();
+                        foreach (var tag in metaQuestion.Tags)
+                        {
+                            if (!dbMetaQuestion.MetaQuestionMetaTags.Any(t => string.Equals(t.TagName, tag, StringComparison.OrdinalIgnoreCase)))
                             {
-                                dbMetaQuestion = new DbMetaQuestion { Id = metaQuestion.QuestionId.Value, MetaQuestionTags = new List<DbMetaQuestionTag>() };
-                                context.MetaQuestions.Add(dbMetaQuestion);
+                                context.MetaQuestionMetaTags.Add(new DbMetaQuestionMetaTag { TagName = tag, MetaQuestion = dbMetaQuestion });
+                                if (tag == DbMetaTag.STATUS_FEATURED)
+                                {
+                                    dbMetaQuestion.FeaturedStarted = utcNow;
+                                    newFeatures.Add(new NewFeature { MetaUrl = metaQuestion.Link, Tags = trackedTags.Select(t => t.TagName).ToList() });
+                                }
+                                if (tag == DbMetaTag.STATUS_PLANNED)
+                                    dbMetaQuestion.BurnStarted = utcNow;
+                            }
+                        }
 
-                                questionLookup[dbMetaQuestion.Id] = dbMetaQuestion;
+                        var metaQuestionList = dbMetaQuestion.MetaQuestionMetaTags.ToList();
+                        foreach (var dbTag in metaQuestionList)
+                        {
+                            if (!metaQuestion.Tags.Any(t => string.Equals(t, dbTag.TagName, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                context.MetaQuestionMetaTags.Remove(dbTag);
+
+                                if (dbTag.TagName == DbMetaTag.STATUS_FEATURED)
+                                    dbMetaQuestion.FeaturedEnded = utcNow;
+                                if (dbTag.TagName == DbMetaTag.STATUS_PLANNED)
+                                {
+                                    dbMetaQuestion.BurnEnded = utcNow;
+                                    foreach (var trackedTag in trackedTags)
+                                        finishedBurns.Add(new BurnFinished {Tag = trackedTag.TagName });
+                                }
+                            }
+                        }
+
+                        var dbMetaQuestionStatistics = new DbMetaQuestionStatistics
+                        {
+                            DateTime = utcNow,
+                            Score = metaQuestion.Score.Value,
+                            ViewCount = metaQuestion.ViewCount.Value,
+
+                            MetaQuestion = dbMetaQuestion
+                        };
+                        context.Add(dbMetaQuestionStatistics);
+
+                        foreach (var metaAnswer in metaQuestion.Answers ?? Enumerable.Empty<BaseAnswer>())
+                        {
+                            DbMetaAnswer dbMetaAnswer;
+                            if (!metaAnswer.AnswerId.HasValue)
+                                throw new InvalidOperationException($"Answer object does not contain {nameof(metaAnswer.AnswerId)}");
+
+                            if (!answerLookup.ContainsKey(metaAnswer.AnswerId.Value))
+                            {
+                                dbMetaAnswer = new DbMetaAnswer { Id = metaAnswer.AnswerId.Value };
+                                context.MetaAnswers.Add(dbMetaAnswer);
+
+                                answerLookup[dbMetaAnswer.Id] = dbMetaAnswer;
                             }
                             else
                             {
-                                dbMetaQuestion = questionLookup[metaQuestion.QuestionId.Value];
+                                dbMetaAnswer = answerLookup[metaAnswer.AnswerId.Value];
                             }
 
-                            if (!metaQuestion.Score.HasValue)
-                                throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.Score)}");
-                            if (!metaQuestion.ViewCount.HasValue)
-                                throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.ViewCount)}");
+                            dbMetaAnswer.Body = metaAnswer.BodyMarkdown;
+                            dbMetaAnswer.MetaQuestion = dbMetaQuestion;
+                            dbMetaAnswer.LastSeen = utcNow;
 
-                            dbMetaQuestion.Title = WebUtility.HtmlDecode(metaQuestion.Title);
-                            dbMetaQuestion.Body = WebUtility.HtmlDecode(metaQuestion.BodyMarkdown);
-                            dbMetaQuestion.Link = metaQuestion.Link;
-                            dbMetaQuestion.LastSeen = utcNow;
-                            dbMetaQuestion.Score = metaQuestion.Score.Value;
-                            dbMetaQuestion.ViewCount = metaQuestion.ViewCount.Value;
-                            dbMetaQuestion.CloseReason = metaQuestion.ClosedReason;
+                            if (!metaAnswer.Score.HasValue)
+                                throw new InvalidOperationException($"Answer object does not contain {nameof(metaAnswer.Score)}");
 
-                            if (metaQuestion.ClosedDate.HasValue)
-                                dbMetaQuestion.ClosedDate = Dates.UnixTimeStampToDateTime(metaQuestion.ClosedDate.Value);
-
-                            var trackedTags = dbMetaQuestion.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).ToList();
-                            foreach (var tag in metaQuestion.Tags)
-                            {
-                                if (!dbMetaQuestion.MetaQuestionMetaTags.Any(t => string.Equals(t.TagName, tag, StringComparison.OrdinalIgnoreCase)))
-                                {
-                                    context.MetaQuestionMetaTags.Add(new DbMetaQuestionMetaTag { TagName = tag, MetaQuestion = dbMetaQuestion });
-                                    if (tag == DbMetaTag.STATUS_FEATURED)
-                                    {
-                                        dbMetaQuestion.FeaturedStarted = utcNow;
-                                        if (!trackedTags.Any())
-                                        {
-                                            await _newBurninationService.AnnounceNoTrackedTags(metaQuestion.Link);
-                                        }
-                                        else if (trackedTags.Count > 1)
-                                        {
-                                            await _newBurninationService.AnnounceMultipleTrackedTags(metaQuestion.Link, trackedTags.Select(t => t.TagName));
-                                        }
-                                        else
-                                        {
-                                            await _newBurninationService.CreateRoomForBurn(trackedTags.First().TagName, metaQuestion.Link);
-                                        }
-                                    }
-                                    if (tag == DbMetaTag.STATUS_PLANNED)
-                                        dbMetaQuestion.BurnStarted = utcNow;
-                                }
-                            }
-
-                            var metaQuestionList = dbMetaQuestion.MetaQuestionMetaTags.ToList();
-                            foreach (var dbTag in metaQuestionList)
-                            {
-                                if (!metaQuestion.Tags.Any(t => string.Equals(t, dbTag.TagName, StringComparison.OrdinalIgnoreCase)))
-                                {
-                                    context.MetaQuestionMetaTags.Remove(dbTag);
-
-                                    if (dbTag.TagName == DbMetaTag.STATUS_FEATURED)
-                                        dbMetaQuestion.FeaturedEnded = utcNow;
-                                    if (dbTag.TagName == DbMetaTag.STATUS_PLANNED)
-                                    {
-                                        dbMetaQuestion.BurnEnded = utcNow;
-                                        foreach (var trackedTag in trackedTags)
-                                            await _newBurninationService.StopBurn(trackedTag.TagName);
-                                    }
-                                }
-                            }
-
-                            var dbMetaQuestionStatistics = new DbMetaQuestionStatistics
+                            var dbMetaAnswerStatistics = new DbMetaAnswerStatistics
                             {
                                 DateTime = utcNow,
-                                Score = metaQuestion.Score.Value,
-                                ViewCount = metaQuestion.ViewCount.Value,
+                                Score = metaAnswer.Score.Value,
 
-                                MetaQuestion = dbMetaQuestion
+                                MetaAnswer = dbMetaAnswer
                             };
-                            context.Add(dbMetaQuestionStatistics);
 
-                            foreach (var metaAnswer in metaQuestion.Answers ?? Enumerable.Empty<BaseAnswer>())
-                            {
-                                DbMetaAnswer dbMetaAnswer;
-                                if (!metaAnswer.AnswerId.HasValue)
-                                    throw new InvalidOperationException($"Answer object does not contain {nameof(metaAnswer.AnswerId)}");
-
-                                if (!answerLookup.ContainsKey(metaAnswer.AnswerId.Value))
-                                {
-                                    dbMetaAnswer = new DbMetaAnswer { Id = metaAnswer.AnswerId.Value };
-                                    context.MetaAnswers.Add(dbMetaAnswer);
-
-                                    answerLookup[dbMetaAnswer.Id] = dbMetaAnswer;
-                                }
-                                else
-                                {
-                                    dbMetaAnswer = answerLookup[metaAnswer.AnswerId.Value];
-                                }
-
-                                dbMetaAnswer.Body = metaAnswer.BodyMarkdown;
-                                dbMetaAnswer.MetaQuestion = dbMetaQuestion;
-                                dbMetaAnswer.LastSeen = utcNow;
-
-                                if (!metaAnswer.Score.HasValue)
-                                    throw new InvalidOperationException($"Answer object does not contain {nameof(metaAnswer.Score)}");
-
-                                var dbMetaAnswerStatistics = new DbMetaAnswerStatistics
-                                {
-                                    DateTime = utcNow,
-                                    Score = metaAnswer.Score.Value,
-
-                                    MetaAnswer = dbMetaAnswer
-                                };
-
-                                context.Add(dbMetaAnswerStatistics);
-                            }
+                            context.Add(dbMetaAnswerStatistics);
                         }
 
                         var currentTags = context.MetaQuestionMetaTags.Local.Select(mqmt => mqmt.TagName).Distinct().ToList();
@@ -221,15 +226,34 @@ namespace Rodgort.Services
 
                         context.SaveChanges();
                     }
+                }
 
-                    _logger.LogInformation("Meta crawl completed");
-                    RecurringJob.Trigger(BurninationTagGuessingService.SERVICE_NAME);
-                }
-                finally
+                foreach (var finishedBurn in finishedBurns.Distinct())
+                    await _newBurninationService.StopBurn(finishedBurn.Tag);
+
+                foreach (var newFeature in newFeatures.GroupBy(g => g.MetaUrl).Select(g => g.First()))
                 {
-                    lock (_locker)
-                        _alreadyProcessing = false;
+                    if (!newFeature.Tags.Any())
+                    {
+                        await _newBurninationService.AnnounceNoTrackedTags(newFeature.MetaUrl);
+                    }
+                    else if (newFeature.Tags.Count > 1)
+                    {
+                        await _newBurninationService.AnnounceMultipleTrackedTags(newFeature.MetaUrl, newFeature.Tags);
+                    }
+                    else
+                    {
+                        await _newBurninationService.CreateRoomForBurn(newFeature.Tags.First(), newFeature.MetaUrl);
+                    }
                 }
+
+                _logger.LogInformation("Meta crawl completed");
+                RecurringJob.Trigger(BurninationTagGuessingService.SERVICE_NAME);
+            }
+            finally
+            {
+                lock (_locker)
+                    _alreadyProcessing = false;
             }
         }
     }

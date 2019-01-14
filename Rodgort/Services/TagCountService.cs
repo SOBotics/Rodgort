@@ -29,7 +29,12 @@ namespace Rodgort.Services
             _dateService = dateService;
         }
 
-        public async Task GetQuestionCountForApprovedTags()
+        public void GetQuestionCountForApprovedTagsSync()
+        {
+            GetQuestionCountForApprovedTags().Wait();
+        }
+
+        private async Task GetQuestionCountForApprovedTags()
         {
             var tagsToCheck = _context.MetaQuestionTags
                 // The tag was approved

@@ -16,7 +16,7 @@ namespace Rodgort.Services
         private readonly DateService _dateService;
         private readonly BurnakiFollowService _burnakiFollowService;
 
-        private readonly bool Enabled;
+        private readonly bool _enabled;
 
         public NewBurninationService(ChatClient chatClient, RodgortContext rodgortContext, DateService dateService, BurnakiFollowService burnakiFollowService, IChatCredentials chatCredentials)
         {
@@ -28,13 +28,12 @@ namespace Rodgort.Services
             var hasCookies = !string.IsNullOrWhiteSpace(chatCredentials.AcctCookie);
             var hasCredentials = !string.IsNullOrWhiteSpace(chatCredentials.AcctCookie) && !string.IsNullOrWhiteSpace(chatCredentials.Password);
 
-            Enabled = hasCookies || hasCredentials;
+            _enabled = hasCookies || hasCredentials;
         }
 
         public async Task AnnounceMultipleTrackedTags(string metaPostUrl, IEnumerable<string> trackedTags)
         {
-            return;
-            if (!Enabled)
+            if (!_enabled)
                 return;
 
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Discussion for the burnination of {metaPostUrl} started, but there are multiple tracked tags: {string.Join(", ", trackedTags)}");
@@ -42,8 +41,7 @@ namespace Rodgort.Services
 
         public async Task AnnounceNoTrackedTags(string metaPostUrl)
         {
-            return;
-            if (!Enabled)
+            if (!_enabled)
                 return;
 
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Discussion for the burnination of {metaPostUrl} started, but there are no tracked tags");
@@ -51,8 +49,7 @@ namespace Rodgort.Services
 
         public async Task StopBurn(string tag)
         {
-            return;
-            if (!Enabled)
+            if (!_enabled)
                 return;
 
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
@@ -69,8 +66,7 @@ namespace Rodgort.Services
         
         public async Task CreateRoomForBurn(string tag, string metaPostUrl)
         {
-            return;
-            if (!Enabled)
+            if (!_enabled)
                 return;
 
             var roomName = $"Observation room for [{tag}] burnination";
