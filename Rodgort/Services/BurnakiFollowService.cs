@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rodgort.Data;
+using Rodgort.Data.Constants;
 using Rodgort.Data.Tables;
 using Rodgort.Utilities;
 using Rodgort.Utilities.ReactiveX;
@@ -20,8 +21,6 @@ namespace Rodgort.Services
 {
     public class BurnakiFollowService : IHostedService
     {
-        public const int ROB_USER_ID = 563532;
-
         private readonly IServiceProvider _serviceProvider;
         private readonly BurnProcessingService _burnProcessingService;
         private readonly ILogger<BurnakiFollowService> _logger;
@@ -61,7 +60,7 @@ namespace Rodgort.Services
                     .ReplyAlive()
                     .Pinged()
                     .SameRoomOnly()
-                    .Where(r => r.ChatEventDetails.UserId == ROB_USER_ID)
+                    .Where(r => r.ChatEventDetails.UserId == ChatUserIds.ROB)
                     .ForEachAsync(
                         async chatEvent =>
                         {

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Rodgort.Data;
+using Rodgort.Data.Constants;
 using Rodgort.Data.Tables;
 using Rodgort.Utilities;
 using StackExchangeChat;
@@ -79,7 +80,7 @@ namespace Rodgort.Services
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [tag:{tag}] has finished!");
 
-            var follows = _rodgortContext.BurnakiFollows.Where(bf => bf.BurnakiId == 8300708 && bf.Tag == tag).ToList();
+            var follows = _rodgortContext.BurnakiFollows.Where(bf => bf.BurnakiId == ChatUserIds.GEMMY && bf.Tag == tag).ToList();
             foreach (var follow in follows)
             {
                 follow.FollowEnded = _dateService.UtcNow;
@@ -109,7 +110,7 @@ namespace Rodgort.Services
 
             var observationRooms = 
                 _rodgortContext.BurnakiFollows
-                .Where(b => b.BurnakiId == 8300708 && !b.FollowEnded.HasValue && b.Tag == tag)
+                .Where(b => b.BurnakiId == ChatUserIds.GEMMY && !b.FollowEnded.HasValue && b.Tag == tag)
                 .Select(bf => bf.RoomId)
                 .Distinct()
                 .ToList();
@@ -179,7 +180,7 @@ namespace Rodgort.Services
             
             var burnakiFollow = new DbBurnakiFollow
             {
-                BurnakiId = 8300708,
+                BurnakiId = ChatUserIds.GEMMY,
                 FollowStarted = _dateService.UtcNow,
                 RoomId = roomId,
                 Tag = tag
