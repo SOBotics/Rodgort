@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
@@ -33,9 +31,9 @@ namespace Rodgort.Controllers
             if (!string.IsNullOrWhiteSpace(tag))
                 query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == tag));
 
-            if (trackingStatusId > 0)
+            if (trackingStatusId != -1)
             {
-                query = trackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
+                query = trackingStatusId == -10
                     ? query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE))
                     : query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == trackingStatusId));
             }
@@ -76,8 +74,7 @@ namespace Rodgort.Controllers
                     {
                         mqt.TagName
                     }),
-                    NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED 
-                                                                    || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE)
+                    NumQuestions = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
                         .Select(mqt => mqt.Tag.NumberOfQuestions)
                         .OrderByDescending(mqt => mqt)
                         .FirstOrDefault(),

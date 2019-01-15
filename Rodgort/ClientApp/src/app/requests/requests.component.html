@@ -12,6 +12,7 @@
                 <select class="custom-select" id="trackingStatusSelector" [(ngModel)]="filter.trackingStatusId"
                     [ngModelOptions]="{standalone: true}">
                     <option value="-1">Any</option>
+                    <option value="-10">Tracked &amp; Tracked elsewhere</option>
                     <option value="2">Tracked</option>
                     <option value="3">Ignored</option>
                     <option value="1">Requires tracking approval</option>

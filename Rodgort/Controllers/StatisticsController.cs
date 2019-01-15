@@ -41,8 +41,7 @@ namespace Rodgort.Controllers
 
             var completedRequestsWithQuestions = _context.MetaQuestions.Count(mq => 
                 mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED)
-                && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
-                                                    || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE).Any(mqt => mqt.Tag.NumberOfQuestions > 0)
+                && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).Any(mqt => mqt.Tag.NumberOfQuestions > 0)
             );
 
             var statusTags = DbMetaTag.StatusFlags;
