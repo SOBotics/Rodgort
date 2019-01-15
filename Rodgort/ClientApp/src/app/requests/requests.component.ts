@@ -145,6 +145,5 @@ export class RequestsComponent implements OnInit {
 
   public setHasQuestions(newValue: boolean) {
     // this.filter.hasQuestions = newValue;
-    console.log(newValue);
   }
 }

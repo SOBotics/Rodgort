@@ -159,7 +159,6 @@ export class QuestionCountGraphComponent implements OnInit {
       },
       tooltip: {
         formatter: function () {
-          console.log(this.series.name);
           const actionType =
             this.series.name === 'Total'
               ? 'seen on'
