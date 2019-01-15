@@ -181,25 +181,34 @@ namespace Rodgort.Controllers
                                         ? current.Last()
                                         : new { next.Time, Closed = false, Deleted = false, RemovedTag = false, Roombad = false };
 
-                                    if (next.TypeId == DbUserActionType.CLOSED)
-                                        state = new { next.Time, Closed = true, state.Deleted, state.RemovedTag, state.Roombad };
-                                    else if (next.TypeId == DbUserActionType.REOPENED)
-                                        state = new { next.Time, Closed = false, state.Deleted, state.RemovedTag, state.Roombad };
-                                    else if (next.TypeId == DbUserActionType.DELETED)
-                                        state = new { next.Time, state.Closed, Deleted = true, state.RemovedTag, Roombad = next.UserId == -1 };
-                                    else if (next.TypeId == DbUserActionType.UNDELETED)
-                                        state = new { next.Time, state.Closed, Deleted = false, state.RemovedTag, Roombad = false };
-                                    else if (next.TypeId == DbUserActionType.REMOVED_TAG)
-                                        state = new { next.Time, state.Closed, state.Deleted, RemovedTag = true, state.Roombad };
-                                    else if (next.TypeId == DbUserActionType.ADDED_TAG)
-                                        state = new { next.Time, state.Closed, state.Deleted, RemovedTag = false, state.Roombad };
-                                    else
-                                        return current;
+                                    switch (next.TypeId)
+                                    {
+                                        case DbUserActionType.CLOSED:
+                                            state = new { next.Time, Closed = true, state.Deleted, state.RemovedTag, state.Roombad };
+                                            break;
+                                        case DbUserActionType.REOPENED:
+                                            state = new { next.Time, Closed = false, state.Deleted, state.RemovedTag, state.Roombad };
+                                            break;
+                                        case DbUserActionType.DELETED:
+                                            state = new { next.Time, state.Closed, Deleted = true, state.RemovedTag, Roombad = next.UserId == -1 };
+                                            break;
+                                        case DbUserActionType.UNDELETED:
+                                            state = new { next.Time, state.Closed, Deleted = false, state.RemovedTag, Roombad = false };
+                                            break;
+                                        case DbUserActionType.REMOVED_TAG:
+                                            state = new { next.Time, state.Closed, state.Deleted, RemovedTag = true, state.Roombad };
+                                            break;
+                                        case DbUserActionType.ADDED_TAG:
+                                            state = new { next.Time, state.Closed, state.Deleted, RemovedTag = false, state.Roombad };
+                                            break;
+                                        default:
+                                            return current;
+                                    }
 
                                     current.Add(state);
                                     return current;
                                 });
-                            });
+                            }).ToList();
 
 
                         return new
