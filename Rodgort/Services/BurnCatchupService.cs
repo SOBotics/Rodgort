@@ -54,46 +54,22 @@ namespace Rodgort.Services
 
         private async Task Catchup(string tag)
         {
-            var result = await _apiClient.QuestionsBy("stackoverflow.com", tag);
+            var result = await _apiClient.QuestionsByTag("stackoverflow.com", tag);
             var idsToProcess = result.Items
                 .Where(i => i.Tags.Contains(tag))
                 .Select(i => i.QuestionId)
                 .ToList();
 
-            var burnProcessingService = _serviceProvider.GetRequiredService<BurnProcessingService>();
-            await burnProcessingService.ProcessQuestionIds(idsToProcess, tag, null, false);
-
-            var allIdsSeen = result.Items
-                .Select(i => i.QuestionId)
-                .ToList();
-
-            var missingPostIds = _context
+            var seenQuestionsNotDeleted = _context
                 .UserActions
                 .Where(ua => ua.Tag == tag)
-                .Where(ua => !allIdsSeen.Contains(ua.PostId))                
                 .Where(g => !_context.UserActions.Any(ua => ua.PostId == g.PostId && ua.UserActionTypeId == DbUserActionType.DELETED))
                 .Select(g => g.PostId)
                 .Distinct()
                 .ToList();
 
-            foreach (var missingPostId in missingPostIds)
-            {
-                if (!_context.UserActions.Any(ua =>
-                    ua.PostId == missingPostId
-                    && ua.UserActionTypeId == DbUserActionType.UNKNOWN_DELETION
-                    && ua.Tag == tag))
-                {
-                    _context.UserActions.Add(
-                        new DbUserAction
-                        {
-                            UserActionTypeId = DbUserActionType.UNKNOWN_DELETION,
-                            Tag = tag,
-                            PostId = missingPostId,
-                            Time = _dateService.UtcNow,
-                            SiteUserId = -1
-                        });
-                }
-            }
+            var burnProcessingService = _serviceProvider.GetRequiredService<BurnProcessingService>();
+            await burnProcessingService.ProcessQuestionIds(idsToProcess.Concat(seenQuestionsNotDeleted), tag, null, false);            
         }
     }
 }

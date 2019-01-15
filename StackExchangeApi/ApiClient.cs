@@ -130,7 +130,7 @@ namespace StackExchangeApi
             });
         }
 
-        public Task<ApiItemsResponse<QuestionIdResponse>> QuestionsBy(string siteName, string tag)
+        public Task<ApiItemsResponse<QuestionIdResponse>> QuestionsByTag(string siteName, string tag)
         {
             return ApplyWithPaging<QuestionIdResponse>($"{BASE_URL}/questions?tagged={tag}", new Dictionary<string, string>
             {
