@@ -61,7 +61,7 @@ namespace Rodgort.Services
                 .ToList();
 
             var burnProcessingService = _serviceProvider.GetRequiredService<BurnProcessingService>();
-            await burnProcessingService.ProcessQuestionIds(idsToProcess, tag, null, null, false);
+            await burnProcessingService.ProcessQuestionIds(idsToProcess, tag, null, false);
 
             var allIdsSeen = result.Items
                 .Select(i => i.QuestionId)

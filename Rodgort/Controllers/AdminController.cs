@@ -152,7 +152,6 @@ namespace Rodgort.Controllers
             await _burnProcessingService.ProcessQuestionIds(
                 request.QuestionIds,
                 follow.Tag,
-                follow.FollowStarted,
                 null,
                 true
             );

@@ -39,7 +39,8 @@ namespace Rodgort.Services
 
         private static readonly Regex USER_ID_REGEX = new Regex(@"\/users\/(\d+)");
 
-        public async Task ProcessQuestionIds(IEnumerable<int> questionIds, string followingTag, DateTime? fromTime, int? roomId, bool announce)
+        public async Task ProcessQuestionIds(IEnumerable<int> questionIds, string followingTag, int? roomId,
+            bool announce)
         {
             var distinctQuestionIds = questionIds.Distinct();
             foreach (var questionIdGroup in distinctQuestionIds.Batch(100))
@@ -85,12 +86,6 @@ namespace Rodgort.Services
                 var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
                 foreach (var revision in revisions.Items)
                 {
-                    if (fromTime.HasValue && Dates.UnixTimeStampToDateTime(revision.CreationDate) <= fromTime)
-                    {
-                        _logger.LogInformation($"Skipping revision {revision.RevisionNumber} on {revision.PostId}, as it's too old");
-                        continue;
-                    }
-
                     if (revision.LastTags != null)
                     {
                         // There was a retag
