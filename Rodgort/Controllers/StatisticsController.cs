@@ -200,7 +200,7 @@ namespace Rodgort.Controllers
                                     return current;
                                 });
                             });
-                            
+
 
                         return new
                         {
@@ -209,15 +209,17 @@ namespace Rodgort.Controllers
                             bt.QuestionCountOverTime,
 
                             ClosuresOverTime = dateRange.Select(d =>
-                                new {
+                                new
+                                {
                                     Date = d,
                                     Total = questionStates
                                         .Select(qs => qs.LastOrDefault(s => s.Time <= d))
                                         .Count(qs => qs != null && !qs.Deleted && qs.Closed)
                                 }),
-                            
+
                             DeletionsOverTime = dateRange.Select(d =>
-                                new {
+                                new
+                                {
                                     Date = d,
                                     Total = questionStates
                                         .Select(qs => qs.LastOrDefault(s => s.Time <= d))
@@ -225,7 +227,8 @@ namespace Rodgort.Controllers
                                 }),
 
                             RetagsOverTime = dateRange.Select(d =>
-                                new {
+                                new
+                                {
                                     Date = d,
                                     Total = questionStates
                                         .Select(qs => qs.LastOrDefault(s => s.Time <= d))
@@ -233,7 +236,8 @@ namespace Rodgort.Controllers
                                 }),
 
                             RoombasOverTime = dateRange.Select(d =>
-                                new {
+                                new
+                                {
                                     Date = d,
                                     Total = questionStates
                                         .Select(qs => qs.LastOrDefault(s => s.Time <= d))
@@ -280,14 +284,23 @@ namespace Rodgort.Controllers
                                     g.Key.UserId,
                                     Total = g.Select(gg => gg.PostId).Distinct().Count()
                                 }),
-                            Totals = bt.Actions
-                                .Where(ua =>
-                                    ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
-                                .GroupBy(g => g.Type).Select(g => new
-                                {
-                                    Type = g.Key,
-                                    Total = g.Select(gg => gg.PostId).Distinct().Count()
-                                })
+
+
+                            Totals =
+                                questionStates.Select(g => g.LastOrDefault())
+                                    .Where(g => g != null)
+                                    .GroupBy(g => g.Closed && !g.Deleted ? "Closed"
+                                        : !g.Roombad && g.Deleted ? "Deleted"
+                                        : g.Roombad ? "Roombad"
+                                        : g.RemovedTag ? "Removed tag"
+                                        : "None"
+                                    ).Where(g => g.Key != "None")
+                                    .Select(g => new
+                                        {
+                                            Type = g.Key,
+                                            Total = g.Count()
+                                        }
+                                    )
                         };
                     }),
 
