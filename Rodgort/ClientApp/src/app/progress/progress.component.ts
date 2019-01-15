@@ -57,7 +57,7 @@ export class ProgressComponent implements OnInit {
             this.hasNoData = true;
             return;
           }
-          
+
           const firstTag = this.burns[0];
 
           if (firstTag.featuredStarted && firstTag.featuredEnded) {
@@ -134,6 +134,10 @@ export class ProgressComponent implements OnInit {
               })
             };
           });
+
+          if (!series.length) {
+            return;
+          }
 
           this.chart = new Chart({
             chart: {
