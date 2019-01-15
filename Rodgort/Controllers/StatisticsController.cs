@@ -163,9 +163,17 @@ namespace Rodgort.Controllers
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
-                                Total = 
-                                    bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.CLOSED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
-                                    - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.REOPENED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
+                                Total =
+                                    bt.Actions.Where(ggg => 
+                                        ggg.TypeId == DbUserActionType.CLOSED 
+                                        && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time
+                                        && !bt.Actions.Any(a => a.PostId == ggg.PostId && a.TypeId == DbUserActionType.DELETED)
+                                    ).Select(ggg => ggg.PostId).Distinct().Count()
+                                    - bt.Actions.Where(ggg => 
+                                        ggg.TypeId == DbUserActionType.REOPENED && 
+                                        ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time
+                                        && !bt.Actions.Any(a => a.PostId == ggg.PostId && a.TypeId == DbUserActionType.DELETED)
+                                    ).Select(ggg => ggg.PostId).Distinct().Count()
                             })
                             .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
