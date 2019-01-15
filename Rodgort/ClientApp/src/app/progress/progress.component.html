@@ -1,4 +1,7 @@
-<ng-container *ngIf="burns">
+<ng-container *ngIf="!hasData">
+  No data found
+</ng-container>
+<ng-container *ngIf="hasData && burns">
   <ng-container *ngFor="let burn of burns">
     <h1>{{burn.metaQuestionTitle}}</h1>
     <ng-container *ngFor="let tag of burn.tags">

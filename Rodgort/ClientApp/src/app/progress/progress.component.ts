@@ -11,6 +11,9 @@ import { ActivatedRoute } from '@angular/router';
   styleUrls: ['./progress.component.scss']
 })
 export class ProgressComponent implements OnInit {
+  public loading = true;
+  public hasData = false;
+
   public burns: any;
   public chart: Chart;
 
@@ -32,6 +35,7 @@ export class ProgressComponent implements OnInit {
   }
 
   private reloadData() {
+    this.loading = true;
     this.authService.GetAuthDetails().subscribe(d => {
       const endpoint = this.filter.metaQuestionId >= 0 ?
         `/api/statistics/leaderboard?metaQuestionId=${this.filter.metaQuestionId}`
@@ -41,10 +45,18 @@ export class ProgressComponent implements OnInit {
         headers: { 'Authorization': 'Bearer ' + d.RawToken }
       })
         .subscribe((data: any) => {
+          this.loading = false;
+
           this.burns = data.burns;
 
           const bands = [];
           const lines = [];
+
+          if (this.burns.length === 0 || this.burns[0].tags[0].length === 0) {
+            this.hasData = false;
+            return;
+          }
+          this.hasData = true;
 
           const firstTag = this.burns[0];
 
