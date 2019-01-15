@@ -214,7 +214,7 @@ namespace Rodgort.Controllers
                                     Date = d,
                                     Total = questionStates
                                         .Select(qs => qs.LastOrDefault(s => s.Time <= d))
-                                        .Count(qs => qs != null && !qs.Deleted && qs.Closed)
+                                        .Count(qs => qs != null && !qs.Deleted && !qs.RemovedTag && qs.Closed)
                                 }),
 
                             DeletionsOverTime = dateRange.Select(d =>
@@ -289,7 +289,7 @@ namespace Rodgort.Controllers
                             Totals =
                                 questionStates.Select(g => g.LastOrDefault())
                                     .Where(g => g != null)
-                                    .GroupBy(g => g.Closed && !g.Deleted ? "Closed"
+                                    .GroupBy(g => g.Closed && !g.Deleted && !g.RemovedTag ? "Closed"
                                         : !g.Roombad && g.Deleted ? "Deleted"
                                         : g.Roombad ? "Roombad"
                                         : g.RemovedTag ? "Removed tag"
