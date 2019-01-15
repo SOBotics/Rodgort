@@ -161,7 +161,7 @@ namespace Rodgort.Controllers
                         var now = _dateService.UtcNow;
                         var maxDate = now.Date.AddHours(now.Hour + 1);
 
-                        var dateRange = Enumerable.Range(0, (int)(maxDate - minDate).TotalHours).Select(h => minDate.AddHours(h)).ToList();
+                        var dateRange = Enumerable.Range(0, (int)Math.Ceiling((maxDate - minDate).TotalHours)).Select(h => minDate.AddHours(h)).ToList();
 
                         var questionStates = sortedActions
                             .GroupBy(g => g.PostId)
