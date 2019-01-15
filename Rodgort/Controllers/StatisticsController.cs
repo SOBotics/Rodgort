@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc;
@@ -164,16 +165,44 @@ namespace Rodgort.Controllers
                             {
                                 Date = gg.Key.Time,
                                 Total =
-                                    bt.Actions.Where(ggg => 
-                                        ggg.TypeId == DbUserActionType.CLOSED 
-                                        && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time
-                                        && !bt.Actions.Any(a => a.PostId == ggg.PostId && a.TypeId == DbUserActionType.DELETED)
-                                    ).Select(ggg => ggg.PostId).Distinct().Count()
-                                    - bt.Actions.Where(ggg => 
-                                        ggg.TypeId == DbUserActionType.REOPENED && 
-                                        ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time
-                                        && !bt.Actions.Any(a => a.PostId == ggg.PostId && a.TypeId == DbUserActionType.DELETED)
-                                    ).Select(ggg => ggg.PostId).Distinct().Count()
+                                    bt.Actions
+                                        .Where(a => a.Time.Date.AddHours(a.Time.Hour) <= gg.Key.Time)
+                                        .OrderBy(a => a.Time)
+                                        .Aggregate(new Dictionary<int, Stack<int>>(), (accumulate, current) =>
+                                        {
+                                            Stack<int> stack;
+                                            if (!accumulate.ContainsKey(current.PostId))
+                                            {
+                                                stack = new Stack<int>();
+                                                accumulate[current.PostId] = stack;
+                                            }
+                                            else
+                                            {
+                                                stack = accumulate[current.PostId];
+                                            }
+
+                                            if (current.TypeId == DbUserActionType.CLOSED)
+                                                stack.Push(DbUserActionType.CLOSED);
+                                            else if (current.TypeId == DbUserActionType.DELETED)
+                                                stack.Push(DbUserActionType.DELETED);
+                                            else if (current.TypeId == DbUserActionType.REOPENED)
+                                            {
+                                                if (stack.Count > 0)
+                                                    stack.Pop();
+                                            }
+                                            else if (current.TypeId == DbUserActionType.UNDELETED)
+                                            {
+                                                if (stack.Count > 0)
+                                                    stack.Pop();
+                                            }
+
+                                            return accumulate;
+                                        }).Sum(a =>
+                                        {
+                                            if (a.Value.Count > 0)
+                                                return a.Value.Peek() == DbUserActionType.CLOSED ? 1 : 0;
+                                            return 0;
+                                        })
                             })
                             .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
@@ -182,9 +211,37 @@ namespace Rodgort.Controllers
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
-                                Total =
-                                    bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.DELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
-                                    - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.UNDELETED && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
+                                Total = bt.Actions
+                                    .Where(a => a.Time.Date.AddHours(a.Time.Hour) <= gg.Key.Time)
+                                    .OrderBy(a => a.Time)
+                                        .Aggregate(new Dictionary<int, Stack<int>>(), (accumulate, current) =>
+                                        {
+                                            Stack<int> stack;
+                                            if (!accumulate.ContainsKey(current.PostId))
+                                            {
+                                                stack = new Stack<int>();
+                                                accumulate[current.PostId] = stack;
+                                            }
+                                            else
+                                            {
+                                                stack = accumulate[current.PostId];
+                                            }
+
+                                            if (current.TypeId == DbUserActionType.DELETED)
+                                                stack.Push(DbUserActionType.DELETED);
+                                            else if (current.TypeId == DbUserActionType.UNDELETED)
+                                            {
+                                                if (stack.Count > 0)
+                                                    stack.Pop();
+                                            }
+
+                                            return accumulate;
+                                        }).Sum(a =>
+                                        {
+                                            if (a.Value.Count > 0)
+                                                return a.Value.Peek() == DbUserActionType.DELETED ? 1 : 0;
+                                            return 0;
+                                        })
                             })
                             .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
@@ -193,9 +250,37 @@ namespace Rodgort.Controllers
                             .Select(gg => new
                             {
                                 Date = gg.Key.Time,
-                                Total =
-                                    bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.REMOVED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
-                                    - bt.Actions.Where(ggg => ggg.TypeId == DbUserActionType.ADDED_TAG && ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time).Select(ggg => ggg.PostId).Distinct().Count()
+                                Total = bt.Actions
+                                    .Where(a => a.Time.Date.AddHours(a.Time.Hour) <= gg.Key.Time)
+                                    .OrderBy(a => a.Time)
+                                    .Aggregate(new Dictionary<int, Stack<int>>(), (accumulate, current) =>
+                                    {
+                                        Stack<int> stack;
+                                        if (!accumulate.ContainsKey(current.PostId))
+                                        {
+                                            stack = new Stack<int>();
+                                            accumulate[current.PostId] = stack;
+                                        }
+                                        else
+                                        {
+                                            stack = accumulate[current.PostId];
+                                        }
+
+                                        if (current.TypeId == DbUserActionType.REMOVED_TAG)
+                                            stack.Push(DbUserActionType.REMOVED_TAG);
+                                        else if (current.TypeId == DbUserActionType.ADDED_TAG)
+                                        {
+                                            if (stack.Count > 0)
+                                                stack.Pop();
+                                        }
+
+                                        return accumulate;
+                                    }).Sum(a =>
+                                    {
+                                        if (a.Value.Count > 0)
+                                            return a.Value.Peek() == DbUserActionType.REMOVED_TAG ? 1 : 0;
+                                        return 0;
+                                    })
                             })
                             .Where(s => s.Date > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                             .OrderBy(gg => gg.Date),
