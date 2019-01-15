@@ -179,7 +179,7 @@ namespace Rodgort.Controllers
                                 {
                                     var state = current.Count > 0
                                         ? current.Last()
-                                        : new { next.Time, Closed = false, Deleted = false, RemovedTag = false, Roombad = true };
+                                        : new { next.Time, Closed = false, Deleted = false, RemovedTag = false, Roombad = false };
 
                                     if (next.TypeId == DbUserActionType.CLOSED)
                                         state = new { next.Time, Closed = true, state.Deleted, state.RemovedTag, state.Roombad };
