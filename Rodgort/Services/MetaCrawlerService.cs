@@ -227,17 +227,17 @@ namespace Rodgort.Services
 
                             context.Add(dbMetaAnswerStatistics);
                         }
-
-                        var currentTags = context.MetaQuestionMetaTags.Local.Select(mqmt => mqmt.TagName).Distinct().ToList();
-                        var dbTags = context.MetaTags.Where(t => currentTags.Contains(t.Name)).ToLookup(t => t.Name);
-                        foreach (var currentTag in currentTags)
-                        {
-                            if (!dbTags.Contains(currentTag))
-                                context.MetaTags.Add(new DbMetaTag { Name = currentTag });
-                        }
-
-                        context.SaveChanges();
                     }
+
+                    var currentTags = context.MetaQuestionMetaTags.Local.Select(mqmt => mqmt.TagName).Distinct().ToList();
+                    var dbTags = context.MetaTags.Where(t => currentTags.Contains(t.Name)).ToLookup(t => t.Name);
+                    foreach (var currentTag in currentTags)
+                    {
+                        if (!dbTags.Contains(currentTag))
+                            context.MetaTags.Add(new DbMetaTag { Name = currentTag });
+                    }
+
+                    context.SaveChanges();
                 }
 
                 foreach (var finishedBurn in finishedBurns.Distinct())
