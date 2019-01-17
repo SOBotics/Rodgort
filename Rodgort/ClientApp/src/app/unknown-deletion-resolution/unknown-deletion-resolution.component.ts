@@ -84,7 +84,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
               return;
             }
 
-            requests = postTags.map(e => {
+            requests = requests.concat(postTags.map(e => {
               return {
                 unknownDeletionId: postToVisit.unknownDeletionId,
                 userId,
@@ -92,7 +92,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
                 actionTypeId: e.getAttribute('class') === 'diff-delete' ? 1 : 2,
                 dateTime: date
               };
-            });
+            }));
           } else if (element.getAttribute('class') === 'vote-revision') {
             const revisionVoteInfo = element.querySelector('.revcell3');
             const xml = revisionVoteInfo.outerHTML;
