@@ -22,6 +22,7 @@ namespace Rodgort.Data
         public DbSet<DbSiteUser> SiteUsers { get; set; }
         public DbSet<DbSiteUserRole> SiteUserRoles { get; set; }
         public DbSet<DbUnknownDeletion> UnknownDeletions { get; set; }
+        public DbSet<DbSeenQuestion> SeenQuestions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -102,6 +103,10 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbUnknownDeletion>().ToTable("UnknownDeletions");
             modelBuilder.Entity<DbUnknownDeletion>().HasKey(ud => ud.Id);
             modelBuilder.Entity<DbUnknownDeletion>().HasOne(ud => ud.ProcessedByUser).WithMany(u => u.ProcessedUnknownDeletions).HasForeignKey(ua => ua.ProcessedByUserId).IsRequired(false);
+
+            modelBuilder.Entity<DbSeenQuestion>().ToTable("SeenQuestions");
+            modelBuilder.Entity<DbSeenQuestion>().HasKey(sq => new { sq.Id, sq.Tag });
+            modelBuilder.Entity<DbSeenQuestion>().HasIndex(sq => sq.Tag);
 
             modelBuilder.Entity<DbMetaTag>()
                 .HasData(

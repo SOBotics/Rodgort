@@ -61,10 +61,10 @@ namespace Rodgort.Services
                 .ToList();
 
             var seenQuestionsNotDeleted = _context
-                .UserActions
-                .Where(ua => ua.Tag == tag)
-                .Where(g => !_context.UserActions.Any(ua => ua.PostId == g.PostId && ua.UserActionTypeId == DbUserActionType.DELETED))
-                .Select(g => g.PostId)
+                .SeenQuestions
+                .Where(sq => sq.Tag == tag)
+                .Where(g => !_context.UserActions.Any(ua => ua.PostId == g.Id && ua.UserActionTypeId == DbUserActionType.DELETED))
+                .Select(g => g.Id)
                 .Distinct()
                 .ToList();
 

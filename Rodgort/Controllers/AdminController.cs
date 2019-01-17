@@ -106,6 +106,33 @@ namespace Rodgort.Controllers
                 matchedUnknown.ProcessedByUserId = User.UserId();
             }
 
+            var userActionTagLookup = _context.UserActions.Local.Select(mqmt => new { mqmt.PostId, mqmt.Tag })
+                .GroupBy(ua => ua.PostId)
+                .ToDictionary(g => g.Key, g => g.GroupBy(gg => new { gg.PostId, gg.Tag }).Select(gg => gg.Key).ToList());
+
+            var currentPostIds = userActionTagLookup.Keys.ToList();
+            var dbSeenQuestionsLookup = _context.SeenQuestions.Where(t => currentPostIds.Contains(t.Id))
+                .ToList()
+                .GroupBy(t => t.Id)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            foreach (var currentPostId in currentPostIds)
+            {
+                var dbSeenQuestions =
+                    dbSeenQuestionsLookup.ContainsKey(currentPostId)
+                        ? dbSeenQuestionsLookup[currentPostId]
+                        : new List<DbSeenQuestion>();
+
+                foreach (var userActionTag in userActionTagLookup[currentPostId])
+                {
+                    var matched = dbSeenQuestions.FirstOrDefault(dsq => dsq.Id == userActionTag.PostId && dsq.Tag == userActionTag.Tag);
+                    if (matched == null)
+                        _context.SeenQuestions.Add(new DbSeenQuestion { Id = currentPostId, LastSeen = _dateService.UtcNow, Tag = userActionTag.Tag });
+                    else
+                        matched.LastSeen = _dateService.UtcNow;
+                }
+            }
+
             var currentUserIds = _context.UserActions.Local.Select(mqmt => mqmt.SiteUserId).Distinct().ToList();
             var dbUsers = _context.SiteUsers.Where(t => currentUserIds.Contains(t.Id)).ToLookup(t => t.Id);
 

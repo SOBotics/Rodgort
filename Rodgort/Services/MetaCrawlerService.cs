@@ -251,6 +251,9 @@ namespace Rodgort.Services
 
                 _logger.LogInformation("Meta crawl completed");
                 RecurringJob.Trigger(BurninationTagGuessingService.SERVICE_NAME);
+
+                if (newFeatures.Any() || burnsStarted.Any())
+                    RecurringJob.Trigger(BurnCatchupService.SERVICE_NAME);
             }
             finally
             {
