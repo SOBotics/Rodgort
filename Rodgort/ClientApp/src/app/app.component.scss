@@ -6,59 +6,63 @@
     line-height: 60px;
     font-size: 13px;
     background-color: #f7f7f7;
+}
+
+header {
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+.bg-faded {
+  background-color: #f7f7f7;
+}
+
+.footer.footer > div.container {
+  text-align: center;
+}
+
+@media(max-width: 1201px) {
+  .footer {
+    font-size: 9px;
   }
-  
-  header {
-    height: 60px;
-    margin-bottom: 20px;
+}
+
+
+@media(max-width: 767px) {
+  .footer {
+    line-height: 30px;
   }
-  
-  .bg-faded {
-    background-color: #f7f7f7;
+}
+
+@media(max-width: 280px) {
+  .footer {
+    line-height: 20px;
   }
-  
-  .footer.footer > div.container {
-    text-align: center;
-  }
-  
-  @media(max-width: 1201px) {
-    .footer {
-      font-size: 9px;
-    }
-  }
-  
-  
-  @media(max-width: 767px) {
-    .footer {
-      line-height: 30px;
-    }
-  }
-  
-  @media(max-width: 280px) {
-    .footer {
-      line-height: 20px;
-    }
-  }
-  
-  main.container {
-    padding-bottom: 60px;
-  }
-  
-  .navbar-logo {
-    cursor: pointer;
-  }
-  
-  button {
-    cursor: pointer;
-  }
-  .logo {
-    width: 30px;
-    height: 30px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-  }
-  
-  .quota-display {
-    padding: 5px;
-    padding-right: 10px;
-  }
+}
+
+main.container {
+  padding-bottom: 60px;
+}
+
+.navbar-logo {
+  cursor: pointer;
+}
+
+button {
+  cursor: pointer;
+}
+.logo {
+  width: 30px;
+  height: 30px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+
+.quota-display {
+  padding: 5px;
+  padding-right: 10px;
+}
+
+.loading-container {
+  text-align: center;
+}

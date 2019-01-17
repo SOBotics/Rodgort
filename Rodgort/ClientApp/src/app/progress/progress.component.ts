@@ -49,7 +49,6 @@ export class ProgressComponent implements OnInit {
 
           this.burns = data.burns;
 
-          const bands = [];
           const lines = [];
 
           if (this.burns.length === 0 || this.burns[0].tags[0].length === 0) {
@@ -58,72 +57,74 @@ export class ProgressComponent implements OnInit {
           }
 
           for (const burn of this.burns) {
+            const bands = [];
+
+            if (burn.featuredStarted && burn.featuredEnded) {
+              bands.push({
+                color: 'rgb(251, 237, 182)',
+                from: this.toUtcDateTime(burn.featuredStarted),
+                to: this.toUtcDateTime(burn.featuredEnded),
+                label: {
+                  text: 'featured'
+                }
+              });
+            } else if (burn.featuredStarted) {
+              lines.push({
+                color: 'red',
+                value: this.toUtcDateTime(burn.featuredStarted),
+                width: 2,
+                label: {
+                  text: 'featured start'
+                }
+              });
+            } else if (burn.featuredEnded) {
+              lines.push({
+                color: 'red',
+                value: this.toUtcDateTime(burn.featuredEnded),
+                width: 2,
+                label: {
+                  text: 'featured end'
+                }
+              });
+            }
+
+            if (burn.burnStarted && burn.burnEnded) {
+              bands.push({
+                color: 'rgb(251, 189, 182)',
+                from: this.toUtcDateTime(burn.burnStarted),
+                to: this.toUtcDateTime(burn.burnEnded),
+                label: {
+                  text: 'burnination'
+                }
+              });
+            } else if (burn.burnStarted) {
+              lines.push({
+                color: 'red',
+                value: this.toUtcDateTime(burn.burnStarted),
+                width: 2,
+                label: {
+                  text: 'burn start'
+                }
+              });
+            } else if (burn.burnEnded) {
+              lines.push({
+                color: 'red',
+                value: this.toUtcDateTime(burn.burnEnded),
+                width: 2,
+                label: {
+                  text: 'burn end'
+                }
+              });
+            }
+
+            const minTime = this.toUtcDateTime(
+              burn.featuredStarted
+              || burn.featuredEnded
+              || burn.burnStarted
+              || burn.burnEnded
+            );
+
             for (const tag of burn.tags) {
-              if (tag.featuredStarted && tag.featuredEnded) {
-                bands.push({
-                  color: 'rgb(251, 237, 182)',
-                  from: this.toUtcDateTime(tag.featuredStarted),
-                  to: this.toUtcDateTime(tag.featuredEnded),
-                  label: {
-                    text: 'featured'
-                  }
-                });
-              } else if (tag.featuredStarted) {
-                lines.push({
-                  color: 'red',
-                  value: this.toUtcDateTime(tag.featuredStarted),
-                  width: 2,
-                  label: {
-                    text: 'featured start'
-                  }
-                });
-              } else if (tag.featuredEnded) {
-                lines.push({
-                  color: 'red',
-                  value: this.toUtcDateTime(tag.featuredEnded),
-                  width: 2,
-                  label: {
-                    text: 'featured end'
-                  }
-                });
-              }
-
-              if (tag.burnStarted && tag.burnEnded) {
-                bands.push({
-                  color: 'rgb(251, 189, 182)',
-                  from: this.toUtcDateTime(tag.burnStarted),
-                  to: this.toUtcDateTime(tag.burnEnded),
-                  label: {
-                    text: 'burnination'
-                  }
-                });
-              } else if (tag.burnStarted) {
-                lines.push({
-                  color: 'red',
-                  value: this.toUtcDateTime(tag.burnStarted),
-                  width: 2,
-                  label: {
-                    text: 'burn start'
-                  }
-                });
-              } else if (tag.burnEnded) {
-                lines.push({
-                  color: 'red',
-                  value: this.toUtcDateTime(tag.burnEnded),
-                  width: 2,
-                  label: {
-                    text: 'burn end'
-                  }
-                });
-              }
-
-              const minTime = this.toUtcDateTime(
-                tag.featuredStarted
-                || tag.featuredEnded
-                || tag.burnStarted
-                || tag.burnEnded
-              );
-
               const series: { name: string, data: [number, number][] }[] = tag.overtime.map(o => {
                 return {
                   name: o.user,

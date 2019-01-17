@@ -1,81 +1,87 @@
-<ng-container *ngIf="hasNoData">
-  No data found
-</ng-container>
-<ng-container *ngIf="!hasNoData && burns">
-  <ng-container *ngFor="let burn of burns">
-    <h1>{{burn.metaQuestionTitle}}</h1>
-    <p style="display: inline"><a href="{{burn.metaQuestionLink}}">View meta post</a></p>
-    <ng-container *ngFor="let tag of burn.tags">
-      <div class="container mt-3 mb-3">
-        <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tag}}">{{tag.tag}}</a></p>
-        <p style="display: inline"> - {{tag.numberOfQuestions}} questions</p>
-      </div>
+<div class="container loading-container">
+  <img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
+</div>
 
-      <h2>Tag Progress</h2>
-      <app-question-count-graph [data]="tag.questionCountOverTime" [closuresOverTime]="tag.closuresOverTime"
-        [deletionsOverTime]="tag.deletionsOverTime" [retagsOverTime]="tag.retagsOverTime" [roombasOverTime]="tag.roombasOverTime"
-        [featuredStarted]="burn.featuredStarted" [featuredEnded]="burn.featuredEnded" [burnStarted]="burn.burnStarted"
-        [burnEnded]="burn.burnEnded">
+<ng-container *ngIf="!loading">
+  <ng-container *ngIf="hasNoData">
+    No data found
+  </ng-container>
+  <ng-container *ngIf="!hasNoData && burns">
+    <ng-container *ngFor="let burn of burns">
+      <h1>{{burn.metaQuestionTitle}}</h1>
+      <p style="display: inline"><a href="{{burn.metaQuestionLink}}">View meta post</a></p>
+      <ng-container *ngFor="let tag of burn.tags">
+        <div class="container mt-3 mb-3">
+          <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tag}}">{{tag.tag}}</a></p>
+          <p style="display: inline"> - {{tag.numberOfQuestions}} questions</p>
+        </div>
 
-      </app-question-count-graph>
+        <h2>Tag Progress</h2>
+        <app-question-count-graph [data]="tag.questionCountOverTime" [closuresOverTime]="tag.closuresOverTime"
+          [deletionsOverTime]="tag.deletionsOverTime" [retagsOverTime]="tag.retagsOverTime" [roombasOverTime]="tag.roombasOverTime"
+          [featuredStarted]="burn.featuredStarted" [featuredEnded]="burn.featuredEnded" [burnStarted]="burn.burnStarted"
+          [burnEnded]="burn.burnEnded">
 
-      <h2>User Activity</h2>
-      <div *ngIf="tag.chart" [chart]="tag.chart"></div>
+        </app-question-count-graph>
 
-      <ng-container *ngIf="tag.userGrandTotals.length">
-        <h2>User grand totals</h2>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of tag.userGrandTotals | sortAscending: 'total'">
-              <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
-              <td>{{row.total}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </ng-container>
+        <h2>User Activity</h2>
+        <div *ngIf="tag.chart" [chart]="tag.chart"></div>
 
-      <ng-container *ngIf="tag.userTotals.length">
-        <h2>User total breakdown</h2>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Type</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of tag.userTotals | sortAscending: 'total'">
-              <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
-              <td>{{row.type}}</td>
-              <td>{{row.total}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </ng-container>
+        <ng-container *ngIf="tag.userGrandTotals.length">
+          <h2>User grand totals</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of tag.userGrandTotals | sortAscending: 'total'">
+                <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
+                <td>{{row.total}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
 
-      <ng-container *ngIf="tag.totals.length">
-        <h2>Grand totals</h2>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Count</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let row of tag.totals | sortAscending: 'total'">
-              <td>{{row.type}}</td>
-              <td>{{row.total}}</td>
-            </tr>
-          </tbody>
-        </table>
+        <ng-container *ngIf="tag.userTotals.length">
+          <h2>User total breakdown</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Type</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of tag.userTotals | sortAscending: 'total'">
+                <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
+                <td>{{row.type}}</td>
+                <td>{{row.total}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
+
+        <ng-container *ngIf="tag.totals.length">
+          <h2>Grand totals</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of tag.totals | sortAscending: 'total'">
+                <td>{{row.type}}</td>
+                <td>{{row.total}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
       </ng-container>
     </ng-container>
   </ng-container>
