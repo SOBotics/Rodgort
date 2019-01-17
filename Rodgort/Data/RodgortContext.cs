@@ -71,6 +71,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbUserAction>().HasKey(ua => ua.Id);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.UserActionType).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.UserActionTypeId);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.SiteUser).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.SiteUserId);
+            modelBuilder.Entity<DbUserAction>().Property(ua => ua.TimeProcessed).IsRequired().HasDefaultValueSql("now() at time zone 'utc'");
 
             modelBuilder.Entity<DbUserActionType>().ToTable("UserActionTypes");
             modelBuilder.Entity<DbUserActionType>().HasKey(uat => uat.Id);

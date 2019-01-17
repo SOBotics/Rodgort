@@ -16,6 +16,8 @@ namespace Rodgort.Data.Tables
 
         public int UserActionTypeId { get; set; }
 
+        public DateTime TimeProcessed { get; set; }
+
         public DbUserActionType UserActionType { get; set; }
         public DbSiteUser SiteUser { get; set; }
     }

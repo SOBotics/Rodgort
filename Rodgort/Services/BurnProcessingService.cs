@@ -98,7 +98,8 @@ namespace Rodgort.Services
                                 PostId = revision.PostId,
                                 Tag = newTag,
                                 Time = Dates.UnixTimeStampToDateTime(revision.CreationDate),
-                                SiteUserId = revision.User.UserId
+                                SiteUserId = revision.User.UserId,
+                                TimeProcessed = _dateService.UtcNow
                             });
                         }
                     }
@@ -111,6 +112,13 @@ namespace Rodgort.Services
                         if (revision.Comment == null || !revision.Comment.StartsWith("<b>Post Closed</b>"))
                             continue;
 
+                        // A closure doesn't have a tags list.
+                        // So, check all previous revisions for this post and grab all the tags. A closure counts for all tags seen
+                        var allSeenTags = revisions.Items
+                            .Where(r => r.PostId == revision.PostId)
+                            .Where(r => r.CreationDate < revision.CreationDate)
+                            .Where(r => r.Tags != null).SelectMany(r => r.Tags).Distinct().ToList();
+
                         var userIds = USER_ID_REGEX
                             .Matches(revision.Comment)
                             .Select(m => int.Parse(m.Groups[1].Value))
@@ -118,12 +126,6 @@ namespace Rodgort.Services
 
                         foreach (var userId in userIds)
                         {
-                            // A closure doesn't have a tags list.
-                            // So, check all previous revisions for this post and grab all the tags. A closure counts for all tags seen
-                            var allSeenTags = revisions.Items
-                                .Where(r => r.PostId == revision.PostId)
-                                .Where(r => r.CreationDate < revision.CreationDate)
-                                .Where(r => r.Tags != null).SelectMany(r => r.Tags).Distinct().ToList();
                             foreach (var tag in allSeenTags)
                             {
                                 AddIfNew(new DbUserAction
@@ -132,7 +134,8 @@ namespace Rodgort.Services
                                     Tag = tag,
                                     PostId = revision.PostId,
                                     Time = Dates.UnixTimeStampToDateTime(revision.CreationDate),
-                                    SiteUserId = userId
+                                    SiteUserId = userId,
+                                    TimeProcessed = _dateService.UtcNow
                                 });
                             }
                         }
@@ -156,7 +159,8 @@ namespace Rodgort.Services
                                     Tag = followingTag,
                                     PostId = questionId,
                                     Time = _dateService.UtcNow,
-                                    SiteUserId = -1
+                                    SiteUserId = -1,
+                                    TimeProcessed = _dateService.UtcNow
                                 });
                         }
                     }

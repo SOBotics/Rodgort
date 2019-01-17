@@ -20,13 +20,15 @@ namespace Rodgort.Controllers
     {
         private readonly RodgortContext _context;
         private readonly BurnProcessingService _burnProcessingService;
+        private readonly DateService _dateService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AdminController> _logger;
 
-        public AdminController(RodgortContext context, BurnProcessingService burnProcessingService, IServiceProvider serviceProvider, ILogger<AdminController> logger)
+        public AdminController(RodgortContext context, BurnProcessingService burnProcessingService, DateService dateService, IServiceProvider serviceProvider, ILogger<AdminController> logger)
         {
             _context = context;
             _burnProcessingService = burnProcessingService;
+            _dateService = dateService;
             _serviceProvider = serviceProvider;
             _logger = logger;
         }
@@ -80,7 +82,8 @@ namespace Rodgort.Controllers
                         Tag = tag,
                         SiteUserId = requestItem.UserId,
                         Time = requestItem.DateTime,
-                        UserActionTypeId = requestItem.ActionTypeId
+                        UserActionTypeId = requestItem.ActionTypeId,
+                        TimeProcessed = _dateService.UtcNow
                     });
 
 
