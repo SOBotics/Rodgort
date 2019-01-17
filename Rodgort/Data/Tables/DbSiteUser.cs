@@ -9,5 +9,7 @@ namespace Rodgort.Data.Tables
 
         public List<DbUserAction> UserActions { get; set; }
         public List<DbSiteUserRole> Roles { get; set; }
+
+        public List<DbUnknownDeletion> ProcessedUnknownDeletions { get; set; }
     }
 }

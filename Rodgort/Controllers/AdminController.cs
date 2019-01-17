@@ -40,12 +40,11 @@ namespace Rodgort.Controllers
             if (!isAdmin)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
-            return _context.UserActions
-                .Where(ua => ua.SiteUserId == -1)
-                .Where(ua => ua.UserActionTypeId == DbUserActionType.UNKNOWN_DELETION)
+            return _context.UnknownDeletions
+                .Where(ud => !ud.Processed.HasValue)
                 .Select(ua => new
                 {
-                    ActionId = ua.Id,
+                    UnknownDeletionId = ua.Id,
                     ua.PostId
                 })
                 .ToList();
@@ -58,9 +57,9 @@ namespace Rodgort.Controllers
             if (!isAdmin)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
-            foreach (var requestItemsPerAction in requestItems.GroupBy(g => g.ActionId))
+            foreach (var requestItemsPerAction in requestItems.GroupBy(g => g.UnknownDeletionId))
             {
-                var matchedUnknown = _context.UserActions.FirstOrDefault(ua => ua.Id == requestItemsPerAction.Key);
+                var matchedUnknown = _context.UnknownDeletions.FirstOrDefault(ua => ua.Id == requestItemsPerAction.Key);
                 if (matchedUnknown == null)
                     continue;
 
@@ -83,7 +82,8 @@ namespace Rodgort.Controllers
                         SiteUserId = requestItem.UserId,
                         Time = requestItem.DateTime,
                         UserActionTypeId = requestItem.ActionTypeId,
-                        TimeProcessed = _dateService.UtcNow
+                        TimeProcessed = _dateService.UtcNow,
+                        UnknownDeletionId = requestItemsPerAction.Key
                     });
 
 
@@ -102,7 +102,8 @@ namespace Rodgort.Controllers
                     }
                 }
 
-                _context.UserActions.Remove(matchedUnknown);
+                matchedUnknown.Processed = _dateService.UtcNow;
+                matchedUnknown.ProcessedByUserId = User.UserId();
             }
 
             var currentUserIds = _context.UserActions.Local.Select(mqmt => mqmt.SiteUserId).Distinct().ToList();
@@ -164,7 +165,7 @@ namespace Rodgort.Controllers
         
         public class ResolveUnresolvedDeletionRequest
         {
-            public int ActionId { get; set; }
+            public int UnknownDeletionId { get; set; }
             public int UserId { get; set; }
             public int ActionTypeId { get; set; }
             public string Tag { get; set; }

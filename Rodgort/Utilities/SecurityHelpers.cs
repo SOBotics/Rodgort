@@ -8,5 +8,11 @@ namespace Rodgort.Utilities
         {
             return claimsPrincipal.HasClaim(c => string.Equals(c.Type, type));
         }
+
+        public static int UserId(this ClaimsPrincipal claimsPrincipal)
+        {
+            var claim = claimsPrincipal.FindFirst("accountId");
+            return int.Parse(claim.Value);
+        }
     }
 }

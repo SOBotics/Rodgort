@@ -147,20 +147,17 @@ namespace Rodgort.Services
                 {
                     if (!returnedItemLookup.Contains(questionId))
                     {
-                        if (!innerContext.UserActions.Any(ua =>
-                            ua.PostId == questionId
-                            && ua.UserActionTypeId == DbUserActionType.UNKNOWN_DELETION
+                        if (!innerContext.UnknownDeletions.Any(ua =>
+                            !ua.Processed.HasValue
+                            && ua.PostId == questionId
                             && ua.Tag == followingTag))
                         {
-                            innerContext.UserActions.Add(
-                                new DbUserAction
+                            innerContext.UnknownDeletions.Add(
+                                new DbUnknownDeletion
                                 {
-                                    UserActionTypeId = DbUserActionType.UNKNOWN_DELETION,
                                     Tag = followingTag,
                                     PostId = questionId,
                                     Time = _dateService.UtcNow,
-                                    SiteUserId = -1,
-                                    TimeProcessed = _dateService.UtcNow
                                 });
                         }
                     }

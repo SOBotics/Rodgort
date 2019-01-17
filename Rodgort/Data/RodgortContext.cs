@@ -21,6 +21,7 @@ namespace Rodgort.Data
         public DbSet<DbUserAction> UserActions { get; set; }
         public DbSet<DbSiteUser> SiteUsers { get; set; }
         public DbSet<DbSiteUserRole> SiteUserRoles { get; set; }
+        public DbSet<DbUnknownDeletion> UnknownDeletions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -71,6 +72,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbUserAction>().HasKey(ua => ua.Id);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.UserActionType).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.UserActionTypeId);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.SiteUser).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.SiteUserId);
+            modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.UnknownDeletion).WithMany(ud => ud.UserActions).HasForeignKey(ua => ua.UnknownDeletionId).IsRequired(false);
             modelBuilder.Entity<DbUserAction>().Property(ua => ua.TimeProcessed).IsRequired().HasDefaultValueSql("now() at time zone 'utc'");
 
             modelBuilder.Entity<DbUserActionType>().ToTable("UserActionTypes");
@@ -97,6 +99,10 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasOne(mqmt => mqmt.MetaQuestion).WithMany(mq => mq.MetaQuestionMetaTags);
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasOne(mqmt => mqmt.MetaTag).WithMany(mq => mq.MetaQuestionMetaTags).HasForeignKey(mqmt => mqmt.TagName);
 
+            modelBuilder.Entity<DbUnknownDeletion>().ToTable("DbUnknownDeletions");
+            modelBuilder.Entity<DbUnknownDeletion>().HasKey(ud => ud.Id);
+            modelBuilder.Entity<DbUnknownDeletion>().HasOne(ud => ud.ProcessedByUser).WithMany(u => u.ProcessedUnknownDeletions).HasForeignKey(ua => ua.ProcessedByUserId).IsRequired(false);
+
             modelBuilder.Entity<DbMetaTag>()
                 .HasData(
                     new DbMetaTag {Name = DbMetaTag.STATUS_COMPLETED},
@@ -120,8 +126,7 @@ namespace Rodgort.Data
                     new DbUserActionType {Id = DbUserActionType.CLOSED, Name = "Closed"},
                     new DbUserActionType {Id = DbUserActionType.REOPENED, Name = "Reopened"},
                     new DbUserActionType {Id = DbUserActionType.DELETED, Name = "Deleted"},
-                    new DbUserActionType {Id = DbUserActionType.UNDELETED, Name = "Undeleted"},
-                    new DbUserActionType {Id = DbUserActionType.UNKNOWN_DELETION, Name = "Unknown deletion"}
+                    new DbUserActionType {Id = DbUserActionType.UNDELETED, Name = "Undeleted"}
                 );
 
             modelBuilder.Entity<DbRole>()

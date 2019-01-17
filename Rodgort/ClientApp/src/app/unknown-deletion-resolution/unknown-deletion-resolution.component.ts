@@ -39,7 +39,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
       })
         .subscribe((data: any) => {
           this.postsToVisit = data.map(action => ({
-            actionId: action.actionId,
+            unknownDeletionId: action.unknownDeletionId,
             postId: action.postId,
             info: '',
             status: 'pending'
@@ -86,7 +86,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
 
             requests = postTags.map(e => {
               return {
-                actionId: postToVisit.actionId,
+                unknownDeletionId: postToVisit.unknownDeletionId,
                 userId,
                 tag: e.innerHTML,
                 actionTypeId: e.getAttribute('class') === 'diff-delete' ? 1 : 2,
@@ -118,7 +118,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
             while (userIdMatch != null) {
               const userId = parseInt(userIdMatch[1], 10);
               requests.push({
-                actionId: postToVisit.actionId,
+                unknownDeletionId: postToVisit.unknownDeletionId,
                 userId,
                 actionTypeId,
                 dateTime: date

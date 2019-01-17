@@ -38,7 +38,7 @@ namespace Rodgort.Controllers
             var declinedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_DECLINED));
             var completedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED));
 
-            var unknownDeletions = _context.UserActions.Count(ua => ua.UserActionTypeId == DbUserActionType.UNKNOWN_DELETION);
+            var unknownDeletions = _context.UnknownDeletions.Count(ud => !ud.Processed.HasValue);
 
             var completedRequestsWithQuestions = _context.MetaQuestions.Count(mq => 
                 mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED)
@@ -135,7 +135,6 @@ namespace Rodgort.Controllers
                                 QuestionCountOverTime = mqt.Tag.Statistics.Where(s => s.DateTime > (mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded))
                                     .Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
                                 Actions = _context.UserActions
-                                    .Where(a => a.UserActionTypeId != DbUserActionType.UNKNOWN_DELETION)
                                     .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
                                     {
                                         ua.PostId,

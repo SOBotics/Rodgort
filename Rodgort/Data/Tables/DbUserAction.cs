@@ -18,7 +18,10 @@ namespace Rodgort.Data.Tables
 
         public DateTime TimeProcessed { get; set; }
 
+        public int? UnknownDeletionId { get; set; }
+
         public DbUserActionType UserActionType { get; set; }
         public DbSiteUser SiteUser { get; set; }
+        public DbUnknownDeletion UnknownDeletion { get; set; }
     }
 }
