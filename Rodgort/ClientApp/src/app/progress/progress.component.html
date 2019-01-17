@@ -4,11 +4,11 @@
 <ng-container *ngIf="!hasNoData && burns">
   <ng-container *ngFor="let burn of burns">
     <h1>{{burn.metaQuestionTitle}}</h1>
+    <p style="display: inline"><a href="{{burn.metaQuestionLink}}">View meta post</a></p>
     <ng-container *ngFor="let tag of burn.tags">
       <div class="container mt-3 mb-3">
         <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tag}}">{{tag.tag}}</a></p>
         <p style="display: inline"> - {{tag.numberOfQuestions}} questions</p>
-        <p style="display: inline"> - <a href="{{burn.metaQuestionLink}}">View meta post</a></p>
       </div>
 
       <h2>Tag Progress</h2>
