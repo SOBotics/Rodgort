@@ -133,6 +133,23 @@ namespace StackExchangeChat
             }, Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
+        public async Task AddRoomOwner(ChatSite chatSite, int roomId, int userId)
+        {
+            await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
+            {
+                var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
+                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/${roomId}",
+                    new FormUrlEncodedContent(
+                        new Dictionary<string, string>
+                        {
+                            {"fkey", fkey},
+                            {"userAccess", "owner"},
+                            {"aclUserId", userId.ToString()},
+                        }));
+            });
+        }
+
         public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, int roomId)
         {
             return Observable.Create<ChatEvent>(async observer =>
