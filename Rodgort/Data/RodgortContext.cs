@@ -99,7 +99,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasOne(mqmt => mqmt.MetaQuestion).WithMany(mq => mq.MetaQuestionMetaTags);
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasOne(mqmt => mqmt.MetaTag).WithMany(mq => mq.MetaQuestionMetaTags).HasForeignKey(mqmt => mqmt.TagName);
 
-            modelBuilder.Entity<DbUnknownDeletion>().ToTable("DbUnknownDeletions");
+            modelBuilder.Entity<DbUnknownDeletion>().ToTable("UnknownDeletions");
             modelBuilder.Entity<DbUnknownDeletion>().HasKey(ud => ud.Id);
             modelBuilder.Entity<DbUnknownDeletion>().HasOne(ud => ud.ProcessedByUser).WithMany(u => u.ProcessedUnknownDeletions).HasForeignKey(ua => ua.ProcessedByUserId).IsRequired(false);
 
