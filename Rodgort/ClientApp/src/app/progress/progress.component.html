@@ -20,7 +20,7 @@
       </app-question-count-graph>
 
       <h2>User Activity</h2>
-      <div *ngIf="chart" [chart]="chart"></div>
+      <div *ngIf="tag.chart" [chart]="tag.chart"></div>
 
       <ng-container *ngIf="tag.userGrandTotals.length">
         <h2>User grand totals</h2>
