@@ -49,14 +49,11 @@ namespace Rodgort.Controllers
             var noStatusNoQuestions = _context.MetaQuestions.Count(mq => 
                 !mq.MetaQuestionMetaTags.Any(mqa => statusTags.Contains(mqa.TagName))
                 && !mq.ClosedDate.HasValue
-                && mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
-                                                  || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE)
-                && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
-                                                    || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE).All(mqt => mqt.Tag.NumberOfQuestions <= 0)
+                && mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
+                && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).All(mqt => mqt.Tag.NumberOfQuestions <= 0)
             );
 
-            var filteredTags = _context.Tags.Where(t => t.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
-                                                                                      || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE));
+            var filteredTags = _context.Tags.Where(t => t.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED));
             var tagCount = filteredTags.Count();
             var tagsNoQuestions = filteredTags.Count(t => t.NumberOfQuestions == 0);
             var synonomisedTags = filteredTags.Count(t => t.SynonymOf != null);
