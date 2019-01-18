@@ -77,6 +77,7 @@ namespace Rodgort
             services.AddTransient<BurnakiFollowService>();
             services.AddTransient<BurnProcessingService>();
             services.AddTransient<BurnCatchupService>();
+            services.AddTransient<MetaCrawlerService>();
             services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
             services.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
 
@@ -94,6 +95,8 @@ namespace Rodgort
             services.AddScoped<NewBurninationService>();
 
             services.AddHostedService<BurnakiFollowService>();
+
+            services.AddHostedService<LiveMetaQuestionWatcherService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

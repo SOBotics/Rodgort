@@ -15,8 +15,9 @@ namespace Rodgort.Data.Tables
         public const string BURNINATE_REQUEST = "burninate-request";
         public const string SYNONYM_REQUEST = "synonym-request";
         public const string RETAG_REQUEST = "retag-request";
+        public const string TAG_DISAMBIGUATION = "tag-disambiguation";
 
-        public static string[] RequestTypes = { BURNINATE_REQUEST, SYNONYM_REQUEST, RETAG_REQUEST };
+        public static string[] RequestTypes = { BURNINATE_REQUEST, SYNONYM_REQUEST, RETAG_REQUEST, TAG_DISAMBIGUATION };
 
         public string Name { get; set; }
 

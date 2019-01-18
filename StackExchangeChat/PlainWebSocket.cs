@@ -63,11 +63,36 @@ namespace StackExchangeChat
                     _socket.Options.SetRequestHeader(kv.Key, kv.Value);
             
             await _socket.ConnectAsync(Endpoint, _socketTokenSource.Token);
-
+            
             new Thread(Listen).Start();
             InvokeAsync(OnOpen);
         }
-        
+
+        public async Task SendAsync(string message)
+        {
+            if (_dispose) return;
+
+            if (_socket?.State != WebSocketState.Open)
+                throw new Exception("The WebSocket must be open before attempting to send a message.");
+
+            var bytes = Encoding.UTF8.GetBytes(message);
+
+            await SendAsync(bytes, WebSocketMessageType.Text);
+        }
+
+        public async Task SendAsync(byte[] bytes, WebSocketMessageType messageType)
+        {
+            if (_dispose) return;
+
+            if (_socket?.State != WebSocketState.Open)
+                throw new Exception("The WebSocket must be open before attempting to send a message.");
+
+            var bytesSegment = new ArraySegment<byte>(bytes);
+            
+            await _socket.SendAsync(bytesSegment, messageType, true, _socketTokenSource.Token);
+        }
+
+
         private void Listen()
         {
             while (!_dispose)
