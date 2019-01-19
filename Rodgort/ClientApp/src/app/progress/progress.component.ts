@@ -49,8 +49,6 @@ export class ProgressComponent implements OnInit {
 
           this.burns = data.burns;
 
-          const lines = [];
-
           if (this.burns.length === 0 || this.burns[0].tags[0].length === 0) {
             this.hasNoData = true;
             return;
@@ -58,6 +56,7 @@ export class ProgressComponent implements OnInit {
 
           for (const burn of this.burns) {
             const bands = [];
+            const lines = [];
 
             if (burn.featuredStarted && burn.featuredEnded) {
               bands.push({
