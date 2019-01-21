@@ -31,7 +31,7 @@ namespace Rodgort.Controllers
                 var matchedLevel = enumList.First(e => e.Name == level) ?? enumList.First();
                 var desiredLevel = matchedLevel.Value;
 
-                var lookFor = enumList.Where(e => e.Value > desiredLevel).Select(e => e.Name).ToList();
+                var lookFor = enumList.Where(e => e.Value >= desiredLevel).Select(e => e.Name).ToList();
                 query = query.Where(q => lookFor.Contains(q.Level));
             }
             var orderedQuery = query.OrderByDescending(l => l.TimeLogged);
