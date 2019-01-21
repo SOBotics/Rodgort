@@ -78,15 +78,18 @@ namespace Rodgort.Services
             if (!_enabled)
                 return;
 
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [tag:{tag}] has finished!");
-
-            var follows = _rodgortContext.BurnakiFollows.Where(bf => 
-                bf.BurnakiId == ChatUserIds.GEMMY 
+            var follows = _rodgortContext.BurnakiFollows.Where(bf =>
+                bf.BurnakiId == ChatUserIds.GEMMY
                 && bf.Tag == tag
                 && !bf.FollowEnded.HasValue
             ).ToList();
 
+            if (!follows.Any())
+                return;
+
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [tag:{tag}] has finished!");
+            
             foreach (var follow in follows)
             {
                 await _chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
@@ -169,7 +172,7 @@ namespace Rodgort.Services
         {
             if (!_enabled)
                 return;
-
+            
             if (!tags.Any())
             {
                 await AnnounceFeaturedNoTrackedTags(metaPostUrl);
@@ -183,7 +186,16 @@ namespace Rodgort.Services
             }
 
             var tag = tags.First();
-            
+
+            var follows = _rodgortContext.BurnakiFollows.Where(bf =>
+                bf.BurnakiId == ChatUserIds.GEMMY
+                && bf.Tag == tag
+                && !bf.FollowEnded.HasValue
+            ).ToList();
+
+            if (follows.Any())
+                return;
+
             var roomName = $"Observation room for [{tag}] burnination";
             var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, metaPostUrl, new[] { tag });
             await _chatClient.AddWriteAccess(ChatSite.StackOverflow, roomId, ChatUserIds.GEMMY);
