@@ -42,7 +42,10 @@ namespace Rodgort.Services
             {
                 foreach (var batch in questionIdList.Distinct().Batch(95))
                 {
-                    var questions = await _apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batch.ToList());
+                    var batchList = batch.ToList();
+
+                    _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
+                    var questions = await _apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
                     var result = _metaCrawlerService.ProcessQuestions(questions.Items);
                     await _metaCrawlerService.PostProcessQuestions(result);
                 }
