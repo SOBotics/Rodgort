@@ -116,8 +116,8 @@ namespace Rodgort.Services
 
         public async Task PostProcessQuestions(IEnumerable<BurnFinished> finishedBurns, IReadOnlyCollection<NewFeature> newFeatures, IReadOnlyCollection<BurnStarted> burnsStarted)
         {
-            foreach (var finishedBurn in finishedBurns.Distinct())
-                await _newBurninationService.StopBurn(finishedBurn.Tag);
+            foreach (var tag in finishedBurns.Select(b => b.Tag).Distinct())
+                await _newBurninationService.StopBurn(tag);
 
             foreach (var newFeature in newFeatures.GroupBy(g => g.MetaUrl).Select(g => g.First()))
                 await _newBurninationService.NewTagsFeatured(newFeature.MetaQuestionId, newFeature.MetaUrl, newFeature.Tags);

@@ -81,7 +81,12 @@ namespace Rodgort.Services
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [tag:{tag}] has finished!");
 
-            var follows = _rodgortContext.BurnakiFollows.Where(bf => bf.BurnakiId == ChatUserIds.GEMMY && bf.Tag == tag).ToList();
+            var follows = _rodgortContext.BurnakiFollows.Where(bf => 
+                bf.BurnakiId == ChatUserIds.GEMMY 
+                && bf.Tag == tag
+                && !bf.FollowEnded.HasValue
+            ).ToList();
+
             foreach (var follow in follows)
             {
                 await _chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
