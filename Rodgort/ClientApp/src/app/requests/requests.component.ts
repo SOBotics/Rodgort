@@ -149,10 +149,13 @@ export class RequestsComponent implements OnInit {
   public showMore(tag: any) {
     tag.showingMore = true;
     this.httpClient.get(`/api/MetaQuestions/QuestionCountOverTime?tag=${tag.tagName}`)
-    .subscribe((d: any) => {
-      console.log(d.questionCountOverTime);
-      tag.questionCountOverTime = d.questionCountOverTime;
-    });
+      .subscribe((data: any) => {
+        if (data.questionCountOverTime) {
+          tag.questionCountOverTime = data.questionCountOverTime;
+        } else {
+          tag.questionCountOverTime = [];
+        }
+      });
   }
 
   public hideMore(tag: any) {
