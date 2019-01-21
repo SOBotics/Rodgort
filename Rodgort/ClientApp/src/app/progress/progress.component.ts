@@ -16,6 +16,9 @@ export class ProgressComponent implements OnInit {
 
   public burns: any;
 
+  public userGrandTotalShowAll = false;
+  public userBreakdownShowAll = false;
+
   public filter = {
     metaQuestionId: -1
   };
