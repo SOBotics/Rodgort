@@ -153,8 +153,17 @@ namespace Rodgort.Controllers
                     Tags = b.BurningTags.Select(bt =>
                     {
                         var sortedActions = bt.Actions.OrderBy(t => t.Time).ToList();
-                        var minDate = b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded ?? sortedActions.Select(a => a.Time).FirstOrDefault().Date;
+                        var minDate = 
+                            b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded ?? 
+                            (sortedActions.Any() 
+                                ? sortedActions.Select(a => a.Time).FirstOrDefault().Date 
+                                : bt.QuestionCountOverTime.OrderBy(qc => qc.DateTime).Select(qc => qc.DateTime).FirstOrDefault().Date
+                            );
+
                         var now = _dateService.UtcNow;
+                        if (minDate == DateTime.MinValue)
+                            minDate = now.Date;
+
                         var maxDate = now.Date.AddHours(now.Hour + 1);
 
                         var dateRange = Enumerable.Range(0, (int)Math.Ceiling((maxDate - minDate).TotalHours)).Select(h => minDate.AddHours(h)).ToList();
