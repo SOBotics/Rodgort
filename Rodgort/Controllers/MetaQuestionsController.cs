@@ -102,6 +102,17 @@ namespace Rodgort.Controllers
             return result;
         }
 
+        [HttpGet("QuestionCountOverTime")]
+        public object GetQuestionCountOverTime(string tag)
+        {
+            return _context.Tags.Where(t => t.Name == tag)
+                .Select(t => new
+                {
+                    QuestionCountOverTime = t.Statistics.Select(s => new {s.DateTime, s.QuestionCount}).OrderBy(s => s.DateTime)
+                })
+                .FirstOrDefault();
+        }
+
         [HttpPost("SetTagTrackingStatus")]
         public void SetTagTrackingStatus([FromBody] SetTagTrackingStatusRequest request)
         {

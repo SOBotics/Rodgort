@@ -146,6 +146,19 @@ export class RequestsComponent implements OnInit {
     this.router.navigate(['/requests'], { queryParams: this.filter });
   }
 
+  public showMore(tag: any) {
+    tag.showingMore = true;
+    this.httpClient.get(`/api/MetaQuestions/QuestionCountOverTime?tag=${tag.tagName}`)
+    .subscribe((d: any) => {
+      console.log(d.questionCountOverTime);
+      tag.questionCountOverTime = d.questionCountOverTime;
+    });
+  }
+
+  public hideMore(tag: any) {
+    tag.showingMore = false;
+  }
+
   public setHasQuestions(newValue: boolean) {
     // this.filter.hasQuestions = newValue;
   }
