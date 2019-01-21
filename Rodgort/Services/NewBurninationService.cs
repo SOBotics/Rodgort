@@ -84,6 +84,7 @@ namespace Rodgort.Services
             var follows = _rodgortContext.BurnakiFollows.Where(bf => bf.BurnakiId == ChatUserIds.GEMMY && bf.Tag == tag).ToList();
             foreach (var follow in follows)
             {
+                await _chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
                 follow.FollowEnded = _dateService.UtcNow;
             }
 
