@@ -32,26 +32,25 @@ namespace Rodgort.Services
             _logger = logger;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             var websocket = CreateLiveWebsocket();
 
-            websocket
+            await websocket
                 .SlidingBuffer(TimeSpan.FromSeconds(5))
-                .Subscribe(async questionIdList =>
-            {
-                foreach (var batch in questionIdList.Distinct().Batch(95))
+                .ForEachAsync(async questionIdList =>
                 {
-                    var batchList = batch.ToList();
+                    foreach (var batch in questionIdList.Distinct().Batch(95))
+                    {
+                        var batchList = batch.ToList();
 
-                    _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
-                    var questions = await _apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
-                    var result = _metaCrawlerService.ProcessQuestions(questions.Items);
-                    await _metaCrawlerService.PostProcessQuestions(result);
-                }
-            });
-
-            return Task.CompletedTask;
+                        _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
+                        var questions =
+                            await _apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
+                        var result = _metaCrawlerService.ProcessQuestions(questions.Items);
+                        await _metaCrawlerService.PostProcessQuestions(result);
+                    }
+                }, cancellationToken);
         }
 
         private IObservable<int> CreateLiveWebsocket()
