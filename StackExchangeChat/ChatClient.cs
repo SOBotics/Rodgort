@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchangeChat.Utilities;
@@ -19,11 +20,13 @@ namespace StackExchangeChat
 
         private readonly SiteAuthenticator _siteAuthenticator;
         private readonly HttpClientWithHandler _httpClient;
+        private readonly ILogger<ChatClient> _logger;
 
-        public ChatClient(SiteAuthenticator siteAuthenticator, HttpClientWithHandler httpClient)
+        public ChatClient(SiteAuthenticator siteAuthenticator, HttpClientWithHandler httpClient, ILogger<ChatClient> logger)
         {
             _siteAuthenticator = siteAuthenticator;
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public async Task<int> SendMessageAndPin(ChatSite chatSite, int roomId, string message)
@@ -50,6 +53,8 @@ namespace StackExchangeChat
                                 {"text", message},
                                 {"fkey", fkey}
                             }));
+
+                    LogResponseError(response);
 
                     var responseString = await response.Content.ReadAsStringAsync();
                     var matchesBackoff = backoffRegex.Match(responseString);
@@ -91,6 +96,7 @@ namespace StackExchangeChat
                             {"tags", string.Join(" ", tags)},
                             {"noDupeCheck", "true"}
                         }));
+                LogResponseError(response);
 
                 var requestUri = response.RequestMessage.RequestUri;
                 var roomId = int.Parse(_roomRegex.Match(requestUri.AbsolutePath).Groups[1].Value);
@@ -105,7 +111,7 @@ namespace StackExchangeChat
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
 
-                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/save",
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/save",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
@@ -115,6 +121,7 @@ namespace StackExchangeChat
                             {"description", roomDescription},
                             {"tags", string.Join(" ", tags)},
                         }));
+                LogResponseError(response);
             });
         }
 
@@ -124,12 +131,13 @@ namespace StackExchangeChat
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, currentRoomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/messages/{messageId}/owner-star  ",
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/messages/{messageId}/owner-star  ",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
                             {"fkey", fkey},
                         }));
+                LogResponseError(response);
             }, Task.Delay(TimeSpan.FromSeconds(5)));
         }
 
@@ -139,7 +147,7 @@ namespace StackExchangeChat
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/${roomId}",
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/${roomId}",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
@@ -147,6 +155,7 @@ namespace StackExchangeChat
                             {"userAccess", "owner"},
                             {"aclUserId", userId.ToString()},
                         }));
+                LogResponseError(response);
             });
         }
 
@@ -156,7 +165,7 @@ namespace StackExchangeChat
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/${roomId}",
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/${roomId}",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
@@ -164,6 +173,7 @@ namespace StackExchangeChat
                             {"userAccess", "read-write"},
                             {"aclUserId", userId.ToString()},
                         }));
+                LogResponseError(response);
             });
         }
 
@@ -234,6 +244,12 @@ namespace StackExchangeChat
                     // webSocket.Dispose();
                 });
             });
+        }
+
+        private void LogResponseError(HttpResponseMessage responseMessage)
+        {
+            if (!responseMessage.IsSuccessStatusCode)
+                _logger.LogError($"Request failed for {responseMessage.RequestMessage.RequestUri}: {responseMessage.StatusCode}. {responseMessage.ReasonPhrase}");
         }
     }
 }
