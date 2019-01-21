@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, TROGDOR_ROOM_OWNER } from '../services/auth.service';
+import { tagTrackingStatus } from '../../constants/tag-tracking-status';
+// import * as _tagTrackingStatus from '../../constants/tag-tracking-status';
 
 @Component({
   selector: 'app-requests',
@@ -26,6 +28,8 @@ export class RequestsComponent implements OnInit {
   };
 
   model = { options: '2' };
+
+  tagTrackingStatus = tagTrackingStatus;
 
   public questions: any[];
 
@@ -108,26 +112,25 @@ export class RequestsComponent implements OnInit {
 
       const matchedTag = question.mainTags.find((mt: any) => mt.tagName === newTagName);
 
-      if (matchedTag && matchedTag.status !== 'Ignored') {
+      event.target.value = '';
+
+      if (matchedTag && matchedTag.trackingStatusId !== tagTrackingStatus.IGNORED) {
         return;
       }
 
-      event.target.value = '';
-
       this.httpClient.post('/api/MetaQuestions/AddTag', {
         metaQuestionId: question.id,
-        tagName: newTagName,
-        requestType: 'Burninate'
+        tagName: newTagName
       }).subscribe(_ => {
         if (matchedTag) {
-          matchedTag.status = 'Tracked';
-          matchedTag.statusId = 2;
+          matchedTag.trackingStatusName = 'Tracked';
+          matchedTag.trackingStatusId = tagTrackingStatus.TRACKED;
         } else {
           question.mainTags = question.mainTags.concat([{
             questionCountOverTime: [],
             status: 'Tracked',
-            statusId: 2,
-            tagName: newTagName
+            trackingStatusId: tagTrackingStatus.TRACKED,
+            trackingStatusName: newTagName
           }]);
         }
       });

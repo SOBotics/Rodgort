@@ -85,91 +85,54 @@
     <div class="row pt-1" *ngFor="let question of questions">
         <div class="col-md-12">
             <h3>
-                <a>{{question.title}} <span class="closed-label" *ngIf="question.closed">(closed)</span></a>
-                <p *ngFor="let metaTag of question.metaStatusTags" class="post-statustag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
-                <p *ngFor="let metaTag of question.metaRequestTags" class="post-metatag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
+                <span>{{question.score > 0 ? '+' : ''}}{{question.score}}</span>
+                <a href="https://meta.stackoverflow.com/questions/{{question.id}}">{{question.title}}
+                    <span class="closed-label" *ngIf="question.closed">(closed)</span>
+                </a>
             </h3>
-            <a href="https://meta.stackoverflow.com/questions/{{question.id}}">View on site</a> |
-            <a href="/progress?metaQuestionId={{question.id}}">Progress</a>
-            <div class="row">
-                <div class="col-md-3">
-                    Request score:
-                </div>
-                <div class="col-md-3">
-                    {{question.score}}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-3">
-                    Question count:
-                </div>
-                <div class="col-md-3">
-                    {{question.numQuestions}}
-                </div>
-            </div>
+            <p *ngFor="let metaTag of question.metaStatusTags" class="post-statustag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
+            <p *ngFor="let metaTag of question.metaRequestTags" class="post-metatag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
             <div class="tags">
-                <ng-container *ngFor="let tag of question.mainTags | sort:'statusId'">
-                    <div *ngIf="showIgnoredTags || tag.visibleIgnored || tag.trackingStatusName !== 'Ignored'" class="mt-3 p-2" [class.tag-ignored]="tag.trackingStatusName === 'Ignored'">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="row pb-3">
-                                    <div class="col">
-                                        <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td style="width: 35%;">Tag</td>
+                            <td style="width: 15%;"># questions</td>
+                            <td style="width: 25%;">Status</td>
+                            <td style="width: 25%;" *ngIf="isTrogdorRoomOwner">Admin</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let tag of question.mainTags | sort:'statusId'">
+                            <tr *ngIf="showIgnoredTags || tag.visibleIgnored || tag.trackingStatusId !== tagTrackingStatus.IGNORED">
+                                <td *ngIf="!tag.synonymOf">
+                                    <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                </td>
+                                <td *ngIf="tag.synonymOf">
+                                    <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                    -> <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.synonymOf}}">{{tag.synonymOf}}</a></p>
+                                </td>
+                                <td>{{tag.numQuestions}}</td>
+                                <td>
+                                    <div [class.tag-tracked]="tag.trackingStatusId === tagTrackingStatus.TRACKED"
+                                        [class.tag-ignored]="tag.trackingStatusId === tagTrackingStatus.IGNORED"
+                                        [class.tag-pending]="tag.trackingStatusId === tagTrackingStatus.REQUIRES_TRACKING_APPROVAL || tag.trackingStatusId === tagTrackingStatus.TRACKED_ELSEWHERE">
+                                        {{tag.trackingStatusName}}
                                     </div>
-                                </div>
-                                <div *ngIf="tag.synonymOf" class="row">
-                                    <div class="col-md-6">
-                                        Synonym of
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.synonymOf}}">{{tag.synonymOf}}</a></p>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        Number of questions
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{tag.numQuestions}}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        Status
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div [class.tag-tracked]="tag.trackingStatusId===2 || tag.trackingStatusId===4" [class.tag-pending]="tag.trackingStatusName==='Requires tracking approval'">
-                                            {{tag.trackingStatusName}}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div *ngIf="isTrogdorRoomOwner">
-                                    <div class="row mt-2">
-                                        <div class="col-md-6">
-                                            Admin
-                                        </div>
-                                        <div class="col-md-6">
-                                            <a *ngIf="tag.trackingStatusName !== 'Tracked'" href="javascript:void(0)" (click)="setTagTrackingStatus(question.id, tag, true)">Track
-                                                Tag</a>
-                                            <span *ngIf="tag.trackingStatusName !== 'Tracked' && tag.trackingStatusName !== 'Ignored'">|</span>
-                                            <a *ngIf="tag.trackingStatusName !== 'Ignored'" href="javascript:void(0)" (click)="setTagTrackingStatus(question.id, tag, false)">Ignore
-                                                Tag</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6" *ngIf="tag.questionCountOverTime.length">
-                                <app-question-count-graph [data]="tag.questionCountOverTime" [featuredStarted]="question.featuredStarted"
-                                    [featuredEnded]="question.featuredEnded" [burnStarted]="question.burnStarted"
-                                    [burnEnded]="question.burnEnded">
-
-                                </app-question-count-graph>
-                            </div>
-                        </div>
-                    </div>
-                </ng-container>
-
+                                </td>
+                                <td *ngIf="isTrogdorRoomOwner">
+                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)"
+                                        (click)="setTagTrackingStatus(question.id, tag, true)">Track
+                                        Tag</a>
+                                    <span *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED && tag.trackingStatusId !== tagTrackingStatus.IGNORED">|</span>
+                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.IGNORED" href="javascript:void(0)"
+                                        (click)="setTagTrackingStatus(question.id, tag, false)">Ignore
+                                        Tag</a>
+                                </td>
+                            </tr>
+                        </ng-container>
+                    </tbody>
+                </table>
                 <input type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
             </div>
             <hr />

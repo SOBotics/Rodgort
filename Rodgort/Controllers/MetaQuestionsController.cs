@@ -63,8 +63,7 @@ namespace Rodgort.Controllers
                         mqt.TrackingStatusId,
                         TrackingStatusName = mqt.TrackingStatus.Name,
                         NumQuestions = mqt.Tag.NumberOfQuestions,
-                        SynonymOf = mqt.Tag.SynonymOfTagName,
-                        QuestionCountOverTime = mqt.Tag.Statistics.Select(s => new {s.DateTime, s.QuestionCount}).OrderBy(s => s.DateTime)
+                        SynonymOf = mqt.Tag.SynonymOfTagName
                     }),
                     MetaStatusTags = mq.MetaQuestionMetaTags.Where(mqmt => statusFlags.Contains(mqmt.TagName)).Select(mqt => new
                     {
@@ -78,7 +77,6 @@ namespace Rodgort.Controllers
                         .Select(mqt => mqt.Tag.NumberOfQuestions)
                         .OrderByDescending(mqt => mqt)
                         .FirstOrDefault(),
-                    ScoreOverTime = mq.Statistics.Select(s => new {s.DateTime, s.Score}),
                     Closed = mq.ClosedDate.HasValue,
 
                     mq.FeaturedStarted,

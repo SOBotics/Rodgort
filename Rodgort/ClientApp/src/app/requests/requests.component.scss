@@ -1,4 +1,4 @@
-.post-tag, .post-metatag, .post-statustag, .tag-tracked, .tag-pending {
+.post-tag, .post-metatag, .post-statustag, .tag-tracked, .tag-pending, .tag-ignored {
     display: inline;
 
     padding: .4em .5em;
@@ -59,6 +59,7 @@
 }
 
 .tag-ignored {
+    border:none;
     background-color: #f1c0c0;
 }
 
@@ -78,4 +79,9 @@
 
 .closed-label {
     color: red;
+}
+
+.tags {
+    padding: 5px;
+    margin-top: 5px;
 }
