@@ -103,7 +103,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ng-container *ngFor="let tag of question.mainTags | sort:'statusId'">
+                        <ng-container *ngFor="let tag of question.mainTags | sort:'trackingStatusId,tagName'">
                             <tr *ngIf="showIgnoredTags || tag.visibleIgnored || tag.trackingStatusId !== tagTrackingStatus.IGNORED">
                                 <td *ngIf="!tag.synonymOf">
                                     <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
