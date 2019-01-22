@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { PagingInfo } from '../../utils/PagingHelper';
 
 @Component({
@@ -11,12 +11,15 @@ export class PaginationComponent implements OnInit {
   @Input()
   public pagingInfo: PagingInfo[];
 
-  @Input()
-  public loadPage: (pageNumber: number) => void;
+  @Output()
+  public pageClicked = new EventEmitter<number>();
 
   constructor() { }
 
   ngOnInit() {
   }
 
+  public pageWasClicked(pageNumber: number) {
+    this.pageClicked.emit(pageNumber);
+  }
 }
