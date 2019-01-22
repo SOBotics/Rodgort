@@ -1,80 +1,61 @@
-<form style="padding: 10px" #filterForm="ngForm">
-    <div class="form-row align-items-center mb-2">
-        <div class="col">
-            <input type="text" class="form-control" id="contentInput" placeholder="Tag" name="tag" [(ngModel)]="filter.tag"
-                #tag="ngModel">
+<form class="form-inline" style="padding: 10px" #filterForm="ngForm">
+    <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Tag" name="tag"
+        [(ngModel)]="filter.tag" #tag="ngModel">
+    <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="trackingStatusSelector">Tracking Status</label>
         </div>
-        <div class="col">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <label class="input-group-text" for="trackingStatusSelector">Tracking Status</label>
-                </div>
-                <select class="custom-select" id="trackingStatusSelector" [(ngModel)]="filter.trackingStatusId"
-                    [ngModelOptions]="{standalone: true}">
-                    <option value="-1">Any</option>
-                    <option value="-10">Tracked &amp; Tracked elsewhere</option>
-                    <option value="2">Tracked</option>
-                    <option value="3">Ignored</option>
-                    <option value="1">Requires tracking approval</option>
-                    <option value="4">Tracked elsewhere</option>
-                </select>
-            </div>
-        </div>
-        <div class="col">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <label class="input-group-text" for="sortBySelector">Sort By</label>
-                </div>
-                <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
-                    <option value="score">Request score</option>
-                    <option value="numQuestions"># of Questions</option>
-                </select>
-            </div>
-        </div>
+        <select class="custom-select" id="trackingStatusSelector" [(ngModel)]="filter.trackingStatusId"
+            [ngModelOptions]="{standalone: true}">
+            <option value="-1">Any</option>
+            <option value="-10">Tracked &amp; Tracked elsewhere</option>
+            <option value="2">Tracked</option>
+            <option value="3">Ignored</option>
+            <option value="1">Requires tracking approval</option>
+            <option value="4">Tracked elsewhere</option>
+        </select>
     </div>
-    <div class="form-row align-items-center mb-2">
-        <div class="col">
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <label class="input-group-text" for="statusSelector">Status</label>
-                </div>
-                <select class="custom-select" id="statusSelector" [(ngModel)]="filter.status" [ngModelOptions]="{standalone: true}">
-                    <option value="">Any</option>
-                    <option value="none">None</option>
-                    <option value="status-completed">Completed</option>
-                    <option value="status-planned">Planned</option>
-                    <option value="featured">Featured</option>
-                    <option value="status-declined">Declined</option>
-                    <option value="closed">Closed</option>
-                </select>
-            </div>
+    <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="sortBySelector">Sort By</label>
         </div>
-        <div class="col">
-            <div class="btn-group btn-group-toggle">
-                <div class="input-group-prepend">
-                    <label class="input-group-text">Has Questions</label>
-                </div>
-                <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'any'">
-                    <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="any">Any
-                </label>
-                <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'yes'">
-                    <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="yes">Yes
-                </label>
-                <label class="btn btn-secondary" [class.active]="filter.hasQuestions === 'no'">
-                    <input type="radio" name="hasQuestionsOptions" [(ngModel)]="filter.hasQuestions" value="no">No
-                </label>
-            </div>
-        </div>
+        <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
+            <option value="score">Request score</option>
+            <option value="numQuestions"># of Questions</option>
+        </select>
     </div>
-    <div class="form-row align-items-center mb-2">
-        <div class="col">
-            <button type="submit" class="btn btn-primary" (click)="applyFilter()">Search</button>
-            <div class="pull-right">
-                <input type="checkbox" id="chkShowIgnoredTags" [(ngModel)]="showIgnoredTags" [ngModelOptions]="{standalone: true}" />
-                <label for="chkShowIgnoredTags">Show ignored tags</label>
-            </div>
+    <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="statusSelector">Status</label>
         </div>
+        <select class="custom-select" id="statusSelector" [(ngModel)]="filter.status" [ngModelOptions]="{standalone: true}">
+            <option value="">Any</option>
+            <option value="none">None</option>
+            <option value="status-completed">Completed</option>
+            <option value="status-planned">Planned</option>
+            <option value="featured">Featured</option>
+            <option value="status-declined">Declined</option>
+            <option value="closed">Closed</option>
+        </select>
     </div>
+    <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="hasQuestionsSelector">Has Questions</label>
+        </div>
+        <select class="custom-select" id="hasQuestionsSelector" [(ngModel)]="filter.hasQuestions" [ngModelOptions]="{standalone: true}">
+            <option value="any">Any</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+        </select>
+    </div>
+    <div class="form-check mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <label class="form-check-label">
+            <input type="checkbox" class="mr-2" id="chkShowIgnoredTags" [(ngModel)]="showIgnoredTags" [ngModelOptions]="{standalone: true}">
+            Show ignored tags
+        </label>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
 </form>
 
 <div class="container loading-container">
@@ -123,9 +104,11 @@
                                     </div>
                                 </td>
                                 <td *ngIf="isTrogdorRoomOwner">
-                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)" (click)="setTagTrackingStatus(question.id, tag, true)">Track</a>
+                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)"
+                                        (click)="setTagTrackingStatus(question.id, tag, true)">Track</a>
                                     <span *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED && tag.trackingStatusId !== tagTrackingStatus.IGNORED">|</span>
-                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.IGNORED" href="javascript:void(0)" (click)="setTagTrackingStatus(question.id, tag, false)">Ignore</a>
+                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.IGNORED" href="javascript:void(0)"
+                                        (click)="setTagTrackingStatus(question.id, tag, false)">Ignore</a>
                                 </td>
                             </tr>
                             <tr *ngIf="tag.showingMore && tag.questionCountOverTime">
