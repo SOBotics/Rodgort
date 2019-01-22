@@ -58,6 +58,7 @@ namespace Rodgort.Controllers
             }
 
             var transformedQuery = query
+                .Where(mq => mq.MetaQuestionMetaTags.Any(mqt => DbMetaTag.RequestTypes.Contains(mqt.TagName)))
                 .Select(mq => new
                 {
                     mq.Id,

@@ -25,28 +25,30 @@ namespace Rodgort.Controllers
         [HttpGet]
         public object Get()
         {
-            var burninationRequests = _context.MetaQuestions.Count();
+            var burnRequests = _context.MetaQuestions.Where(mq => mq.MetaQuestionMetaTags.Any(mqtmt => DbMetaTag.RequestTypes.Contains(mqtmt.TagName)));
 
-            var currentBurns = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED));
-            var proposedBurns = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_FEATURED));
+            var burninationRequests = burnRequests.Count();
 
-            var burninationRequestsWithTracked = _context.MetaQuestions.Count(mq => mq.MetaQuestionTags.Any(mqt => 
+            var currentBurns = burnRequests.Count(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED));
+            var proposedBurns = burnRequests.Count(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_FEATURED));
+
+            var burninationRequestsWithTracked = burnRequests.Count(mq => mq.MetaQuestionTags.Any(mqt => 
                 mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED
                 || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE));
-            var burninationRequestsRequireTrackingApproval = _context.MetaQuestions.Count(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL));
+            var burninationRequestsRequireTrackingApproval = burnRequests.Count(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL));
             
-            var declinedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_DECLINED));
-            var completedRequests = _context.MetaQuestions.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED));
+            var declinedRequests = burnRequests.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_DECLINED));
+            var completedRequests = burnRequests.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED));
 
             var unknownDeletions = _context.UnknownDeletions.Count(ud => !ud.Processed.HasValue);
 
-            var completedRequestsWithQuestions = _context.MetaQuestions.Count(mq => 
+            var completedRequestsWithQuestions = burnRequests.Count(mq => 
                 mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED)
                 && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).Any(mqt => mqt.Tag.NumberOfQuestions > 0)
             );
 
             var statusTags = DbMetaTag.StatusFlags;
-            var noStatusNoQuestions = _context.MetaQuestions.Count(mq => 
+            var noStatusNoQuestions = burnRequests.Count(mq => 
                 !mq.MetaQuestionMetaTags.Any(mqa => statusTags.Contains(mqa.TagName))
                 && !mq.ClosedDate.HasValue
                 && mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
@@ -101,13 +103,21 @@ namespace Rodgort.Controllers
         [HttpGet("Leaderboard/Current")]
         public object CurrentLeaderboard()
         {
-            return GenerateBurnsData(_context.MetaQuestions.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED)));
+            return GenerateBurnsData(
+                _context.MetaQuestions
+                    .Where(mq => mq.MetaQuestionMetaTags.Any(mqtmt => DbMetaTag.RequestTypes.Contains(mqtmt.TagName)))
+                    .Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == DbMetaTag.STATUS_PLANNED))
+            );
         }
 
         [HttpGet("Leaderboard")]
         public object LeaderboardForId(int metaQuestionId)
         {
-            return GenerateBurnsData(_context.MetaQuestions.Where(mq => mq.Id == metaQuestionId));
+            return GenerateBurnsData(
+                _context.MetaQuestions
+                    .Where(mq => mq.MetaQuestionMetaTags.Any(mqtmt => DbMetaTag.RequestTypes.Contains(mqtmt.TagName)))
+                    .Where(mq => mq.Id == metaQuestionId)
+            );
         }
 
         private object GenerateBurnsData(IQueryable<DbMetaQuestion> query)
