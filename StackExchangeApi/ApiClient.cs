@@ -120,6 +120,15 @@ namespace StackExchangeApi
             return finalResult;
         }
 
+        public Task<ApiItemsResponse<TagSynonymsResponse>> TagSynonyms(string siteName)
+        {
+            return ApplyWithPaging<TagSynonymsResponse>($"{BASE_URL}/tags/synonyms", new Dictionary<string, string>
+            {
+                {"site", siteName},
+                {"filter", "!--o_SwqiUDuP"},
+            });
+        }
+
         public Task<ApiItemsResponse<RevisionResponse>> Revisions(string siteName, IEnumerable<int> postIds)
         {
             var postIdsList = postIds.ToList();
@@ -172,7 +181,8 @@ namespace StackExchangeApi
             {
                 while (result.HasMore)
                 {
-                    copiedParameters["page"] = page++.ToString();
+                    page++;
+                    copiedParameters["page"] = page.ToString();
                     runningItems.AddRange(result.Items);
                     result = await MakeRequest<ApiItemsResponse<TItemType>>(endPoint, copiedParameters);
                 }

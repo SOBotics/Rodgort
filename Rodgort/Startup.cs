@@ -158,6 +158,10 @@ namespace Rodgort
 
             RecurringJob.AddOrUpdate<InitialTagQueryService>(InitialTagQueryService.SERVICE_NAME, service => service.QuerySync(), "25 0 * * *");
 
+            RecurringJob.AddOrUpdate<InitialTagQueryService>(InitialTagQueryService.SERVICE_NAME, service => service.QuerySync(), "30 0 * * *");
+
+            RecurringJob.AddOrUpdate<SynonymSynchroniserService>(SynonymSynchroniserService.SERVICE_NAME, service => service.SynchroniseSync(), "35 0 * * *");
+
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
             // So, we'll just execute once a year - the first of January at 0:10
             RecurringJob.AddOrUpdate<BurninationTagGuessingService>(BurninationTagGuessingService.SERVICE_NAME, service => service.GuessTags(), "20 0 1 1 *");
