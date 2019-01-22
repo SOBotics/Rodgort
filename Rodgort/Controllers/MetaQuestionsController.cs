@@ -1,8 +1,12 @@
 ﻿using System.Linq;
+using System.Net;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
+using Rodgort.Services;
+using Rodgort.Utilities;
 using Rodgort.Utilities.Paging;
 
 namespace Rodgort.Controllers
@@ -11,10 +15,12 @@ namespace Rodgort.Controllers
     public class MetaQuestionsController : Controller
     {
         private readonly RodgortContext _context;
+        private readonly DateService _dateService;
 
-        public MetaQuestionsController(RodgortContext context)
+        public MetaQuestionsController(RodgortContext context, DateService dateService)
         {
             _context = context;
+            _dateService = dateService;
         }
 
         [HttpGet]
@@ -115,8 +121,12 @@ namespace Rodgort.Controllers
         }
 
         [HttpPost("SetTagTrackingStatus")]
+        [Authorize]
         public void SetTagTrackingStatus([FromBody] SetTagTrackingStatusRequest request)
         {
+            if (!User.HasClaim(DbRole.TROGDOR_ROOM_OWNER))
+                throw new HttpStatusException(HttpStatusCode.Forbidden);
+
             var matchingQuestionMetaTag = _context.MetaQuestionTags.FirstOrDefault(mqt => mqt.MetaQuestionId == request.MetaQuestionId && mqt.TagName == request.TagName);
             if (matchingQuestionMetaTag != null)
             {
@@ -127,7 +137,18 @@ namespace Rodgort.Controllers
 
                 if (matchingQuestionMetaTag.TrackingStatusId != newStatusId)
                 {
+                    _context.MetaQuestionTagTrackingStatusAudit.Add(new DbMetaQuestionTagTrackingStatusAudit
+                    {
+                        Tag = request.TagName,
+                        MetaQuestionId = request.MetaQuestionId,
+                        ChangedByUserId = User.UserId(),
+                        PreviousTrackingStatusId = matchingQuestionMetaTag.TrackingStatusId,
+                        NewTrackingStatusId = newStatusId,
+                        TimeChanged = _dateService.UtcNow
+                    });
+
                     matchingQuestionMetaTag.TrackingStatusId = newStatusId;
+                    
                     _context.SaveChanges();
                 }
             }
@@ -141,8 +162,12 @@ namespace Rodgort.Controllers
         }
         
         [HttpPost("AddTag")]
+        [Authorize]
         public void AddTag([FromBody] AddTagRequest request)
         {
+            if (!User.HasClaim(DbRole.TROGDOR_ROOM_OWNER))
+                throw new HttpStatusException(HttpStatusCode.Forbidden);
+            
             var matchingQuestionMetaTag = _context.MetaQuestions
                 .Include(mq => mq.MetaQuestionTags)
                 .FirstOrDefault(mqt => mqt.Id == request.MetaQuestionId);
@@ -152,6 +177,16 @@ namespace Rodgort.Controllers
                 var alreadyExistingTag = matchingQuestionMetaTag.MetaQuestionTags.FirstOrDefault(mqt => mqt.TagName == request.TagName);
                 if (alreadyExistingTag != null)
                 {
+                    _context.MetaQuestionTagTrackingStatusAudit.Add(new DbMetaQuestionTagTrackingStatusAudit
+                    {
+                        Tag = request.TagName,
+                        MetaQuestionId = request.MetaQuestionId,
+                        ChangedByUserId = User.UserId(),
+                        PreviousTrackingStatusId = alreadyExistingTag.TrackingStatusId,
+                        NewTrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED,
+                        TimeChanged = _dateService.UtcNow
+                    });
+
                     alreadyExistingTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
                 }
                 else
@@ -165,6 +200,16 @@ namespace Rodgort.Controllers
                         MetaQuestionId = request.MetaQuestionId,
                         TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED,
                         TagName = request.TagName
+                    });
+
+                    _context.MetaQuestionTagTrackingStatusAudit.Add(new DbMetaQuestionTagTrackingStatusAudit
+                    {
+                        Tag = request.TagName,
+                        MetaQuestionId = request.MetaQuestionId,
+                        ChangedByUserId = User.UserId(),
+                        PreviousTrackingStatusId = null,
+                        NewTrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED,
+                        TimeChanged = _dateService.UtcNow
                     });
                 }
 

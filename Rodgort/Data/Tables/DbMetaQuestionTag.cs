@@ -1,4 +1,6 @@
-﻿namespace Rodgort.Data.Tables
+﻿using System.Collections.Generic;
+
+namespace Rodgort.Data.Tables
 {
     public class DbMetaQuestionTag
     {
@@ -12,5 +14,7 @@
         public DbTag Tag { get; set; }
         public DbMetaQuestionTagTrackingStatus TrackingStatus { get; set; }
         public DbTag SecondaryTag { get; set; }
+
+        public List<DbMetaQuestionTagTrackingStatusAudit> TagTrackingStatusAudits { get; set; }
     }
 }

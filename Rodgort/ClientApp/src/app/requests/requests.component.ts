@@ -82,16 +82,20 @@ export class RequestsComponent implements OnInit {
   }
 
   public setTagTrackingStatus(metaQuestionId: number, tag: any, tracked: boolean) {
-    this.httpClient.post('/api/MetaQuestions/SetTagTrackingStatus', {
-      metaQuestionId,
-      tagName: tag.tagName,
-      tracked
-    }).subscribe(_ => {
-      tag.trackingStatusId = tracked ? 2 : 3;
-      tag.trackingStatusName = tracked ? 'Tracked' : 'Ignored';
-      if (!tracked) {
-        tag.visibleIgnored = true;
-      }
+    this.authService.GetAuthDetails().subscribe(d => {
+      this.httpClient.post('/api/MetaQuestions/SetTagTrackingStatus', {
+        metaQuestionId,
+        tagName: tag.tagName,
+        tracked
+      }, {
+          headers: { 'Authorization': 'Bearer ' + d.RawToken }
+        }).subscribe(_ => {
+          tag.trackingStatusId = tracked ? 2 : 3;
+          tag.trackingStatusName = tracked ? 'Tracked' : 'Ignored';
+          if (!tracked) {
+            tag.visibleIgnored = true;
+          }
+        });
     });
   }
 
@@ -118,21 +122,25 @@ export class RequestsComponent implements OnInit {
         return;
       }
 
-      this.httpClient.post('/api/MetaQuestions/AddTag', {
-        metaQuestionId: question.id,
-        tagName: newTagName
-      }).subscribe(_ => {
-        if (matchedTag) {
-          matchedTag.trackingStatusName = 'Tracked';
-          matchedTag.trackingStatusId = tagTrackingStatus.TRACKED;
-        } else {
-          question.mainTags = question.mainTags.concat([{
-            questionCountOverTime: [],
-            tagName: newTagName,
-            trackingStatusId: tagTrackingStatus.TRACKED,
-            trackingStatusName: 'Tracked'
-          }]);
-        }
+      this.authService.GetAuthDetails().subscribe(d => {
+        this.httpClient.post('/api/MetaQuestions/AddTag', {
+          metaQuestionId: question.id,
+          tagName: newTagName
+        }, {
+            headers: { 'Authorization': 'Bearer ' + d.RawToken }
+          }).subscribe(_ => {
+            if (matchedTag) {
+              matchedTag.trackingStatusName = 'Tracked';
+              matchedTag.trackingStatusId = tagTrackingStatus.TRACKED;
+            } else {
+              question.mainTags = question.mainTags.concat([{
+                questionCountOverTime: [],
+                tagName: newTagName,
+                trackingStatusId: tagTrackingStatus.TRACKED,
+                trackingStatusName: 'Tracked'
+              }]);
+            }
+          });
       });
     }
   }

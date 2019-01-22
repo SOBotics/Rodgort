@@ -23,6 +23,7 @@ namespace Rodgort.Data
         public DbSet<DbSiteUserRole> SiteUserRoles { get; set; }
         public DbSet<DbUnknownDeletion> UnknownDeletions { get; set; }
         public DbSet<DbSeenQuestion> SeenQuestions { get; set; }
+        public DbSet<DbMetaQuestionTagTrackingStatusAudit> MetaQuestionTagTrackingStatusAudit { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -68,6 +69,14 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbBurnakiFollow>().ToTable("BurnakiFollows");
             modelBuilder.Entity<DbBurnakiFollow>().HasKey(tag => tag.Id);
+
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().ToTable("MetaQuestionTagTrackingStatusAudits");
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasKey(audit => audit.Id);
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().Property(audit => audit.TimeChanged).IsRequired();
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.ChangedByUser).WithMany(u => u.TagTrackingStatusAudits).HasForeignKey(audit => audit.ChangedByUserId);
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.MetaQuestionTag).WithMany(mqt => mqt.TagTrackingStatusAudits).HasForeignKey(audit => new { audit.MetaQuestionId, audit.Tag });
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.PreviousTrackingStatus).WithMany(ts => ts.PreviousTagTrackingStatusAudits).HasForeignKey(audit => audit.PreviousTrackingStatusId).IsRequired(false);
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.NewTrackingStatus).WithMany(ts => ts.NewTagTrackingStatusAudits).HasForeignKey(audit => audit.NewTrackingStatusId);
 
             modelBuilder.Entity<DbUserAction>().ToTable("UserActions");
             modelBuilder.Entity<DbUserAction>().HasKey(ua => ua.Id);

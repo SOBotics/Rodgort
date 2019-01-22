@@ -45,6 +45,10 @@
     <Compile Remove="Migrations\20181221020531_ReworkUserActions.Designer.cs" />
     <Compile Remove="Migrations\20181222023730_SeedMyself.cs" />
     <Compile Remove="Migrations\20181222023730_SeedMyself.Designer.cs" />
+    <Compile Remove="Migrations\20190122013959_AddDbMetaQuestionTagTrackingStatusAudit.cs" />
+    <Compile Remove="Migrations\20190122013959_AddDbMetaQuestionTagTrackingStatusAudit.Designer.cs" />
+    <Compile Remove="Migrations\20190122014207_AddDbMetaQuestionTagTrackingStatusAudit.cs" />
+    <Compile Remove="Migrations\20190122014207_AddDbMetaQuestionTagTrackingStatusAudit.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

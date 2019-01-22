@@ -11,5 +11,7 @@ namespace Rodgort.Data.Tables
         public List<DbSiteUserRole> Roles { get; set; }
 
         public List<DbUnknownDeletion> ProcessedUnknownDeletions { get; set; }
+
+        public List<DbMetaQuestionTagTrackingStatusAudit> TagTrackingStatusAudits { get; set; }
     }
 }

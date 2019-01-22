@@ -14,5 +14,8 @@ namespace Rodgort.Data.Tables
         public string Name { get; set; }
 
         public List<DbMetaQuestionTag> MetaQuestionTags { get; set; }
+
+        public List<DbMetaQuestionTagTrackingStatusAudit> PreviousTagTrackingStatusAudits { get; set; }
+        public List<DbMetaQuestionTagTrackingStatusAudit> NewTagTrackingStatusAudits { get; set; }
     }
 }

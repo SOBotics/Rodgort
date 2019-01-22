@@ -129,7 +129,7 @@
                                 </td>
                             </tr>
                             <tr *ngIf="tag.showingMore && tag.questionCountOverTime">
-                                <td colspan="4">
+                                <td [attr.colspan]="isTrogdorRoomOwner ? 4 : 3">
                                     <app-question-count-graph [data]="tag.questionCountOverTime" [featuredStarted]="question.featuredStarted"
                                         [featuredEnded]="question.featuredEnded" [burnStarted]="question.burnStarted"
                                         [burnEnded]="question.burnEnded">
