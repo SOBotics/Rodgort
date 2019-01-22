@@ -17,6 +17,7 @@ import { ArraySortAscendingPipe } from '../pipes/ArraySortAscendingPipe';
 import { AuthService } from './services/auth.service';
 import { UnknownDeletionResolutionComponent } from './unknown-deletion-resolution/unknown-deletion-resolution.component';
 import { ManualQuestionProcessingComponent } from './manual-question-processing/manual-question-processing.component';
+import { PaginationComponent } from './pagination/pagination.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { ManualQuestionProcessingComponent } from './manual-question-processing/
     RequestsComponent,
     ProgressComponent,
     UnknownDeletionResolutionComponent,
-    ManualQuestionProcessingComponent
+    ManualQuestionProcessingComponent,
+    PaginationComponent
   ],
   imports: [
     ChartModule,

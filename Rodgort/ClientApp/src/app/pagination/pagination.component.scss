@@ -1,0 +1,17 @@
+@media(max-width: 588px) {
+    .pagination {
+        font-size: 14px;
+    }
+}
+
+@media(max-width: 515px) {
+    .pagination {
+        font-size: 10px;
+    }
+}
+
+@media(max-width: 427px) {
+    .pagination .page-neighbour {
+        display: none;
+    }
+}

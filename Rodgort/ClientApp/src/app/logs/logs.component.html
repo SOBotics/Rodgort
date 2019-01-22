@@ -1,10 +1,5 @@
-<nav style="margin-top: 20px;">
-  <ul class="pagination">
-    <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active" *ngFor="let page of pagingInfo">
-      <a class="page-link" (click)="loadPage(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
-    </li>
-  </ul>
-</nav>
+<app-pagination [pagingInfo]="pagingInfo">
+</app-pagination>
 
 <form style="padding: 10px" #filterForm="ngForm">
   <div class="form-row align-items-center mb-2">
@@ -53,10 +48,5 @@
   </tbody>
 </table>
 
-<nav style="margin-top: 20px;">
-  <ul class="pagination">
-    <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active" *ngFor="let page of pagingInfo">
-      <a class="page-link" (click)="loadPage(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
-    </li>
-  </ul>
-</nav>
+<app-pagination [pagingInfo]="pagingInfo">
+</app-pagination>

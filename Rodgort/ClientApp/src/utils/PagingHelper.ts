@@ -3,6 +3,7 @@ export interface PagingInfo {
     Number: number;
     Active: boolean;
     Disabled: boolean;
+    IsNeighbour: boolean;
 }
 
 export function GetPagingInfo(pagedData: { pageNumber?: number, totalPages?: number }, numExtraPages = 2): PagingInfo[] {
@@ -49,7 +50,7 @@ export function GetPagingInfo(pagedData: { pageNumber?: number, totalPages?: num
         if (i <= 0 || i > totalPages) {
             continue;
         }
-        pages.push({ Name: i + '', Number: i, Active: i === pageNumber });
+        pages.push({ Name: i + '', Number: i, Active: i === pageNumber, IsNeighbour: i !== pageNumber });
     }
 
 
@@ -64,7 +65,7 @@ export function GetPagingInfo(pagedData: { pageNumber?: number, totalPages?: num
             });
         }
 
-        // Add in page 1 if we're far away
+        // Add in last page if we're far away
         pages.push({
             Name: totalPages + '',
             Number: totalPages,
