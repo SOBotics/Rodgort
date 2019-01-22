@@ -144,12 +144,12 @@ namespace StackExchangeApi
         public Task<ApiItemsResponse<TagResponse>> TotalQuestionsByTag(string siteName, IEnumerable<string> tags)
         {
             var tagsList = tags.ToList();
-            var tagString = string.Join(";", tagsList.Select(HttpUtility.HtmlEncode));
+            var tagString = string.Join(";", tagsList.Select(HttpUtility.UrlEncode));
             return MakeRequest<ApiItemsResponse<TagResponse>>($"{BASE_URL}/tags/{tagString}/info", new Dictionary<string, string>
             {
                 {"site", siteName},
                 {"filter", "!9Z(-wqiNh"},
-                { "pageSize", tagsList.Count().ToString() }
+                { "pageSize", tagsList.Count.ToString() }
             });
         }
 
