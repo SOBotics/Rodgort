@@ -128,9 +128,9 @@ export class RequestsComponent implements OnInit {
         } else {
           question.mainTags = question.mainTags.concat([{
             questionCountOverTime: [],
-            status: 'Tracked',
+            tagName: newTagName,
             trackingStatusId: tagTrackingStatus.TRACKED,
-            trackingStatusName: newTagName
+            trackingStatusName: 'Tracked'
           }]);
         }
       });
