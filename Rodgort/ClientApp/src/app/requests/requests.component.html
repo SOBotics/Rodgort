@@ -107,7 +107,7 @@
                             <tr *ngIf="showIgnoredTags || tag.visibleIgnored || tag.trackingStatusId !== tagTrackingStatus.IGNORED">
                                 <td *ngIf="!tag.synonymOf">
                                     <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
-                                    <a href="javascript:void(0);" (click)="showMore(tag)" *ngIf="!tag.showingMore">Show more</a>
+                                    <a href="javascript:void(0);" (click)="showMore(tag)" *ngIf="tag.hasQuestionCountOverTimeData && !tag.showingMore">Details</a>
                                     <a href="javascript:void(0);" (click)="hideMore(tag)" *ngIf="tag.showingMore">Hide</a>
                                 </td>
                                 <td *ngIf="tag.synonymOf">
