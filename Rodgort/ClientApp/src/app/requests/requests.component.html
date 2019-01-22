@@ -123,13 +123,9 @@
                                     </div>
                                 </td>
                                 <td *ngIf="isTrogdorRoomOwner">
-                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)"
-                                        (click)="setTagTrackingStatus(question.id, tag, true)">Track
-                                        Tag</a>
+                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)" (click)="setTagTrackingStatus(question.id, tag, true)">Track</a>
                                     <span *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED && tag.trackingStatusId !== tagTrackingStatus.IGNORED">|</span>
-                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.IGNORED" href="javascript:void(0)"
-                                        (click)="setTagTrackingStatus(question.id, tag, false)">Ignore
-                                        Tag</a>
+                                    <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.IGNORED" href="javascript:void(0)" (click)="setTagTrackingStatus(question.id, tag, false)">Ignore</a>
                                 </td>
                             </tr>
                             <tr *ngIf="tag.showingMore && tag.questionCountOverTime">
