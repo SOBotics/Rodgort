@@ -15,6 +15,7 @@ using MoreLinq.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchangeApi.Responses;
+using Utilities;
 using Utilities.Throttling;
 
 namespace StackExchangeApi
@@ -56,7 +57,7 @@ namespace StackExchangeApi
             if (!string.IsNullOrWhiteSpace(_appKey) && !copiedParameters.ContainsKey("key"))
                 copiedParameters["key"] = _appKey;
 
-            var url = QueryHelpers.AddQueryString(endpoint, copiedParameters);
+            var url = UrlTools.BuildUrl(endpoint, copiedParameters);
 
             return await ThrottlingUtils.Throttle(ApiThrottleGroups.ApiThrottleGroup, async () =>
             {

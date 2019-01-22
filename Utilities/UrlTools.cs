@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Web;
 
-namespace Rodgort.Utilities
+namespace Utilities
 {
     public class UrlTools
     {

@@ -8,6 +8,7 @@ using Rodgort.Data.Constants;
 using Rodgort.Data.Tables;
 using Rodgort.Utilities;
 using StackExchangeChat;
+using Utilities;
 
 namespace Rodgort.Services
 {
