@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.WebUtilities;
 using Rodgort.Data;
 using Rodgort.Data.Constants;
 using Rodgort.Data.Tables;
@@ -138,8 +139,8 @@ namespace Rodgort.Services
             else
                 await RenameObservationRoom(roomId, metaPostUrl, tag);
             
-            var closeQueueLink = UrlTools.BuildUrl("https://stackoverflow.com/review/close/", new Dictionary<string, string> { { "filter-tags", tag } });
-            var openQuestionsLink = UrlTools.BuildUrl("https://stackoverflow.com/search", new Dictionary<string, string> { { "q", $"[{tag}] is:q closed:no" } });
+            var closeQueueLink = QueryHelpers.AddQueryString("https://stackoverflow.com/review/close/", new Dictionary<string, string> { { "filter-tags", tag } });
+            var openQuestionsLink = QueryHelpers.AddQueryString("https://stackoverflow.com/search", new Dictionary<string, string> { { "q", $"[{tag}] is:q closed:no" } });
 
             var burninationMessage = $"The burnination of [tag:{tag}] has STARTED! [Close Queue]({closeQueueLink}) - [Open questions]({openQuestionsLink}) - [Meta post]({metaPostUrl}) - [Burn room](https://chat.stackoverflow.com/rooms/{roomId}).";
             await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
@@ -157,8 +158,8 @@ namespace Rodgort.Services
 
             await _chatClient.AddWriteAccess(ChatSite.StackOverflow, roomId, ChatUserIds.GEMMY);
 
-            var closeQueueLink = UrlTools.BuildUrl("https://stackoverflow.com/review/close/", new Dictionary<string, string> { { "filter-tags", tag } });
-            var openQuestionsLink = UrlTools.BuildUrl("https://stackoverflow.com/search", new Dictionary<string, string> { { "q", $"[{tag}] is:q closed:no" } });
+            var closeQueueLink = QueryHelpers.AddQueryString("https://stackoverflow.com/review/close/", new Dictionary<string, string> { { "filter-tags", tag } });
+            var openQuestionsLink = QueryHelpers.AddQueryString("https://stackoverflow.com/search", new Dictionary<string, string> { { "q", $"[{tag}] is:q closed:no" } });
 
             var burninationMessage = $"[Close Queue]({closeQueueLink}) - [Open questions]({openQuestionsLink}) - [Meta post]({metaPostUrl}) - [Burn room](https://chat.stackoverflow.com/rooms/{roomId}).";
             await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, roomId, burninationMessage);
