@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -142,7 +143,7 @@ namespace StackExchangeApi
         public Task<ApiItemsResponse<TagResponse>> TotalQuestionsByTag(string siteName, IEnumerable<string> tags)
         {
             var tagsList = tags.ToList();
-            var tagString = string.Join(";", tagsList);
+            var tagString = string.Join(";", tagsList.Select(HttpUtility.HtmlEncode));
             return MakeRequest<ApiItemsResponse<TagResponse>>($"{BASE_URL}/tags/{tagString}/info", new Dictionary<string, string>
             {
                 {"site", siteName},
