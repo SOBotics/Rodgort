@@ -66,7 +66,7 @@
     <div class="row pt-1" *ngFor="let question of questions">
         <div class="col-md-12">
             <h3>
-                <span>{{question.score > 0 ? '+' : ''}}{{question.score}}</span>
+                <span>{{question.score > 0 ? '+' : ''}}{{question.score | number}}</span>
                 <a href="https://meta.stackoverflow.com/questions/{{question.id}}">{{question.title}}
                     <span class="closed-label" *ngIf="question.closed">(closed)</span>
                 </a>
@@ -108,7 +108,7 @@
                                     <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
                                     -> <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.synonymOf}}">{{tag.synonymOf}}</a></p>
                                 </td>
-                                <td>{{tag.numQuestions}}</td>
+                                <td>{{tag.numQuestions | number}}</td>
                                 <td>
                                     <div [class.tag-tracked]="tag.trackingStatusId === tagTrackingStatus.TRACKED"
                                         [class.tag-ignored]="tag.trackingStatusId === tagTrackingStatus.IGNORED"
