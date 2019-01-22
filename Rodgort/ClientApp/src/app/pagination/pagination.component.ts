@@ -11,6 +11,9 @@ export class PaginationComponent implements OnInit {
   @Input()
   public pagingInfo: PagingInfo[];
 
+  @Input()
+  public loadPage: (pageNumber: number) => void;
+
   constructor() { }
 
   ngOnInit() {
