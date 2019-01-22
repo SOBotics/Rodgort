@@ -87,9 +87,22 @@
                         <ng-container *ngFor="let tag of question.mainTags | sort:'trackingStatusId,tagName'">
                             <tr *ngIf="showIgnoredTags || tag.visibleIgnored || tag.trackingStatusId !== tagTrackingStatus.IGNORED">
                                 <td *ngIf="!tag.synonymOf">
-                                    <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
-                                    <a href="javascript:void(0);" (click)="showMore(tag)" *ngIf="tag.hasQuestionCountOverTimeData && !tag.showingMore">Details</a>
-                                    <a href="javascript:void(0);" (click)="hideMore(tag)" *ngIf="tag.showingMore">Hide</a>
+                                    <ng-container *ngIf="tag.hasQuestionCountOverTimeData">
+                                        <div class="row">
+                                            <div class="col">
+                                                <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <a href="javascript:void(0);" (click)="showMore(tag)" *ngIf="tag.hasQuestionCountOverTimeData && !tag.showingMore">Details</a>
+                                                <a href="javascript:void(0);" (click)="hideMore(tag)" *ngIf="tag.showingMore">Hide</a>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngIf="!tag.hasQuestionCountOverTimeData">
+                                        <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                    </ng-container>
                                 </td>
                                 <td *ngIf="tag.synonymOf">
                                     <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
