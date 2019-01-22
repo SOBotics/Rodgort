@@ -135,7 +135,7 @@
                         </ng-container>
                     </tbody>
                 </table>
-                <input type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
+                <input *ngIf="isTrogdorRoomOwner" type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
             </div>
             <hr />
         </div>
