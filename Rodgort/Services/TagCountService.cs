@@ -80,7 +80,7 @@ namespace Rodgort.Services
 
         public async Task ProcessTags(IReadOnlyCollection<DbTag> tagsToCheck)
         {
-            _logger.LogInformation("Fetching question counts for the following tags: " + string.Join(", ", tagsToCheck.Select(t => t.Name)));
+            _logger.LogInformation($"Fetching question counts for {tagsToCheck.Count} tags.");
 
             foreach (var batch in BatchTags(tagsToCheck))
             {
