@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { PagingInfo } from 'src/utils/PagingHelper';
+import { PagingInfo } from '../../utils/PagingHelper';
 
 @Component({
   selector: 'app-pagination',
