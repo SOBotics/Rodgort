@@ -78,7 +78,7 @@ namespace Rodgort.Services
                 yield return currentList;
         }
 
-        private async Task ProcessTags(IReadOnlyCollection<DbTag> tagsToCheck)
+        public async Task ProcessTags(IReadOnlyCollection<DbTag> tagsToCheck)
         {
             _logger.LogInformation("Fetching question counts for the following tags: " + string.Join(", ", tagsToCheck.Select(t => t.Name)));
 

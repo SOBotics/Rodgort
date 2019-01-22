@@ -71,7 +71,7 @@ namespace Rodgort.Controllers
                         TrackingStatusName = mqt.TrackingStatus.Name,
                         NumQuestions = mqt.Tag.NumberOfQuestions,
                         SynonymOf = mqt.Tag.SynonymOfTagName,
-                        HasQuestionCountOverTimeData = mqt.Tag.Statistics.Any()
+                        HasQuestionCountOverTimeData = mqt.Tag.Statistics.Count > 1
                     }),
                     MetaStatusTags = mq.MetaQuestionMetaTags.Where(mqmt => statusFlags.Contains(mqmt.TagName)).Select(mqt => new
                     {

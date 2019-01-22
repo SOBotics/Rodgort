@@ -78,6 +78,8 @@ namespace Rodgort
             services.AddTransient<BurnProcessingService>();
             services.AddTransient<BurnCatchupService>();
             services.AddTransient<MetaCrawlerService>();
+            services.AddTransient<TagCountService>();
+
             services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
             services.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
 
@@ -153,6 +155,8 @@ namespace Rodgort
             RecurringJob.AddOrUpdate<TrogdorRoomOwnerService>(TrogdorRoomOwnerService.SERVICE_NAME, service => service.SyncTrogdorRoomOwnersSync(), "15 0 * * *");
 
             RecurringJob.AddOrUpdate<BurnCatchupService>(BurnCatchupService.SERVICE_NAME, service => service.CatchupSync(), "20 0 * * *");
+
+            RecurringJob.AddOrUpdate<InitialTagQueryService>(InitialTagQueryService.SERVICE_NAME, service => service.QuerySync(), "25 0 * * *");
 
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
             // So, we'll just execute once a year - the first of January at 0:10
