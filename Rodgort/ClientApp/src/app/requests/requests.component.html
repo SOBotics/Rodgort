@@ -106,7 +106,8 @@
                                 </td>
                                 <td *ngIf="tag.synonymOf">
                                     <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
-                                    -> <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.synonymOf}}">{{tag.synonymOf}}</a></p>
+                                    <span style="display: inline-block;">-></span>
+                                    <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.synonymOf}}">{{tag.synonymOf}}</a></p>
                                 </td>
                                 <td>{{tag.numQuestions | number}}</td>
                                 <td>
