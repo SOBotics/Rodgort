@@ -14,7 +14,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let postToVisit of postsToVisit">
-        <td>{{postToVisit.postId}}</td>
+        <td><a href="https://stackoverflow.com/posts/{{postToVisit.postId}}/revisions">{{postToVisit.postId}}</a></td>
         <td>{{postToVisit.status}}</td>
       </tr>
     </tbody>
