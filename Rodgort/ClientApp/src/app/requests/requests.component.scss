@@ -27,6 +27,12 @@
     }
 }
 
+@media(max-width: 385px) {
+    .post-tag {
+        font-size: 8px;
+    }
+}
+
 table {
     font-size: 12px;
 }
