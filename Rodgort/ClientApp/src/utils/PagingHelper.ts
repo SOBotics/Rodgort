@@ -3,7 +3,8 @@ export interface PagingInfo {
     Number: number;
     Active: boolean;
     Disabled: boolean;
-    IsNeighbour: boolean;
+    MinifiedShown: boolean;
+    MinifiedHidden: boolean;
 }
 
 export function GetPagingInfo(pagedData: { pageNumber?: number, totalPages?: number }, numExtraPages = 2): PagingInfo[] {
@@ -25,24 +26,31 @@ export function GetPagingInfo(pagedData: { pageNumber?: number, totalPages?: num
         Disabled: pageNumber <= 1
     });
 
-    if (pageNumber - numExtraPages > 1) {
-        // Add in page 1 if we're far away
+    if (pageNumber > 1) {
         pages.push({
             Name: '1',
             Number: 1,
             Active: false,
             Disabled: false
         });
+    }
 
-        // Add in dots if we have a missing number between 1 and our first showing number
-        if (pageNumber - numExtraPages > 2) {
-            pages.push({
-                Name: '...',
-                Number: -1,
-                Active: false,
-                Disabled: true
-            });
-        }
+    // Add in dots if we have a missing number between 1 and our first showing number
+    if (pageNumber - numExtraPages > 2) {
+        pages.push({
+            Name: '...',
+            Number: -1,
+            Active: false,
+            Disabled: true
+        });
+    } else if (pageNumber > 2) {
+        pages.push({
+            Name: '...',
+            Number: -1,
+            Active: false,
+            MinifiedShown: true,
+            Disabled: true
+        });
     }
 
     // Add in pages before and after our selected page
@@ -50,22 +58,30 @@ export function GetPagingInfo(pagedData: { pageNumber?: number, totalPages?: num
         if (i <= 0 || i > totalPages) {
             continue;
         }
-        pages.push({ Name: i + '', Number: i, Active: i === pageNumber, IsNeighbour: i !== pageNumber });
+        if (pageNumber !== i && (i  === 1 || i === totalPages)) {
+            continue;
+        }
+        pages.push({ Name: i + '', Number: i, Active: i === pageNumber, MinifiedHidden: i !== pageNumber });
     }
 
+    if (totalPages - pageNumber - numExtraPages > 1) {
+        pages.push({
+            Name: '...',
+            Number: -1,
+            Active: false,
+            Disabled: true
+        });
+    } else if (totalPages - pageNumber > 1) {
+        pages.push({
+            Name: '...',
+            Number: -1,
+            Active: false,
+            MinifiedShown: true,
+            Disabled: true
+        });
+    }
 
-    if (totalPages - pageNumber - numExtraPages > 0) {
-        // Add in dots if we have a missing number between our last showing number and the last page
-        if (totalPages - pageNumber - numExtraPages > 1) {
-            pages.push({
-                Name: '...',
-                Number: -1,
-                Active: false,
-                Disabled: true
-            });
-        }
-
-        // Add in last page if we're far away
+    if (totalPages - pageNumber > 0) {
         pages.push({
             Name: totalPages + '',
             Number: totalPages,

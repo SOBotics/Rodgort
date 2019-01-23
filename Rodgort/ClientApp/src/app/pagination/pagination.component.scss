@@ -10,8 +10,18 @@
     }
 }
 
+.pagination .minified-hidden {
+    display: block;
+}
+.pagination .minified-shown {
+    display: none;
+}
+
 @media(max-width: 427px) {
-    .pagination .page-neighbour {
+    .pagination .minified-hidden {
         display: none;
+    }
+    .pagination .minified-shown {
+        display: block;
     }
 }
