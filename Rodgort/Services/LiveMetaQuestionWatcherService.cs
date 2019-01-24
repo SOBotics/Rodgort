@@ -36,21 +36,27 @@ namespace Rodgort.Services
         {
             var websocket = CreateLiveWebsocket();
 
-            await websocket
-                .SlidingBuffer(TimeSpan.FromSeconds(5))
-                .ForEachAsync(async questionIdList =>
-                {
-                    foreach (var batch in questionIdList.Distinct().Batch(95))
+            try
+            {
+                await websocket
+                    .SlidingBuffer(TimeSpan.FromSeconds(5))
+                    .ForEachAsync(async questionIdList =>
                     {
-                        var batchList = batch.ToList();
+                        foreach (var batch in questionIdList.Distinct().Batch(95))
+                        {
+                            var batchList = batch.ToList();
 
-                        _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
-                        var questions =
-                            await _apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
-                        var result = _metaCrawlerService.ProcessQuestions(questions.Items);
-                        await _metaCrawlerService.PostProcessQuestions(result);
-                    }
-                }, cancellationToken);
+                            _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
+                            var questions = await _apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
+                            var result = _metaCrawlerService.ProcessQuestions(questions.Items);
+                            await _metaCrawlerService.PostProcessQuestions(result);
+                        }
+                    }, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Failed watching live meta", ex);
+            }
         }
 
         private IObservable<int> CreateLiveWebsocket()
@@ -87,6 +93,8 @@ namespace Rodgort.Services
 
                 await webSocket.ConnectAsync();
                 await webSocket.SendAsync("552-home-active");
+
+                _logger.LogTrace("Connected to 552-home-active on meta.stackoverflow.com");
 
                 return Disposable.Empty;
             });
