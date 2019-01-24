@@ -147,7 +147,7 @@ namespace StackExchangeChat
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/${roomId}",
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/{roomId}",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
@@ -165,7 +165,7 @@ namespace StackExchangeChat
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, roomId)).FKey;
                 await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/${roomId}",
+                var response = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/rooms/setuseraccess/{roomId}",
                     new FormUrlEncodedContent(
                         new Dictionary<string, string>
                         {
