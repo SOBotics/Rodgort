@@ -241,7 +241,9 @@ namespace Rodgort.Controllers
                                         .Count(qs => qs != null && !qs.Deleted && !qs.RemovedTag && qs.Closed)
                                 }),
 
-                            DeletionsOverTime = dateRange.Select(d =>
+                            DeletionsOverTime = dateRange
+                                .Where(d => d > minDate)
+                                .Select(d =>
                                 new
                                 {
                                     Date = d,
@@ -250,7 +252,9 @@ namespace Rodgort.Controllers
                                         .Count(qs => qs != null && !qs.Roombad && qs.Deleted)
                                 }),
 
-                            RetagsOverTime = dateRange.Select(d =>
+                            RetagsOverTime = dateRange
+                                .Where(d => d > minDate)
+                                .Select(d =>
                                 new
                                 {
                                     Date = d,
@@ -259,7 +263,9 @@ namespace Rodgort.Controllers
                                         .Count(qs => qs != null && !qs.Deleted && qs.RemovedTag)
                                 }),
 
-                            RoombasOverTime = dateRange.Select(d =>
+                            RoombasOverTime = dateRange
+                                .Where(d => d > minDate)
+                                .Select(d =>
                                 new
                                 {
                                     Date = d,
@@ -313,6 +319,7 @@ namespace Rodgort.Controllers
                             Totals =
                                 questionStates.Select(g => g.LastOrDefault())
                                     .Where(g => g != null)
+                                    .Where(g => g.Time > minDate)
                                     .GroupBy(g => g.Closed && !g.Deleted && !g.RemovedTag ? "Closed"
                                         : !g.Roombad && g.Deleted ? "Deleted"
                                         : g.Roombad ? "Roombad"
