@@ -202,7 +202,11 @@ namespace Rodgort.Services
             var roomId = await _chatClient.CreateRoom(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, roomName, metaPostUrl, new[] { tag });
             await _chatClient.AddWriteAccess(ChatSite.StackOverflow, roomId, ChatUserIds.GEMMY);
 
-            await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, roomId, $"[Rodgort tag progress](https://rodgort.sobotics.org/progress?metaQuestionId={metaQuestionId})");
+            var closeQueueLink = QueryHelpers.AddQueryString("https://stackoverflow.com/review/close/", new Dictionary<string, string> { { "filter-tags", tag } });
+            var openQuestionsLink = QueryHelpers.AddQueryString("https://stackoverflow.com/search", new Dictionary<string, string> { { "q", $"[{tag}] is:q closed:no" } });
+
+            await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, roomId,
+                $"[Rodgort tag progress](https://rodgort.sobotics.org/progress?metaQuestionId={metaQuestionId}) - [Close Queue]({closeQueueLink}) - [Open questions]({openQuestionsLink}) - [Meta post]({metaPostUrl})");
             
             var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} https://chat.stackoverflow.com/rooms/{roomId}";
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, gemmyMessage);
