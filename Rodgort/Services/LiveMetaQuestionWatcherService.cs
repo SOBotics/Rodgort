@@ -20,15 +20,12 @@ namespace Rodgort.Services
 {
     public class LiveMetaQuestionWatcherService : IHostedService
     {
-        private readonly MetaCrawlerService _metaCrawlerService;
-        private readonly ApiClient _apiClient;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<BurnakiFollowService> _logger;
 
         public LiveMetaQuestionWatcherService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
-            var scopedServiceProvider = serviceProvider.CreateScope().ServiceProvider;
-            _metaCrawlerService = scopedServiceProvider.GetRequiredService<MetaCrawlerService>();
-            _apiClient = scopedServiceProvider.GetRequiredService<ApiClient>();
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
@@ -38,20 +35,26 @@ namespace Rodgort.Services
 
             try
             {
-                await websocket
-                    .SlidingBuffer(TimeSpan.FromSeconds(5))
-                    .ForEachAsync(async questionIdList =>
-                    {
-                        foreach (var batch in questionIdList.Distinct().Batch(95))
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var metaCrawlerService = scope.ServiceProvider.GetRequiredService<MetaCrawlerService>();
+                    var apiClient = scope.ServiceProvider.GetRequiredService<ApiClient>();
+                    await websocket
+                        .SlidingBuffer(TimeSpan.FromSeconds(5))
+                        .ForEachAsync(async questionIdList =>
                         {
-                            var batchList = batch.ToList();
+                            foreach (var batch in questionIdList.Distinct().Batch(95))
+                            {
+                                var batchList = batch.ToList();
 
-                            _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
-                            var questions = await _apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
-                            var result = _metaCrawlerService.ProcessQuestions(questions.Items);
-                            await _metaCrawlerService.PostProcessQuestions(result);
-                        }
-                    }, cancellationToken);
+                                _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
+                                var questions = await apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
+                                var result = metaCrawlerService.ProcessQuestions(questions.Items);
+                                await metaCrawlerService.PostProcessQuestions(result);
+                            }
+                        }, cancellationToken);
+                }
+                
             }
             catch (Exception ex)
             {

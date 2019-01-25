@@ -22,13 +22,13 @@ namespace Rodgort.Services
     public class BurnakiFollowService : IHostedService
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly BurnProcessingService _burnProcessingService;
         private readonly ILogger<BurnakiFollowService> _logger;
 
         public BurnakiFollowService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
-            _serviceProvider = serviceProvider.CreateScope().ServiceProvider;
-            _burnProcessingService = _serviceProvider.GetRequiredService<BurnProcessingService>();
+            //_serviceProvider = serviceProvider.CreateScope().ServiceProvider;
+            //_burnProcessingService = _serviceProvider.GetRequiredService<BurnProcessingService>();
+            _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
@@ -85,27 +85,33 @@ namespace Rodgort.Services
                 await events.FirstAsync();
                 _logger.LogInformation($"Successfully joined room {roomId}");
                 chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, $"I just joined {roomId}");
-                await events
-                    .ReplyAlive()
-                    .OnlyMessages()
-                    .SameRoomOnly()
-                    .Where(r => r.ChatEventDetails.UserId == followingUserId)
-                    .SlidingBuffer(TimeSpan.FromSeconds(30))
-                    .ForEachAsync(async chatEvents =>
-                    {
-                        await RunWithLogging(async () =>
-                        {
-                            var questionIds =
-                                chatEvents.SelectMany(ceg =>
-                                        questionIdRegex
-                                            .Matches(ceg.ChatEventDetails.Content)
-                                            .Select(m => int.Parse(m.Groups[1].Value))
-                                    )
-                                    .Distinct();
 
-                            await _burnProcessingService.ProcessQuestionIds(questionIds, followingTag, roomId, true);
-                        });
-                    }, cancellationToken);
+                using (var scope = _serviceProvider.CreateScope())
+                {
+                    var burnProcessingService = scope.ServiceProvider.GetRequiredService<BurnProcessingService>();
+                    await events
+                        .ReplyAlive()
+                        .OnlyMessages()
+                        .SameRoomOnly()
+                        .Where(r => r.ChatEventDetails.UserId == followingUserId)
+                        .SlidingBuffer(TimeSpan.FromSeconds(30))
+                        .ForEachAsync(async chatEvents =>
+                        {
+                            await RunWithLogging(async () =>
+                            {
+                                var questionIds =
+                                    chatEvents.SelectMany(ceg =>
+                                            questionIdRegex
+                                                .Matches(ceg.ChatEventDetails.Content)
+                                                .Select(m => int.Parse(m.Groups[1].Value))
+                                        )
+                                        .Distinct();
+
+                                await burnProcessingService.ProcessQuestionIds(questionIds, followingTag, roomId,
+                                    true);
+                            });
+                        }, cancellationToken);
+                }
             });
         }
 

@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using RestSharp;
 using Rodgort.Data;
+using Rodgort.Data.Constants;
 using Rodgort.Data.Tables;
 using StackExchangeApi;
 
@@ -25,6 +26,7 @@ namespace Rodgort.Controllers
     {
         private readonly string _oauthRedirect;
         private readonly string _jwtSigningKey;
+        private readonly bool _bypassLoopbackAuth;
         private readonly IStackExchangeApiCredentials _stackExchangeApiCredentials;
         private readonly RodgortContext _dbContext;
 
@@ -34,6 +36,7 @@ namespace Rodgort.Controllers
             _dbContext = dbContext;
             _oauthRedirect = $"{configuration["HostName"]}/api/Authentication/OAuthRedirect";
             _jwtSigningKey = configuration["JwtSigningKey"];
+            _bypassLoopbackAuth = configuration.GetValue<bool>("BypassLoopbackAuth");
         }
 
         private static string EncodeBase64(string str)
@@ -52,26 +55,26 @@ namespace Rodgort.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public RedirectResult Login([FromQuery(Name = "redirect_uri")] string redirectURI)
         {
-            //if (Request.GetUri().IsLoopback && "true".Equals(_configuration["BypassLoopbackAuth"], StringComparison.OrdinalIgnoreCase))
-            //{
-            //    // We can just login the user immediately, if we have one.
-            //    var user = _dbContext.Users.Include(u => u.UserScopes).FirstOrDefault(u => u.AccountId == DBExtensions.RobAccountId);
-            //    if (user != null)
-            //    {
-            //        var userScopes = user.UserScopes.Select(s => s.ScopeName).ToList();
+            if (Request.Host.Host == "localhost" && _bypassLoopbackAuth)
+            {
+                // We can just login the user immediately, if we have one.
+                var user = _dbContext.SiteUsers.Include(u => u.Roles).FirstOrDefault(u => u.Id == ChatUserIds.ROB);
+                if (user != null)
+                {
+                    var userScopes = user.Roles.Select(s => s.RoleName).ToList();
 
-            //        var claims = new[]
-            //        {
-            //            new Claim(ClaimTypes.Name, user.Name),
-            //            new Claim(SecurityUtils.ACCOUNT_ID_CLAIM, user.AccountId.ToString())
-            //        }.Concat(userScopes.Select(c => new Claim(c, string.Empty)));
+                    var claims = new[]
+                    {
+                        new Claim(ClaimTypes.Name, user.DisplayName),
+                        new Claim("accountId", user.Id.ToString())
+                    }.Concat(userScopes.Select(c => new Claim(c, "true")));
 
-            //        var signingKey = Convert.FromBase64String(_configuration["JwtSigningKey"]);
-            //        var token = CreateJwtToken(claims, signingKey);
+                    var signingKey = GetSigningKey();
+                    var token = CreateJwtToken(claims, signingKey);
 
-            //        return Redirect($"{redirectURI}?access_token={token}");
-            //    }
-            //}
+                    return Redirect($"{redirectURI}?access_token={token}");
+                }
+            }
 
             var clientId = _stackExchangeApiCredentials.ClientId;
             var payload = JsonConvert.SerializeObject(new LoginState { RedirectUri = redirectURI });
