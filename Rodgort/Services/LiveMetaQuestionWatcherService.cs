@@ -25,9 +25,9 @@ namespace Rodgort.Services
 
         public LiveMetaQuestionWatcherService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
-            _logger.LogTrace("In constructor for LiveMetaQuestionWatcherService");
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _logger.LogTrace("In constructor for LiveMetaQuestionWatcherService");
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
