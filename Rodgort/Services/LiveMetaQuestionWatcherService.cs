@@ -25,16 +25,17 @@ namespace Rodgort.Services
 
         public LiveMetaQuestionWatcherService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
+            _logger.LogTrace("In constructor for LiveMetaQuestionWatcherService");
             _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            var websocket = CreateLiveWebsocket();
-
+            _logger.LogTrace("In StartAsync for LiveMetaQuestionWatcherService");
             try
             {
+                var websocket = CreateLiveWebsocket();
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var metaCrawlerService = scope.ServiceProvider.GetRequiredService<MetaCrawlerService>();
@@ -93,13 +94,22 @@ namespace Rodgort.Services
                         _logger.LogError("Failed to process 552-home-active for 'https://stackoverflow.com'. Message received: " + message, ex);
                     }
                 };
-
-                await webSocket.ConnectAsync();
-                await webSocket.SendAsync("552-home-active");
+                try
+                {
+                    _logger.LogTrace("Trying to connect");
+                    await webSocket.ConnectAsync();
+                    _logger.LogTrace("Connected. Specifying type");
+                    await webSocket.SendAsync("552-home-active");
+                    _logger.LogTrace("Type specified");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to start websocket", ex);
+                }
 
                 _logger.LogTrace("Connected to 552-home-active on meta.stackoverflow.com");
 
-                return Disposable.Empty;
+                return Disposable.Create(() => { });
             });
             return websocket;
         }
