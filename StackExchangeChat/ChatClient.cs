@@ -239,11 +239,8 @@ namespace StackExchangeChat
                     ChatClient = this
                 });
 
-                return Disposable.Create(() =>
-                {
-                    // webSocket.Dispose();
-                });
-            });
+                return webSocket;
+            }).Publish().RefCount();
         }
 
         private void LogResponseError(HttpResponseMessage responseMessage)

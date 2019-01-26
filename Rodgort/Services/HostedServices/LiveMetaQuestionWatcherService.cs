@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,40 +26,45 @@ namespace Rodgort.Services.HostedServices
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
-            _logger.LogTrace("In constructor for LiveMetaQuestionWatcherService");
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogTrace("In ExecuteAsync for LiveMetaQuestionWatcherService");
             try
             {
                 var websocket = CreateLiveWebsocket();
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var metaCrawlerService = scope.ServiceProvider.GetRequiredService<MetaCrawlerService>();
-                    var apiClient = scope.ServiceProvider.GetRequiredService<ApiClient>();
-                    await websocket
-                        .SlidingBuffer(TimeSpan.FromSeconds(5))
-                        .ForEachAsync(async questionIdList =>
+                websocket
+                    .SlidingBuffer(TimeSpan.FromSeconds(5))
+                    .Subscribe(async questionIdList =>
+                    {
+                        foreach (var batch in questionIdList.Distinct().Batch(95))
                         {
-                            foreach (var batch in questionIdList.Distinct().Batch(95))
+                            try
                             {
                                 var batchList = batch.ToList();
-
                                 _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
-                                var questions = await apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
-                                var result = metaCrawlerService.ProcessQuestions(questions.Items);
-                                await metaCrawlerService.PostProcessQuestions(result);
+
+                                using (var scope = _serviceProvider.CreateScope())
+                                {
+                                    var metaCrawlerService = scope.ServiceProvider.GetRequiredService<MetaCrawlerService>();
+                                    var apiClient = scope.ServiceProvider.GetRequiredService<ApiClient>();
+                                    var questions = await apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
+                                    var result = metaCrawlerService.ProcessQuestions(questions.Items);
+                                    await metaCrawlerService.PostProcessQuestions(result);
+                                }
                             }
-                        }, stoppingToken);
-                }
-                
+                            catch (Exception ex)
+                            {
+                                _logger.LogError("Failed processing meta websocket batch", ex);
+                            }
+                        }
+                    }, stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError("Failed watching live meta", ex);
             }
+            return Task.CompletedTask;
         }
 
         private IObservable<int> CreateLiveWebsocket()
@@ -94,13 +98,11 @@ namespace Rodgort.Services.HostedServices
                         _logger.LogError("Failed to process 552-home-active for 'https://stackoverflow.com'. Message received: " + message, ex);
                     }
                 };
+
                 try
                 {
-                    _logger.LogTrace("Trying to connect");
                     await webSocket.ConnectAsync();
-                    _logger.LogTrace("Connected. Specifying type");
                     await webSocket.SendAsync("552-home-active");
-                    _logger.LogTrace("Type specified");
                 }
                 catch (Exception ex)
                 {
@@ -111,7 +113,7 @@ namespace Rodgort.Services.HostedServices
 
                 return webSocket;
             });
-            return websocket;
+            return websocket.Publish().RefCount();
         }
     }
 }

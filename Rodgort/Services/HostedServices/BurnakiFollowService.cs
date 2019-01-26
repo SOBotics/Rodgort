@@ -40,7 +40,7 @@ namespace Rodgort.Services.HostedServices
             if (!hasCookies && !hasCredentials)
                 return;
 
-            await RunWithLogging(async () =>
+            try
             {
                 var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
                 var dateService = _serviceProvider.GetRequiredService<DateService>();
@@ -49,69 +49,73 @@ namespace Rodgort.Services.HostedServices
 
                 var burnakiFollows = context.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue).ToList();
                 foreach (var burnakiFollow in burnakiFollows)
-                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, burnakiFollow.Tag, dateService, cancellationToken);
+                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted,
+                        burnakiFollow.Tag, dateService, cancellationToken);
 
                 var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS);
                 await events.FirstAsync();
                 chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, "o/");
                 _logger.LogInformation("Successfully joined headquarters");
-                await events
+                events
                     .ReplyAlive()
                     .Pinged()
                     .SameRoomOnly()
                     .Where(r => r.ChatEventDetails.UserId == ChatUserIds.ROB)
-                    .ForEachAsync(
+                    .Subscribe(
                         async chatEvent =>
                         {
-                            await RunWithLogging(async () =>
-                            {
-                                await ParseCommands(chatClient, chatEvent, dateService, cancellationToken);
-                            });
+                            await ParseCommands(chatClient, chatEvent, dateService, cancellationToken);
                         }, cancellationToken);
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed chat");
+            }
         }
 
         public async Task FollowInRoom(int roomId, int followingUserId, DateTime fromTime, string followingTag, DateService dateService, CancellationToken cancellationToken)
         {
-            await RunWithLogging(async () =>
+            try
             {
                 var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
 
                 var questionIdRegex = new Regex(@"stackoverflow\.com\/q\/(\d+)");
                 
-
                 var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, roomId);
                 await events.FirstAsync();
                 _logger.LogInformation($"Successfully joined room {roomId}");
                 chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, $"I just joined {roomId}");
 
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var burnProcessingService = scope.ServiceProvider.GetRequiredService<BurnProcessingService>();
-                    await events
-                        .ReplyAlive()
-                        .OnlyMessages()
-                        .SameRoomOnly()
-                        .Where(r => r.ChatEventDetails.UserId == followingUserId)
-                        .SlidingBuffer(TimeSpan.FromSeconds(30))
-                        .ForEachAsync(async chatEvents =>
+                events
+                    .ReplyAlive()
+                    .OnlyMessages()
+                    .SameRoomOnly()
+                    .Where(r => r.ChatEventDetails.UserId == followingUserId)
+                    .SlidingBuffer(TimeSpan.FromSeconds(30))
+                    .Subscribe(async chatEvents =>
+                    {
+                        try
                         {
-                            await RunWithLogging(async () =>
-                            {
-                                var questionIds =
-                                    chatEvents.SelectMany(ceg =>
-                                            questionIdRegex
-                                                .Matches(ceg.ChatEventDetails.Content)
-                                                .Select(m => int.Parse(m.Groups[1].Value))
-                                        )
-                                        .Distinct();
+                            var questionIds = chatEvents
+                                .SelectMany(ceg => questionIdRegex.Matches(ceg.ChatEventDetails.Content).Select(m => int.Parse(m.Groups[1].Value)))
+                                .Distinct();
 
-                                await burnProcessingService.ProcessQuestionIds(questionIds, followingTag, roomId,
-                                    true);
-                            });
-                        }, cancellationToken);
-                }
-            });
+                            using (var scope = _serviceProvider.CreateScope())
+                            {
+                                var burnProcessingService = scope.ServiceProvider.GetRequiredService<BurnProcessingService>();
+                                await burnProcessingService.ProcessQuestionIds(questionIds, followingTag, roomId, true);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError("Failed processing chat events", ex);
+                        }
+                    }, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed chat");
+            }
         }
 
         private async Task ParseCommands(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken)
@@ -205,23 +209,6 @@ namespace Rodgort.Services.HostedServices
             {
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} I'm not following anyone");
             }
-        }
-
-        private async Task RunWithLogging(Func<Task> task)
-        {
-            try
-            {
-                await task();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed chat");
-            }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
         }
     }
 }
