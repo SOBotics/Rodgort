@@ -13,13 +13,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using Rodgort.Data;
 using Rodgort.Services;
+using Rodgort.Services.HostedServices;
 using StackExchangeApi;
 using StackExchangeChat;
 using StackExchangeChat.Utilities;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Rodgort
 {
@@ -96,9 +99,8 @@ namespace Rodgort
             services.AddScoped<ChatClient>();
             services.AddScoped<NewBurninationService>();
 
-            services.AddHostedService<BurnakiFollowService>();
-
-            services.AddHostedService<LiveMetaQuestionWatcherService>();
+            services.AddSingleton<IHostedService, BurnakiFollowService>();
+            services.AddSingleton<IHostedService, LiveMetaQuestionWatcherService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rodgort.Data;
 using Rodgort.Data.Constants;
@@ -15,24 +14,23 @@ using Rodgort.Utilities;
 using Rodgort.Utilities.ReactiveX;
 using StackExchangeChat;
 using StackExchangeChat.Utilities;
+
 #pragma warning disable 4014
 
-namespace Rodgort.Services
+namespace Rodgort.Services.HostedServices
 {
-    public class BurnakiFollowService : IHostedService
+    public class BurnakiFollowService : Microsoft.Extensions.Hosting.BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<BurnakiFollowService> _logger;
 
         public BurnakiFollowService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
-            //_serviceProvider = serviceProvider.CreateScope().ServiceProvider;
-            //_burnProcessingService = _serviceProvider.GetRequiredService<BurnProcessingService>();
             _serviceProvider = serviceProvider;
             _logger = logger;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             var configuration = _serviceProvider.GetRequiredService<IChatCredentials>();
             var hasCookies = !string.IsNullOrWhiteSpace(configuration.AcctCookie);

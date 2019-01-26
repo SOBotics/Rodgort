@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using MoreLinq;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
+using Rodgort.Services.HostedServices;
 using Rodgort.Utilities;
 using StackExchangeApi;
 using StackExchangeChat;

@@ -6,7 +6,6 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
 using Newtonsoft.Json;
@@ -16,9 +15,9 @@ using Rodgort.Utilities.ReactiveX;
 using StackExchangeApi;
 using StackExchangeChat;
 
-namespace Rodgort.Services
+namespace Rodgort.Services.HostedServices
 {
-    public class LiveMetaQuestionWatcherService : IHostedService
+    public class LiveMetaQuestionWatcherService : Microsoft.Extensions.Hosting.BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<BurnakiFollowService> _logger;
@@ -30,9 +29,9 @@ namespace Rodgort.Services
             _logger.LogTrace("In constructor for LiveMetaQuestionWatcherService");
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogTrace("In StartAsync for LiveMetaQuestionWatcherService");
+            _logger.LogTrace("In ExecuteAsync for LiveMetaQuestionWatcherService");
             try
             {
                 var websocket = CreateLiveWebsocket();
@@ -53,7 +52,7 @@ namespace Rodgort.Services
                                 var result = metaCrawlerService.ProcessQuestions(questions.Items);
                                 await metaCrawlerService.PostProcessQuestions(result);
                             }
-                        }, cancellationToken);
+                        }, stoppingToken);
                 }
                 
             }
@@ -109,14 +108,9 @@ namespace Rodgort.Services
 
                 _logger.LogTrace("Connected to 552-home-active on meta.stackoverflow.com");
 
-                return Disposable.Create(() => { });
+                return webSocket;
             });
             return websocket;
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
         }
     }
 }
