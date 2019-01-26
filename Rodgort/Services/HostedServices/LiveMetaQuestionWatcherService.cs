@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
 using Newtonsoft.Json;
@@ -17,7 +18,7 @@ using StackExchangeChat;
 
 namespace Rodgort.Services.HostedServices
 {
-    public class LiveMetaQuestionWatcherService : Microsoft.Extensions.Hosting.BackgroundService
+    public class LiveMetaQuestionWatcherService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<BurnakiFollowService> _logger;

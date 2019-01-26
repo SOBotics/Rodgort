@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rodgort.Data;
 using Rodgort.Data.Constants;
@@ -19,7 +20,7 @@ using StackExchangeChat.Utilities;
 
 namespace Rodgort.Services.HostedServices
 {
-    public class BurnakiFollowService : Microsoft.Extensions.Hosting.BackgroundService
+    public class BurnakiFollowService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<BurnakiFollowService> _logger;
