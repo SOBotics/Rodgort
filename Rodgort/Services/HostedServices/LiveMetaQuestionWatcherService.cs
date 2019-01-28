@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -111,7 +112,11 @@ namespace Rodgort.Services.HostedServices
 
                 _logger.LogTrace("Connected to 552-home-active on meta.stackoverflow.com");
 
-                return webSocket;
+                return Disposable.Create(() =>
+                {
+                    _logger.LogWarning("Disposing meta live websocket");
+                    webSocket?.Dispose();
+                });
             });
             return websocket.Publish().RefCount();
         }

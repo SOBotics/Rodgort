@@ -90,7 +90,7 @@ namespace StackExchangeApi
             }, async returnedItem =>
             {
                 _updateQuota(returnedItem.QuotaRemaining);
-                _logger.LogTrace($"Finished request {url}. Remaining quota: " + returnedItem.QuotaRemaining);
+                _logger.LogDebug($"Finished request {url}. Remaining quota: " + returnedItem.QuotaRemaining);
                 if (returnedItem.Backoff.HasValue)
                     await Task.Delay(TimeSpan.FromSeconds(returnedItem.Backoff.Value));
             });
