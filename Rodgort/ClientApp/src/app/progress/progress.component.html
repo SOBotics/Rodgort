@@ -30,8 +30,8 @@
         <ng-container *ngIf="tag.userGrandTotals.length">
           <h2>User grand totals</h2>
           
-          <input type="checkbox" id="userGrandTotalShowAll" [(ngModel)]="userGrandTotalShowAll" [ngModelOptions]="{standalone: true}" >
-          <label for="userGrandTotalShowAll">Show all</label>
+          <input type="checkbox" id="{{tag.tag}}-userGrandTotalShowAll" [(ngModel)]="tag.userGrandTotalShowAll" [ngModelOptions]="{standalone: true}" >
+          <label for="{{tag.tag}}-userGrandTotalShowAll">Show all</label>
           <table class="table">
             <thead>
               <tr>
@@ -41,7 +41,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let row of tag.userGrandTotals | sortAscending: 'total'; let i=index">
-                <ng-container *ngIf="userGrandTotalShowAll || i < 10">
+                <ng-container *ngIf="tag.userGrandTotalShowAll || i < 10">
                   <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
                   <td>{{row.total}}</td>
                 </ng-container>
@@ -53,8 +53,8 @@
         <ng-container *ngIf="tag.userTotals.length">
           <h2>User total breakdown</h2>
 
-          <input type="checkbox" id="userBreakdownShowAll" [(ngModel)]="userBreakdownShowAll" [ngModelOptions]="{standalone: true}" >
-          <label for="userBreakdownShowAll">Show all</label>
+          <input type="checkbox" id="{{tag.tag}}-userBreakdownShowAll" [(ngModel)]="tag.userBreakdownShowAll" [ngModelOptions]="{standalone: true}" >
+          <label for="{{tag.tag}}-userBreakdownShowAll">Show all</label>
           <table class="table">
             <thead>
               <tr>
@@ -65,7 +65,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let row of tag.userTotals | sortAscending: 'total'; let i=index">
-                <ng-container *ngIf="userBreakdownShowAll || i < 10">
+                <ng-container *ngIf="tag.userBreakdownShowAll || i < 10">
                   <td><a href="https://stackoverflow.com/users/{{row.userId}}">{{row.userName}}</a></td>
                   <td>{{row.type}}</td>
                   <td>{{row.total}}</td>

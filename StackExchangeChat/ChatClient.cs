@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,12 +20,16 @@ namespace StackExchangeChat
         public const int MAX_MESSAGE_LENGTH = 500;
 
         private readonly SiteAuthenticator _siteAuthenticator;
+        private readonly IServiceProvider _serviceProvider;
         private readonly HttpClientWithHandler _httpClient;
         private readonly ILogger<ChatClient> _logger;
 
-        public ChatClient(SiteAuthenticator siteAuthenticator, HttpClientWithHandler httpClient, ILogger<ChatClient> logger)
+        public ChatClient(SiteAuthenticator siteAuthenticator,
+            IServiceProvider serviceProvider,
+            HttpClientWithHandler httpClient, ILogger<ChatClient> logger)
         {
             _siteAuthenticator = siteAuthenticator;
+            _serviceProvider = serviceProvider;
             _httpClient = httpClient;
             _logger = logger;
         }
@@ -205,7 +210,7 @@ namespace StackExchangeChat
 
                 var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
 
-                var webSocket = new PlainWebSocket($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}"} });
+                var webSocket = new PlainWebSocket($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}"} }, _serviceProvider.GetRequiredService<ILogger<PlainWebSocket>>());
                 webSocket.OnTextMessage += (message) =>
                 {
                     var dataObject = JsonConvert.DeserializeObject<JObject>(message);

@@ -74,7 +74,7 @@ namespace Rodgort.Services.HostedServices
 
             var websocket = Observable.Create<int>(async observer =>
             {
-                var webSocket = new PlainWebSocket(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}});
+                var webSocket = new PlainWebSocket(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}}, _serviceProvider.GetRequiredService<ILogger<PlainWebSocket>>());
                 webSocket.OnTextMessage += async message =>
                 {
                     try

@@ -4,12 +4,14 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace StackExchangeChat
 {
     // https://github.com/SOBotics/SharpExchange/blob/master/SharpExchange/Net/WebSocket/DefaultWebSocket.cs
     public class PlainWebSocket : IDisposable
     {
+        private readonly ILogger<PlainWebSocket> _logger;
         private const int BufferSize = 4 * 1024;
         private ClientWebSocket _socket;
         private readonly CancellationTokenSource _socketTokenSource;
@@ -26,8 +28,11 @@ namespace StackExchangeChat
         public IReadOnlyDictionary<string, string> Headers { get; }
         public bool AutoReconnect { get; set; } = true;
 
-        public PlainWebSocket(string endpoint, IReadOnlyDictionary<string, string> headers = null)
+        public PlainWebSocket(string endpoint, 
+            IReadOnlyDictionary<string, string> headers,
+            ILogger<PlainWebSocket> logger)
         {
+            _logger = logger;
             ThrowIfNullOrEmpty(endpoint, nameof(endpoint));
 
             _socketTokenSource = new CancellationTokenSource();
@@ -45,6 +50,8 @@ namespace StackExchangeChat
 
             if (_socket?.State == WebSocketState.Open)
                 _socketTokenSource.Cancel();
+
+            _logger.LogWarning("Disposing socket");
             
             _socket?.Dispose();
         }
@@ -119,12 +126,16 @@ namespace StackExchangeChat
                 when (ex.InnerException?.GetType() == typeof(TaskCanceledException))
                 {
                     InvokeAsync(OnClose);
+
+                    _logger.LogError("Websocket crashed", ex);
                     
                     return;
                 }
                 catch (Exception e1)
                 {
                     OnError?.Invoke(e1);
+
+                    _logger.LogError("Websocket crashed. AutoReconnect: " + AutoReconnect, e1);
 
                     if (!AutoReconnect) return;
 
@@ -139,6 +150,8 @@ namespace StackExchangeChat
                         InvokeAsync(OnReconnectFailed);
                         InvokeAsync(OnError, e2);
                         InvokeAsync(OnClose);
+
+                        _logger.LogError("Websocket crashed on reconnect", e2);
                     }
 
                     return;
@@ -177,6 +190,8 @@ namespace StackExchangeChat
             catch (Exception ex)
             {
                 OnError?.Invoke(ex);
+
+                _logger.LogError("Failed to process message", ex);
             }
         }
 
