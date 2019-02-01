@@ -127,7 +127,7 @@ namespace StackExchangeChat
                 {
                     InvokeAsync(OnClose);
 
-                    _logger.LogError("Websocket crashed", ex);
+                    _logger.LogError(ex, "Websocket crashed");
                     
                     return;
                 }
@@ -135,7 +135,7 @@ namespace StackExchangeChat
                 {
                     OnError?.Invoke(e1);
 
-                    _logger.LogError("Websocket crashed. AutoReconnect: " + AutoReconnect, e1);
+                    _logger.LogError(e1, "Websocket crashed. AutoReconnect: " + AutoReconnect);
 
                     if (!AutoReconnect) return;
 
@@ -151,7 +151,7 @@ namespace StackExchangeChat
                         InvokeAsync(OnError, e2);
                         InvokeAsync(OnClose);
 
-                        _logger.LogError("Websocket crashed on reconnect", e2);
+                        _logger.LogError(e2, "Websocket crashed on reconnect");
                     }
 
                     return;
