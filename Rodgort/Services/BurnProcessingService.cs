@@ -220,7 +220,7 @@ namespace Rodgort.Services
 
                 _logger.LogInformation("Saving user actions...");
                 innerContext.SaveChanges();
-                _logger.LogInformation("User actions saved");
+                _logger.LogTrace("User actions saved");
 
                 if (hasNewUser)
                     RecurringJob.Trigger(UserDisplayNameService.SYNC_USERS_NO_NAME);

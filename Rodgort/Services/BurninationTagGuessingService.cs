@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +11,6 @@ namespace Rodgort.Services
 {
     public class BurninationTagGuessingService
     {
-        public const string SERVICE_NAME = "Guess burnination tags";
-
         private readonly RodgortContext _context;
         private readonly ILogger<BurninationTagGuessingService> _logger;
 
@@ -22,14 +21,15 @@ namespace Rodgort.Services
         }
 
         private static readonly Regex _tagNameMatcher = new Regex("\\[tag:(?<tagName>([^\\]]+))\\]");
-        public void GuessTags()
+        public void GuessTags(IEnumerable<int> questionIds)
         {
             var questions = _context.MetaQuestions
+                .Where(q => questionIds.Contains(q.Id))
                 .Include(mq => mq.MetaQuestionMetaTags)
                 .Include(mq => mq.MetaQuestionTags)
                 .ToList();
 
-            _logger.LogInformation($"Starting to guess tags for {questions.Count} questions");
+            _logger.LogInformation($"Guessing tags for {questions.Count} questions");
 
             foreach (var question in questions)
             {
@@ -98,7 +98,7 @@ namespace Rodgort.Services
 
             _context.SaveChanges();
 
-            _logger.LogInformation("Guessing tags completed");
+            _logger.LogTrace("Guessing tags completed");
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Rodgort.Services.HostedServices
                             try
                             {
                                 var batchList = batch.ToList();
-                                _logger.LogInformation($"Processing batch {string.Join(",", batchList)} from meta websocket");
+                                _logger.LogInformation($"Processing question(s) {string.Join(",", batchList)} from meta websocket");
 
                                 using (var scope = _serviceProvider.CreateScope())
                                 {
@@ -51,7 +51,7 @@ namespace Rodgort.Services.HostedServices
                                     var apiClient = scope.ServiceProvider.GetRequiredService<ApiClient>();
                                     var questions = await apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
                                     var result = metaCrawlerService.ProcessQuestions(questions.Items);
-                                    await metaCrawlerService.PostProcessQuestions(result);
+                                    await metaCrawlerService.PostProcessQuestions(questions.Items, result);
                                 }
                             }
                             catch (Exception ex)

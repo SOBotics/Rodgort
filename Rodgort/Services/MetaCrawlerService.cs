@@ -21,6 +21,7 @@ namespace Rodgort.Services
         public const string SERVICE_NAME = "Refresh burnination request list";
 
         private readonly DbContextOptions<RodgortContext> _dbContextOptions;
+        private readonly BurninationTagGuessingService _tagGuessingService;
         private readonly ApiClient _apiClient;
         private readonly DateService _dateService;
         private readonly ILogger<MetaCrawlerService> _logger;
@@ -29,13 +30,15 @@ namespace Rodgort.Services
         private static readonly object _locker = new object();
         private static bool _alreadyProcessing;
 
-        public MetaCrawlerService(DbContextOptions<RodgortContext> dbContextOptions, 
+        public MetaCrawlerService(DbContextOptions<RodgortContext> dbContextOptions,
+            BurninationTagGuessingService tagGuessingService,
             ApiClient apiClient, 
             DateService dateService, 
             ILogger<MetaCrawlerService> logger,
             NewBurninationService newBurninationService)
         {
             _dbContextOptions = dbContextOptions;
+            _tagGuessingService = tagGuessingService;
             _apiClient = apiClient;
             _dateService = dateService;
             _logger = logger;
@@ -87,11 +90,15 @@ namespace Rodgort.Services
 
                 _logger.LogInformation("Starting meta crawl");
 
+                var questions = new List<BaseQuestion>();
+
                 foreach (var tagToCrawl in DbMetaTag.RequestTypes)
                 {
                     _logger.LogInformation($"Crawling {tagToCrawl}");
 
                     var metaQuestions = await _apiClient.MetaQuestionsByTag("meta.stackoverflow.com", tagToCrawl);
+                    questions.AddRange(metaQuestions.Items);
+
                     _logger.LogInformation($"{metaQuestions.Items.Count} meta questions retrieved for {tagToCrawl}. Processing...");
 
                     var result = ProcessQuestions(metaQuestions.Items);
@@ -100,7 +107,7 @@ namespace Rodgort.Services
                     burnsStarted.AddRange(result.BurnsStarted);
                 }
 
-                await PostProcessQuestions(finishedBurns, newFeatures, burnsStarted);
+                await PostProcessQuestions(questions, finishedBurns, newFeatures, burnsStarted);
             }
             finally
             {
@@ -109,12 +116,12 @@ namespace Rodgort.Services
             }
         }
 
-        public async Task PostProcessQuestions(ProcessQuestionsResult processQuestionsResult)
+        public async Task PostProcessQuestions(List<BaseQuestion> questions, ProcessQuestionsResult processQuestionsResult)
         {
-            await PostProcessQuestions(processQuestionsResult.FinishedBurns, processQuestionsResult.NewFeatures, processQuestionsResult.BurnsStarted);
+            await PostProcessQuestions(questions, processQuestionsResult.FinishedBurns, processQuestionsResult.NewFeatures, processQuestionsResult.BurnsStarted);
         }
 
-        public async Task PostProcessQuestions(IEnumerable<BurnFinished> finishedBurns, IReadOnlyCollection<NewFeature> newFeatures, IReadOnlyCollection<BurnStarted> burnsStarted)
+        public async Task PostProcessQuestions(List<BaseQuestion> questions, IEnumerable<BurnFinished> finishedBurns, IReadOnlyCollection<NewFeature> newFeatures, IReadOnlyCollection<BurnStarted> burnsStarted)
         {
             foreach (var tag in finishedBurns.Select(b => b.Tag).Distinct())
                 await _newBurninationService.StopBurn(tag);
@@ -126,7 +133,8 @@ namespace Rodgort.Services
                 await _newBurninationService.NewBurnStarted(burnStarted.MetaUrl, burnStarted.Tags);
 
             _logger.LogInformation("Meta crawl completed");
-            RecurringJob.Trigger(BurninationTagGuessingService.SERVICE_NAME);
+            
+            _tagGuessingService.GuessTags(questions.Where(q => q.QuestionId.HasValue).Select(q => q.QuestionId.Value));
 
             if (newFeatures.Any() || burnsStarted.Any())
                 RecurringJob.Trigger(BurnCatchupService.SERVICE_NAME);
