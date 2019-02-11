@@ -40,6 +40,19 @@
     </div>
     <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
         <div class="input-group-prepend">
+            <label class="input-group-text" for="requestTypeSelector">Request type</label>
+        </div>
+        <select class="custom-select" id="requestTypeSelector" [(ngModel)]="filter.requestType"
+            [ngModelOptions]="{standalone: true}">
+            <option value="">Any</option>
+            <option value="burninate-request">Burninate request</option>
+            <option value="synonym-request">Synonym request</option>
+            <option value="retag-request">Retag request</option>
+            <option value="tag-disambiguation">Tag disambiguation</option>
+        </select>
+    </div>
+    <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-prepend">
             <label class="input-group-text" for="hasQuestionsSelector">Has Questions</label>
         </div>
         <select class="custom-select" id="hasQuestionsSelector" [(ngModel)]="filter.hasQuestions" [ngModelOptions]="{standalone: true}">

@@ -28,6 +28,7 @@ namespace Rodgort.Controllers
             string tag = null,
             int trackingStatusId = -1,
             string status = null,
+            string requestType = null,
             string hasQuestions = null,
             string sortBy = null,
             int page = 1, 
@@ -55,6 +56,11 @@ namespace Rodgort.Controllers
                     query = query.Where(mq => mq.ClosedDate.HasValue);
                 else
                     query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqt => mqt.TagName == status));
+            }
+
+            if (!string.IsNullOrWhiteSpace(requestType))
+            {
+                query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == requestType));
             }
 
             var transformedQuery = query

@@ -22,6 +22,7 @@ export class RequestsComponent implements OnInit {
     tag: '',
     trackingStatusId: -1,
     status: '',
+    requestType: '',
     pageNumber: 1,
     hasQuestions: 'true',
     sortBy: 'score'
@@ -45,6 +46,7 @@ export class RequestsComponent implements OnInit {
       this.filter.tag = params['tag'] || '';
       this.filter.trackingStatusId = +params['trackingStatusId'] || -1;
       this.filter.status = params['status'] || '';
+      this.filter.requestType = params['requestType'] || '';
       this.filter.hasQuestions = params['hasQuestions'] || 'any';
       this.filter.pageNumber = +params['pageNumber'] || 1;
       this.filter.sortBy = params['sortBy'] || 'score';
@@ -62,6 +64,7 @@ export class RequestsComponent implements OnInit {
       `?tag=${this.filter.tag}` +
       `&trackingStatusId=${this.filter.trackingStatusId}` +
       `&status=${this.filter.status}` +
+      `&requestType=${this.filter.requestType}` +
       `&hasQuestions=${this.filter.hasQuestions}` +
       `&sortBy=${this.filter.sortBy}` +
       `&page=${this.filter.pageNumber}` +
