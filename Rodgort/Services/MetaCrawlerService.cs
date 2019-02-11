@@ -132,7 +132,7 @@ namespace Rodgort.Services
             foreach (var burnStarted in burnsStarted.GroupBy(g => g.MetaUrl).Select(g => g.First()))
                 await _newBurninationService.NewBurnStarted(burnStarted.MetaUrl, burnStarted.Tags);
 
-            _logger.LogInformation("Meta crawl completed");
+            _logger.LogTrace("Meta crawl completed");
             
             _tagGuessingService.GuessTags(questions.Where(q => q.QuestionId.HasValue).Select(q => q.QuestionId.Value));
 
