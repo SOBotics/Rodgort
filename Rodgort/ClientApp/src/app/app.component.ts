@@ -56,8 +56,7 @@ export class AppComponent implements OnInit {
       const status = payload.status;
       if (status === 'running') {
         this.snackBar.openFromComponent(NewVersionDeployingComponent, {
-          verticalPosition: 'top',
-          duration: 999999999
+          verticalPosition: 'top'
         });
       } else {
         this.snackBar.dismiss();
