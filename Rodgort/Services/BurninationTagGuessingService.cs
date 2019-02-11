@@ -96,7 +96,7 @@ namespace Rodgort.Services
 
                 var childSynonymTags = questionMetaTags.Where(mqt =>
                     (mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE) 
-                    && mqt.Tag.SynonymOf != null
+                    && mqt.Tag?.SynonymOf != null
                 );
 
                 foreach (var masterSynonymTag in masterSynonymTags)
