@@ -58,6 +58,8 @@ export class AppComponent implements OnInit {
         this.snackBar.openFromComponent(NewVersionDeployingComponent, {
           verticalPosition: 'top'
         });
+      } else {
+        this.snackBar.dismiss();
       }
     };
   }
