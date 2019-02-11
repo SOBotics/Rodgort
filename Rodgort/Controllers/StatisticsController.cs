@@ -279,24 +279,23 @@ namespace Rodgort.Controllers
                                 }),
 
                             Overtime = bt.Actions
-                                .Where(ua =>
-                                    ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
+                                .Where(ua => ua.Time > minDate)
                                 .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
                                 .GroupBy(a => new {a.User, a.UserId})
                                 .Select(g => new
                                 {
                                     g.Key.User,
-                                    Times = g.GroupBy(gg => new {Time = gg.Time.Date.AddHours(gg.Time.Hour)})
-                                        .Select(gg => new
+                                    Times = dateRange
+                                        .Select(dr => new
                                         {
-                                            Date = gg.Key.Time,
-                                            Total = g.Where(ggg => ggg.Time.Date.AddHours(ggg.Time.Hour) <= gg.Key.Time)
-                                                .Select(ggg => ggg.PostId).Distinct().Count()
+                                            Date = dr,
+                                            Total = g.Where(gg => gg.Time.Date.AddHours(gg.Time.Hour) < dr).Select(gg => gg.PostId).Distinct().Count()
                                         })
                                         .OrderBy(gg => gg.Date)
                                 })
                                 .OrderByDescending(g => g.Times.Max(tt => tt.Total))
                                 .Take(10),
+
                             UserTotals = bt.Actions
                                 .Where(ua =>
                                     ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
