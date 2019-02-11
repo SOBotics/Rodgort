@@ -86,6 +86,24 @@ namespace Rodgort.Services
                     if (isNew)
                         _context.MetaQuestionTags.Add(metaQuestionTag); 
                 }
+
+                var questionMetaTags = _context.MetaQuestionTags.Where(mqt => mqt.MetaQuestionId == question.Id).ToList();
+
+                var masterSynonymTags = questionMetaTags.Where(mqt =>
+                    (mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL ||
+                     mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE) &&
+                    questionMetaTags.Any(innerMqt => innerMqt.Tag.SynonymOf.Name == mqt.TagName));
+
+                var childSynonymTags = questionMetaTags.Where(mqt =>
+                    (mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE) 
+                    && mqt.Tag.SynonymOf != null
+                );
+
+                foreach (var masterSynonymTag in masterSynonymTags)
+                    masterSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.IGNORED;
+
+                foreach (var childSynonymTag in childSynonymTags)
+                    childSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
             }
 
             var currentTags = _context.MetaQuestionTags.Local.Select(mqmt => mqmt.TagName).Distinct().ToList();
