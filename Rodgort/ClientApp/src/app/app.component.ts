@@ -62,6 +62,10 @@ export class AppComponent implements OnInit {
         this.snackBar.dismiss();
       }
     };
+
+    pipelinesStatus.onclose = () => {
+      this.snackBar.dismiss();
+    };
   }
 
   public onLogoutClicked() {
