@@ -19,12 +19,12 @@ namespace Rodgort.Services
         {
             var logsToDelete = _context
                 .Logs
-                .Where(l => l.Level == "Trace" && l.TimeLogged < DateTime.UtcNow.AddDays(2)
-                            || l.Level == "Debug" && l.TimeLogged < DateTime.UtcNow.AddDays(4)
-                            || l.Level == "Info" && l.TimeLogged < DateTime.UtcNow.AddDays(7)
-                            || l.Level == "Warn" && l.TimeLogged < DateTime.UtcNow.AddDays(30)
-                            || l.Level == "Error" && l.TimeLogged < DateTime.UtcNow.AddDays(90)
-                            || l.Level == "Error" && l.TimeLogged < DateTime.UtcNow.AddDays(90)
+                .Where(l => l.Level == "Trace" && l.TimeLogged < DateTime.UtcNow.AddDays(-2)
+                            || l.Level == "Debug" && l.TimeLogged < DateTime.UtcNow.AddDays(-4)
+                            || l.Level == "Info" && l.TimeLogged < DateTime.UtcNow.AddDays(-7)
+                            || l.Level == "Warn" && l.TimeLogged < DateTime.UtcNow.AddDays(-30)
+                            || l.Level == "Error" && l.TimeLogged < DateTime.UtcNow.AddDays(-90)
+                            || l.Level == "Error" && l.TimeLogged < DateTime.UtcNow.AddDays(-90)
                 );
 
             foreach (var logToDelete in logsToDelete)
