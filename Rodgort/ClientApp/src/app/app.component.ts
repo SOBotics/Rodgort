@@ -72,7 +72,7 @@ export class AppComponent implements OnInit {
   public onLogoutClicked() {
     this.authService.Logout();
   }
- 
+
   public getLoginUrl() {
     return `/api/Authentication/Login?redirect_uri=${window.location}&scope=all`;
   }
