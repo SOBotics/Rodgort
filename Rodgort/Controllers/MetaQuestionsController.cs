@@ -25,7 +25,8 @@ namespace Rodgort.Controllers
 
         [HttpGet]
         public object Get(
-            string tag = null,
+            string query = null,
+            string searchBy = null,
             int trackingStatusId = -1,
             string status = null,
             string requestType = null,
@@ -34,15 +35,39 @@ namespace Rodgort.Controllers
             int page = 1, 
             int pageSize = 30)
         {
-            IQueryable<DbMetaQuestion> query = _context.MetaQuestions;
-            if (!string.IsNullOrWhiteSpace(tag))
-                query = query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == tag));
+            IQueryable<DbMetaQuestion> dbQuery = _context.MetaQuestions;
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                switch (searchBy)
+                {
+                    case "id":
+                    {
+                        dbQuery = int.TryParse(query, out var id)
+                            ? dbQuery.Where(mq => mq.Id == id)
+                            : dbQuery.Where(mq => false);
+                        break;
+                    }
+                    case "tag":
+                        dbQuery = dbQuery.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == query));
+                        break;
+                    case "content":
+                        dbQuery = dbQuery.Where(mq => mq.Body.Contains(query) || mq.Title.Contains(query));
+                        break;
+                    default:
+                    {
+                        dbQuery = int.TryParse(query, out var id)
+                            ? dbQuery.Where(mq => mq.Id == id || mq.MetaQuestionTags.Any(mqt => mqt.TagName == query) || mq.Body.Contains(query) || mq.Title.Contains(query))
+                            : dbQuery.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == query) || mq.Body.Contains(query) || mq.Title.Contains(query));
+                        break;
+                    }
+                }
+            }
 
             if (trackingStatusId != -1)
             {
-                query = trackingStatusId == -10
-                    ? query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE))
-                    : query.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == trackingStatusId));
+                dbQuery = trackingStatusId == -10
+                    ? dbQuery.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE))
+                    : dbQuery.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TrackingStatusId == trackingStatusId));
             }
 
             var statusFlags = DbMetaTag.StatusFlags;
@@ -51,19 +76,19 @@ namespace Rodgort.Controllers
             if (!string.IsNullOrWhiteSpace(status))
             {
                 if (status == "none")
-                    query = query.Where(mq => !mq.MetaQuestionMetaTags.Any(mqt => statusFlags.Contains(mqt.TagName)) && !mq.ClosedDate.HasValue);
+                    dbQuery = dbQuery.Where(mq => !mq.MetaQuestionMetaTags.Any(mqt => statusFlags.Contains(mqt.TagName)) && !mq.ClosedDate.HasValue);
                 else if (status == "closed")
-                    query = query.Where(mq => mq.ClosedDate.HasValue);
+                    dbQuery = dbQuery.Where(mq => mq.ClosedDate.HasValue);
                 else
-                    query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqt => mqt.TagName == status));
+                    dbQuery = dbQuery.Where(mq => mq.MetaQuestionMetaTags.Any(mqt => mqt.TagName == status));
             }
 
             if (!string.IsNullOrWhiteSpace(requestType))
             {
-                query = query.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == requestType));
+                dbQuery = dbQuery.Where(mq => mq.MetaQuestionMetaTags.Any(mqmt => mqmt.TagName == requestType));
             }
 
-            var transformedQuery = query
+            var transformedQuery = dbQuery
                 .Where(mq => mq.MetaQuestionMetaTags.Any(mqt => DbMetaTag.RequestTypes.Contains(mqt.TagName)))
                 .Select(mq => new
                 {

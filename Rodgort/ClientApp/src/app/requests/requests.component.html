@@ -1,6 +1,19 @@
 <form class="form-inline" style="padding: 10px; padding-top: 0px;" #filterForm="ngForm">
-    <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Tag" name="tag"
-        [(ngModel)]="filter.tag" #tag="ngModel">
+    <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Search" name="query"
+        [(ngModel)]="filter.query" #query="ngModel">
+    <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-prepend">
+            <label class="input-group-text" for="searchBySelector">Search by</label>
+        </div>
+        <select class="custom-select" id="searchBySelector" [(ngModel)]="filter.searchBy"
+            [ngModelOptions]="{standalone: true}">
+            <option value="">All</option>
+            <option value="tag">Tag</option>
+            <option value="content">Content</option>
+            <option value="id">Question Id</option>
+        </select>
+    </div>
+
     <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
         <div class="input-group-prepend">
             <label class="input-group-text" for="trackingStatusSelector">Tracking Status</label>
@@ -42,8 +55,7 @@
         <div class="input-group-prepend">
             <label class="input-group-text" for="requestTypeSelector">Request type</label>
         </div>
-        <select class="custom-select" id="requestTypeSelector" [(ngModel)]="filter.requestType"
-            [ngModelOptions]="{standalone: true}">
+        <select class="custom-select" id="requestTypeSelector" [(ngModel)]="filter.requestType" [ngModelOptions]="{standalone: true}">
             <option value="">Any</option>
             <option value="burninate-request">Burninate request</option>
             <option value="synonym-request">Synonym request</option>
@@ -82,6 +94,9 @@
                 <span>{{question.score > 0 ? '+' : ''}}{{question.score | number}}</span>
                 <a href="https://meta.stackoverflow.com/questions/{{question.id}}">{{question.title}}
                     <span class="closed-label" *ngIf="question.closed">(closed)</span>
+                </a>
+                <a class="perma-link" routerLink="/requests" [queryParams]="{query: question.id, searchBy: 'id'}">
+                    <img src="../../assets/permalink.png">
                 </a>
             </h3>
             <p *ngFor="let metaTag of question.metaStatusTags" class="post-statustag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>

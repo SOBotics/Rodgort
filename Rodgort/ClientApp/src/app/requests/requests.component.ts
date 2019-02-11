@@ -4,7 +4,6 @@ import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, TROGDOR_ROOM_OWNER } from '../services/auth.service';
 import { tagTrackingStatus } from '../../constants/tag-tracking-status';
-// import * as _tagTrackingStatus from '../../constants/tag-tracking-status';
 
 @Component({
   selector: 'app-requests',
@@ -19,7 +18,8 @@ export class RequestsComponent implements OnInit {
   public isTrogdorRoomOwner = false;
 
   public filter = {
-    tag: '',
+    query: '',
+    searchBy: '',
     trackingStatusId: -1,
     status: '',
     requestType: '',
@@ -43,7 +43,8 @@ export class RequestsComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
-      this.filter.tag = params['tag'] || '';
+      this.filter.query = params['query'] || '';
+      this.filter.searchBy = params['searchBy'] || '';
       this.filter.trackingStatusId = +params['trackingStatusId'] || -1;
       this.filter.status = params['status'] || '';
       this.filter.requestType = params['requestType'] || '';
@@ -61,7 +62,8 @@ export class RequestsComponent implements OnInit {
   public reloadData() {
     const query =
       `/api/MetaQuestions` +
-      `?tag=${this.filter.tag}` +
+      `?query=${this.filter.query}` +
+      `&searchBy=${this.filter.searchBy}` +
       `&trackingStatusId=${this.filter.trackingStatusId}` +
       `&status=${this.filter.status}` +
       `&requestType=${this.filter.requestType}` +
