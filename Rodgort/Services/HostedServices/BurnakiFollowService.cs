@@ -108,7 +108,7 @@ namespace Rodgort.Services.HostedServices
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError("Failed processing chat events", ex);
+                            _logger.LogError(ex, "Failed processing chat events");
                         }
                     }, cancellationToken);
             }

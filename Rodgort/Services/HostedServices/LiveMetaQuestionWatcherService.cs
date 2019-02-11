@@ -56,14 +56,14 @@ namespace Rodgort.Services.HostedServices
                             }
                             catch (Exception ex)
                             {
-                                _logger.LogError("Failed processing meta websocket batch", ex);
+                                _logger.LogError(ex, "Failed processing meta websocket batch");
                             }
                         }
                     }, stoppingToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed watching live meta", ex);
+                _logger.LogError(ex, "Failed watching live meta");
             }
             return Task.CompletedTask;
         }
@@ -96,7 +96,7 @@ namespace Rodgort.Services.HostedServices
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Failed to process 552-home-active for 'https://stackoverflow.com'. Message received: " + message, ex);
+                        _logger.LogError(ex, "Failed to process 552-home-active for 'https://stackoverflow.com'. Message received: " + message);
                     }
                 };
 
@@ -107,7 +107,7 @@ namespace Rodgort.Services.HostedServices
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError("Failed to start websocket", ex);
+                    _logger.LogError(ex, "Failed to start websocket");
                 }
 
                 _logger.LogTrace("Connected to 552-home-active on meta.stackoverflow.com");

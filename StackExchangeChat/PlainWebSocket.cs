@@ -191,7 +191,7 @@ namespace StackExchangeChat
             {
                 OnError?.Invoke(ex);
 
-                _logger.LogError("Failed to process message", ex);
+                _logger.LogError(ex, "Failed to process message");
             }
         }
 
