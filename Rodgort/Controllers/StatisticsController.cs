@@ -38,26 +38,27 @@ namespace Rodgort.Controllers
         [HttpGet("HasDeployInProgress")]
         public object HasDeployInProgress()
         {
-            lock (_deployStatusLocker)
-            {
-                if (_lastDeployChecked.HasValue && _lastDeployChecked > DateTime.UtcNow.AddSeconds(-30))
-                    return _lastDeployResult;
+            return null;
+            //lock (_deployStatusLocker)
+            //{
+            //    if (_lastDeployChecked.HasValue && _lastDeployChecked > DateTime.UtcNow.AddSeconds(-30))
+            //        return _lastDeployResult;
 
-                using (var httpClient = _serviceProvider.GetService<HttpClient>())
-                {
-                    var getAsyncTask = httpClient.GetAsync("https://gitlab.com/rjrudman/Rodgort/pipelines.json?scope=running&page=1");
-                    getAsyncTask.Wait();
+            //    using (var httpClient = _serviceProvider.GetService<HttpClient>())
+            //    {
+            //        var getAsyncTask = httpClient.GetAsync("https://gitlab.com/rjrudman/Rodgort/pipelines.json?scope=running&page=1");
+            //        getAsyncTask.Wait();
 
-                    var readStringTask = getAsyncTask.Result.Content.ReadAsStringAsync();
-                    readStringTask.Wait();
+            //        var readStringTask = getAsyncTask.Result.Content.ReadAsStringAsync();
+            //        readStringTask.Wait();
 
-                    var content = JsonConvert.DeserializeObject(readStringTask.Result);
+            //        var content = JsonConvert.DeserializeObject(readStringTask.Result);
 
-                    _lastDeployChecked = DateTime.UtcNow;
-                    _lastDeployResult = content;
-                    return content;
-                }
-            }
+            //        _lastDeployChecked = DateTime.UtcNow;
+            //        _lastDeployResult = content;
+            //        return content;
+            //    }
+            //}
         }
 
         [HttpGet]
