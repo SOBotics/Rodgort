@@ -145,15 +145,13 @@ namespace Rodgort
                     context.Database.Migrate();
             
             // Every hour
-            RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMetaSync(), "0 * * * *");
-
-            // Every hour
             RecurringJob.AddOrUpdate<TagCountService>(TagCountService.ALL_TAGS, service => service.GetQuestionCountForApprovedTagsSync(), "5 * * * *");
 
             // Every day
+            RecurringJob.AddOrUpdate<MetaCrawlerService>(MetaCrawlerService.SERVICE_NAME, service => service.CrawlMetaSync(), "0 0 * * *");
+
             RecurringJob.AddOrUpdate<UserDisplayNameService>(UserDisplayNameService.SYNC_ALL_USERS, service => service.SyncAllUsersSync(), "10 0 * * *");
 
-            // Every day
             RecurringJob.AddOrUpdate<TrogdorRoomOwnerService>(TrogdorRoomOwnerService.SERVICE_NAME, service => service.SyncTrogdorRoomOwnersSync(), "15 0 * * *");
 
             RecurringJob.AddOrUpdate<BurnCatchupService>(BurnCatchupService.SERVICE_NAME, service => service.CatchupSync(), "20 0 * * *");
@@ -166,8 +164,8 @@ namespace Rodgort
 
             // I don't really want this to automatically execute, but the 'never' crontab expression doesn't work for hangfire.
             // So, we'll just execute once a year - the first of January at 0:10
-            RecurringJob.AddOrUpdate<BurninationTagGuessingService>(BurninationTagGuessingService.SERVICE_NAME, service => service.GuessTags(), "20 0 1 1 *");
-            RecurringJob.AddOrUpdate<UserDisplayNameService>(UserDisplayNameService.SYNC_USERS_NO_NAME, service => service.SyncUsersWithNoNameSync(), "25 0 1 1 *");
+            RecurringJob.AddOrUpdate<BurninationTagGuessingService>(BurninationTagGuessingService.SERVICE_NAME, service => service.GuessTags(), "50 0 1 1 *");
+            RecurringJob.AddOrUpdate<UserDisplayNameService>(UserDisplayNameService.SYNC_USERS_NO_NAME, service => service.SyncUsersWithNoNameSync(), "55 0 1 1 *");
         }
 
         public class NoAuthorizationFilter : IDashboardAuthorizationFilter
