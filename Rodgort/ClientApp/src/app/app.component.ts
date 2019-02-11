@@ -50,17 +50,16 @@ export class AppComponent implements OnInit {
       }
     });
 
-    const intervalId = setInterval(() => {
-      this.httpClient.get('/api/Statistics/HasDeployInProgress')
-        .subscribe((response: any) => {
-          if (response && response.pipelines && response.pipelines.length) {
-            this.snackBar.openFromComponent(NewVersionDeployingComponent, {
-              verticalPosition: 'top'
-            });
-            clearInterval(intervalId);
-          }
+    const pipelinesStatus = new WebSocket(`wss://${location.host}/ws/pipelines`);
+    pipelinesStatus.onmessage = event => {
+      const payload = JSON.parse(event.data);
+      const status = payload.status;
+      if (status !== 'failed' && status !== 'success') {
+        this.snackBar.openFromComponent(NewVersionDeployingComponent, {
+          verticalPosition: 'top'
         });
-    }, 5000);
+      }
+    };
   }
 
   public onLogoutClicked() {

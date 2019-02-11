@@ -19,48 +19,13 @@ namespace Rodgort.Controllers
     {
         private readonly RodgortContext _context;
         private readonly DateService _dateService;
-        private readonly IServiceProvider _serviceProvider;
-
-        public StatisticsController(RodgortContext context, 
-            DateService dateService,
-            IServiceProvider serviceProvider)
+        
+        public StatisticsController(RodgortContext context, DateService dateService)
         {
             _context = context;
             _dateService = dateService;
-            _serviceProvider = serviceProvider;
         }
-
-        private static readonly object _deployStatusLocker = new object();
-        private static DateTime? _lastDeployChecked;
-        private static object _lastDeployResult;
-
-
-        [HttpGet("HasDeployInProgress")]
-        public object HasDeployInProgress()
-        {
-            return null;
-            //lock (_deployStatusLocker)
-            //{
-            //    if (_lastDeployChecked.HasValue && _lastDeployChecked > DateTime.UtcNow.AddSeconds(-30))
-            //        return _lastDeployResult;
-
-            //    using (var httpClient = _serviceProvider.GetService<HttpClient>())
-            //    {
-            //        var getAsyncTask = httpClient.GetAsync("https://gitlab.com/rjrudman/Rodgort/pipelines.json?scope=running&page=1");
-            //        getAsyncTask.Wait();
-
-            //        var readStringTask = getAsyncTask.Result.Content.ReadAsStringAsync();
-            //        readStringTask.Wait();
-
-            //        var content = JsonConvert.DeserializeObject(readStringTask.Result);
-
-            //        _lastDeployChecked = DateTime.UtcNow;
-            //        _lastDeployResult = content;
-            //        return content;
-            //    }
-            //}
-        }
-
+        
         [HttpGet]
         public object Get()
         {
