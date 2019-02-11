@@ -92,7 +92,7 @@ namespace Rodgort.Services
                 var masterSynonymTags = questionMetaTags.Where(mqt =>
                     (mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL ||
                      mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE) &&
-                    questionMetaTags.Any(innerMqt => innerMqt.Tag.SynonymOf.Name == mqt.TagName));
+                    questionMetaTags.Any(innerMqt => innerMqt?.Tag.SynonymOf != null && innerMqt.Tag.SynonymOf.Name == mqt.TagName));
 
                 var childSynonymTags = questionMetaTags.Where(mqt =>
                     (mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE) 
