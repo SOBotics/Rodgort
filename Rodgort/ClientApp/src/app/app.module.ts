@@ -18,6 +18,9 @@ import { AuthService } from './services/auth.service';
 import { UnknownDeletionResolutionComponent } from './unknown-deletion-resolution/unknown-deletion-resolution.component';
 import { ManualQuestionProcessingComponent } from './manual-question-processing/manual-question-processing.component';
 import { PaginationComponent } from './pagination/pagination.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSnackBarModule } from '@angular/material';
+import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +34,8 @@ import { PaginationComponent } from './pagination/pagination.component';
     ProgressComponent,
     UnknownDeletionResolutionComponent,
     ManualQuestionProcessingComponent,
-    PaginationComponent
+    PaginationComponent,
+    NewVersionDeployingComponent
   ],
   imports: [
     ChartModule,
@@ -39,11 +43,16 @@ import { PaginationComponent } from './pagination/pagination.component';
     HttpClientModule,
     FormsModule,
     RouterModule.forRoot(appRoutes),
+    BrowserAnimationsModule,
+    MatSnackBarModule
   ],
   providers: [
     AuthService
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [
+    NewVersionDeployingComponent
+  ]
 })
 export class AppModule {
 }

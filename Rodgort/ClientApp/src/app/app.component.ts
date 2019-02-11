@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { AuthService } from './services/auth.service';
+import { MatSnackBar, MatSnackBarConfig } from '@angular/material';
+import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +22,7 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit() {
@@ -46,6 +49,18 @@ export class AppComponent implements OnInit {
         this.userName = details.TokenData.unique_name;
       }
     });
+
+    const intervalId = setInterval(() => {
+      this.httpClient.get('/api/Statistics/HasDeployInProgress')
+        .subscribe((response: any) => {
+          if (response && response.pipelines && response.pipelines.length) {
+            this.snackBar.openFromComponent(NewVersionDeployingComponent, {
+              verticalPosition: 'top'
+            });
+            clearInterval(intervalId);
+          }
+        });
+    }, 5000);
   }
 
   public onLogoutClicked() {
