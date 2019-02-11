@@ -54,7 +54,7 @@ export class AppComponent implements OnInit {
     pipelinesStatus.onmessage = event => {
       const payload = JSON.parse(event.data);
       const status = payload.status;
-      if (status !== 'failed' && status !== 'success') {
+      if (status === 'running') {
         this.snackBar.openFromComponent(NewVersionDeployingComponent, {
           verticalPosition: 'top'
         });
