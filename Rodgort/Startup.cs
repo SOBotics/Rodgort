@@ -82,6 +82,7 @@ namespace Rodgort
             services.AddTransient<BurnCatchupService>();
             services.AddTransient<MetaCrawlerService>();
             services.AddTransient<TagCountService>();
+            services.AddTransient<BurninationTagGuessingService>();
 
             services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
             services.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
