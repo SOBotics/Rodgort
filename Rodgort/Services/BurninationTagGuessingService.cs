@@ -86,24 +86,6 @@ namespace Rodgort.Services
                     if (isNew)
                         _context.MetaQuestionTags.Add(metaQuestionTag); 
                 }
-
-                var questionMetaTags = _context.MetaQuestionTags.Where(mqt => mqt.MetaQuestionId == question.Id).ToList();
-
-                var masterSynonymTags = questionMetaTags.Where(mqt =>
-                    (mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL ||
-                     mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE) &&
-                    questionMetaTags.Any(innerMqt => innerMqt.Tag?.SynonymOf != null && innerMqt.Tag.SynonymOf.Name == mqt.TagName));
-
-                var childSynonymTags = questionMetaTags.Where(mqt =>
-                    (mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE) 
-                    && mqt.Tag?.SynonymOf != null
-                );
-
-                foreach (var masterSynonymTag in masterSynonymTags)
-                    masterSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.IGNORED;
-
-                foreach (var childSynonymTag in childSynonymTags)
-                    childSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
             }
 
             var currentTags = _context.MetaQuestionTags.Local.Select(mqmt => mqmt.TagName).Distinct().ToList();
@@ -115,6 +97,42 @@ namespace Rodgort.Services
             }
 
             _context.SaveChanges();
+
+            var masterSynonymTags =
+                _context.MetaQuestionTags
+                    .Where(mqt => questionIds.Contains(mqt.MetaQuestionId))
+                    .Where(mqt =>
+                        (
+                            mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL
+                            || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE
+                        )
+                        && _context.MetaQuestionTags.Any(innerMqt =>
+                            innerMqt.MetaQuestionId == mqt.MetaQuestionId
+                            && innerMqt.Tag.SynonymOf != null
+                            && innerMqt.Tag.SynonymOf.Name == mqt.TagName
+                        )
+                    )
+                    .ToList();
+
+            var childSynonymTags = _context.MetaQuestionTags.Where(mqt =>
+                (
+                    mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL 
+                    || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE
+                )
+                && mqt.Tag.SynonymOf != null
+            ).ToList();
+
+            foreach (var masterSynonymTag in masterSynonymTags)
+                masterSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.IGNORED;
+
+            foreach (var childSynonymTag in childSynonymTags)
+                childSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
+
+            if (masterSynonymTags.Any() || childSynonymTags.Any())
+            {
+                _logger.LogInformation($"Automatically ignoring {masterSynonymTags.Count} as synonym masters in a question and tracking {childSynonymTags.Count} synonym children");
+                _context.SaveChanges();
+            }
 
             _logger.LogTrace("Guessing tags completed");
         }
