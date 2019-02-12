@@ -12,6 +12,8 @@ export class QuestionCountGraphComponent implements OnInit {
   @Input()
   public data: any;
   @Input()
+  public remainingOverTime: any;
+  @Input()
   public closuresOverTime: any;
   @Input()
   public deletionsOverTime: any;
@@ -103,6 +105,16 @@ export class QuestionCountGraphComponent implements OnInit {
       })
     });
 
+    if (this.remainingOverTime) {
+      series.push({
+        name: 'Remaining',
+        data: this.remainingOverTime.map(gd => {
+          const utcDate = this.toUtcDateTime(gd.date);
+          return [utcDate, gd.total];
+        })
+      });
+    }
+
     if (this.closuresOverTime) {
       series.push({
         name: 'Closures',
@@ -162,15 +174,17 @@ export class QuestionCountGraphComponent implements OnInit {
           const actionType =
             this.series.name === 'Total'
               ? 'seen on'
-              : this.series.name === 'Closures'
-                ? 'closed by'
-                : this.series.name === 'Deletions'
-                  ? 'deleted by'
-                  : this.series.name === 'Retags'
-                    ? 'retagged by'
-                    : this.series.name === 'Roombas'
-                      ? 'roomba\'d by'
-                      : null;
+              : this.series.name === 'Remaining'
+                ? 'remaining'
+                : this.series.name === 'Closures'
+                  ? 'closed by'
+                  : this.series.name === 'Deletions'
+                    ? 'deleted by'
+                    : this.series.name === 'Retags'
+                      ? 'retagged by'
+                      : this.series.name === 'Roombas'
+                        ? 'roomba\'d by'
+                        : null;
 
           if (actionType) {
             return `${this.y} questions ${actionType} ${Highcharts.dateFormat('%Y-%m-%d %H:%M', this.x)}`;
@@ -188,7 +202,7 @@ export class QuestionCountGraphComponent implements OnInit {
         enabled: false
       },
       legend: {
-        enabled: this.closuresOverTime || this.deletionsOverTime || this.retagsOverTime || this.roombasOverTime
+        enabled: this.remainingOverTime || this.closuresOverTime || this.deletionsOverTime || this.retagsOverTime || this.roombasOverTime
       },
       series: series
     });

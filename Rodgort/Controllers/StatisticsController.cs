@@ -236,13 +236,28 @@ namespace Rodgort.Controllers
                             bt.NumberOfQuestions,
                             bt.QuestionCountOverTime,
 
+                            RemainingOverTime = dateRange.Select(d =>
+                            {
+                                var lastQuestionCount = bt.QuestionCountOverTime.LastOrDefault(qc => qc.DateTime <= d);
+
+                                return new
+                                {
+                                    Date = d,
+                                    Total =
+                                        lastQuestionCount == null 
+                                            ? (int?)null :
+                                            lastQuestionCount.QuestionCount 
+                                            - questionStates.Select(qs => qs.LastOrDefault(s => s.Time <= d)).Count(qs => qs != null && qs.Closed)
+                                };
+                            }).Where(r => r.Total != null),
+
                             ClosuresOverTime = dateRange.Select(d =>
                                 new
                                 {
                                     Date = d,
                                     Total = questionStates
                                         .Select(qs => qs.LastOrDefault(s => s.Time <= d))
-                                        .Count(qs => qs != null && !qs.Deleted && !qs.RemovedTag && qs.Closed)
+                                        .Count(qs => qs != null && qs.Closed)
                                 }),
 
                             DeletionsOverTime = dateRange
@@ -264,7 +279,7 @@ namespace Rodgort.Controllers
                                     Date = d,
                                     Total = questionStates
                                         .Select(qs => qs.LastOrDefault(s => s.Time <= d))
-                                        .Count(qs => qs != null && !qs.Deleted && qs.RemovedTag)
+                                        .Count(qs => qs != null && qs.RemovedTag)
                                 }),
 
                             RoombasOverTime = dateRange

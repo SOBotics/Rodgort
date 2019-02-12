@@ -170,6 +170,11 @@ export class ProgressComponent implements OnInit {
                   },
                   min: 0
                 },
+                plotOptions: {
+                  area: {
+                      stacking: 'normal'
+                  }
+                },
                 credits: {
                   enabled: false
                 },

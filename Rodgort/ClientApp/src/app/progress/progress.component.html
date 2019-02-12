@@ -17,7 +17,7 @@
         </div>
 
         <h2>Tag Progress</h2>
-        <app-question-count-graph [data]="tag.questionCountOverTime" [closuresOverTime]="tag.closuresOverTime"
+        <app-question-count-graph [data]="tag.questionCountOverTime" [remainingOverTime]="tag.remainingOverTime" [closuresOverTime]="tag.closuresOverTime"
           [deletionsOverTime]="tag.deletionsOverTime" [retagsOverTime]="tag.retagsOverTime" [roombasOverTime]="tag.roombasOverTime"
           [featuredStarted]="burn.featuredStarted" [featuredEnded]="burn.featuredEnded" [burnStarted]="burn.burnStarted"
           [burnEnded]="burn.burnEnded">
