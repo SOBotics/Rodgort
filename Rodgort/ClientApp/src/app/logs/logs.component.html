@@ -21,7 +21,7 @@
   <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
 </form>
 
-<table *ngIf="logs" class="table mt-3 mb-3">
+<table *ngIf="logs" class="table log-table mt-3 mb-3">
   <thead>
     <tr>
       <th>TimeLogged</th>
@@ -32,10 +32,10 @@
   </thead>
   <tbody>
     <tr *ngFor="let log of logs">
-      <td>{{log.timeLogged}}</td>
+      <td style="width: 15%" title="{{log.timeLogged}}">{{log.localTime}}</td>
       <td>{{log.level}}</td>
-      <td style="width: 50%"><code>{{log.message}}</code></td>
-      <td style="width: 50%"><code>{{log.exception}}</code></td>
+      <td style="width: 43%"><code>{{log.message}}</code></td>
+      <td style="width: 42%"><code>{{log.exception}}</code></td>
     </tr>
   </tbody>
 </table>

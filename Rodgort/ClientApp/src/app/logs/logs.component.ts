@@ -48,7 +48,9 @@ export class LogsComponent implements OnInit {
         this.filter.pageNumber = 1;
         this.reloadData();
       } else {
-        this.logs = response.data;
+        this.logs = response.data.map(d => ({
+          ...d, localTime: new Date(d.timeLogged).toLocaleString()
+        }));
         this.pagingInfo = GetPagingInfo(response);
       }
     });
