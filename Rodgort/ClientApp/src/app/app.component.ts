@@ -51,6 +51,7 @@ export class AppComponent implements OnInit {
     });
 
     const pipelinesStatus = new WebSocket(`wss://${location.host}/ws/pipelines`);
+    console.log('Started pipelines websocket...');
     pipelinesStatus.onmessage = event => {
       const payload = JSON.parse(event.data);
       const status = payload.status;
@@ -64,6 +65,7 @@ export class AppComponent implements OnInit {
     };
 
     pipelinesStatus.onclose = () => {
+      console.log('Pipelines websocket closed...');
       this.snackBar.dismiss();
     };
   }
