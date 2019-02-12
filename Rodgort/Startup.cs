@@ -43,7 +43,6 @@ namespace Rodgort
 
             services.AddHangfire(config =>
             {
-                config.UseFilter(new IgnoreAntiforgeryTokenAttribute());
                 config.UsePostgreSqlStorage(connectionString);
             });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
