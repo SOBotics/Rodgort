@@ -247,7 +247,7 @@ namespace Rodgort.Controllers
                                         lastQuestionCount == null 
                                             ? (int?)null :
                                             lastQuestionCount.QuestionCount 
-                                            - questionStates.Select(qs => qs.LastOrDefault(s => s.Time <= d)).Count(qs => qs != null && qs.Closed)
+                                            - questionStates.Select(qs => qs.LastOrDefault(s => s.Time <= d)).Count(qs => qs != null && qs.Closed && !qs.Deleted && !qs.RemovedTag)
                                 };
                             }).Where(r => r.Total != null),
 
