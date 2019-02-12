@@ -238,7 +238,7 @@ namespace Rodgort.Controllers
 
                             RemainingOverTime = dateRange.Select(d =>
                             {
-                                var lastQuestionCount = bt.QuestionCountOverTime.LastOrDefault(qc => qc.DateTime <= d);
+                                var lastQuestionCount = bt.QuestionCountOverTime.FirstOrDefault(qc => Math.Abs((qc.DateTime - d).TotalMinutes) < 30);
 
                                 return new
                                 {
