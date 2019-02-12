@@ -1,35 +1,27 @@
 <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
 </app-pagination>
 
-<form style="padding: 10px" #filterForm="ngForm">
-  <div class="form-row align-items-center mb-2">
-    <div class="col">
-      <input type="text" class="form-control" id="contentInput" placeholder="Search" name="search" [(ngModel)]="filter.search"
-        #search="ngModel">
+<form class="form-inline" #filterForm="ngForm">
+  <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Search" name="search" [(ngModel)]="filter.search"
+    #search="ngModel">
+  <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+    <div class="input-group-prepend">
+      <label class="input-group-text" for="logLevelSelector">Log Level</label>
     </div>
-    <div class="col">
-      <div class="input-group">
-        <div class="input-group-prepend">
-          <label class="input-group-text" for="logLevelSelector">Log Level</label>
-        </div>
-        <select class="custom-select" id="logLevelSelector" [(ngModel)]="filter.level" [ngModelOptions]="{standalone: true}">
-          <option value="">Any</option>
-          <option value="Trace">Trace</option>
-          <option value="Debug">Debug</option>
-          <option value="Info">Info</option>
-          <option value="Warn">Warn</option>
-          <option value="Error">Error</option>
-          <option value="Fatal">Fatal</option>
-        </select>
-      </div>
-    </div>
-    <div class="col">
-      <button type="submit" class="btn btn-primary" (click)="applyFilter()">Search</button>
-    </div>
+    <select class="custom-select" id="logLevelSelector" [(ngModel)]="filter.level" [ngModelOptions]="{standalone: true}">
+      <option value="">Any</option>
+      <option value="Trace">Trace</option>
+      <option value="Debug">Debug</option>
+      <option value="Info">Info</option>
+      <option value="Warn">Warn</option>
+      <option value="Error">Error</option>
+      <option value="Fatal">Fatal</option>
+    </select>
   </div>
+  <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
 </form>
 
-<table *ngIf="logs" class="table">
+<table *ngIf="logs" class="table mt-3 mb-3">
   <thead>
     <tr>
       <th>TimeLogged</th>
