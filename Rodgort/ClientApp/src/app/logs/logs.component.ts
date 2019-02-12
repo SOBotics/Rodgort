@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
 import { ActivatedRoute, Router } from '@angular/router';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-logs',
@@ -49,7 +50,7 @@ export class LogsComponent implements OnInit {
         this.reloadData();
       } else {
         this.logs = response.data.map(d => ({
-          ...d, localTime: new Date(d.timeLogged).toLocaleString()
+          ...d, localTime: moment.utc(d.timeLogged).local().format('YYYY-MM-DD hh:mm:ss A')
         }));
         this.pagingInfo = GetPagingInfo(response);
       }
