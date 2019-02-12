@@ -63,6 +63,11 @@ namespace Rodgort.Services
             public List<string> Tags { get; set; }
         }
 
+        public class BurnDeclined
+        {
+            public string Tag { get; set; }
+        }
+
         public void CrawlMetaSync()
         {
             CrawlMeta().Wait();
@@ -87,6 +92,7 @@ namespace Rodgort.Services
                 var newFeatures = new List<NewFeature>();
                 var finishedBurns = new List<BurnFinished>();
                 var burnsStarted = new List<BurnStarted>();
+                var burnsDeclined = new List<BurnDeclined>();
 
                 _logger.LogInformation("Starting meta crawl");
 
@@ -105,9 +111,10 @@ namespace Rodgort.Services
                     newFeatures.AddRange(result.NewFeatures);
                     finishedBurns.AddRange(result.FinishedBurns);
                     burnsStarted.AddRange(result.BurnsStarted);
+                    burnsDeclined.AddRange(result.BurnsDeclined);
                 }
 
-                await PostProcessQuestions(questions, finishedBurns, newFeatures, burnsStarted);
+                await PostProcessQuestions(questions, finishedBurns, newFeatures, burnsStarted, burnsDeclined);
             }
             finally
             {
@@ -118,10 +125,10 @@ namespace Rodgort.Services
 
         public async Task PostProcessQuestions(List<BaseQuestion> questions, ProcessQuestionsResult processQuestionsResult)
         {
-            await PostProcessQuestions(questions, processQuestionsResult.FinishedBurns, processQuestionsResult.NewFeatures, processQuestionsResult.BurnsStarted);
+            await PostProcessQuestions(questions, processQuestionsResult.FinishedBurns, processQuestionsResult.NewFeatures, processQuestionsResult.BurnsStarted, processQuestionsResult.BurnsDeclined);
         }
 
-        public async Task PostProcessQuestions(List<BaseQuestion> questions, IEnumerable<BurnFinished> finishedBurns, IReadOnlyCollection<NewFeature> newFeatures, IReadOnlyCollection<BurnStarted> burnsStarted)
+        public async Task PostProcessQuestions(List<BaseQuestion> questions, IEnumerable<BurnFinished> finishedBurns, IReadOnlyCollection<NewFeature> newFeatures, IReadOnlyCollection<BurnStarted> burnsStarted, IReadOnlyCollection<BurnDeclined> burnsDeclined)
         {
             foreach (var tag in finishedBurns.Select(b => b.Tag).Distinct())
                 await _newBurninationService.StopBurn(tag);
@@ -131,6 +138,9 @@ namespace Rodgort.Services
 
             foreach (var burnStarted in burnsStarted.GroupBy(g => g.MetaUrl).Select(g => g.First()))
                 await _newBurninationService.NewBurnStarted(burnStarted.MetaUrl, burnStarted.Tags);
+
+            foreach (var tag in burnsDeclined.Select(b => b.Tag).Distinct())
+                await _newBurninationService.BurnDeclined(tag);
 
             _logger.LogTrace("Meta crawl completed");
             
@@ -145,6 +155,7 @@ namespace Rodgort.Services
             public List<NewFeature> NewFeatures { get; set; }
             public List<BurnFinished> FinishedBurns { get; set; }
             public List<BurnStarted> BurnsStarted { get; set; }
+            public List<BurnDeclined> BurnsDeclined { get; set; }
         }
 
         public ProcessQuestionsResult ProcessQuestions(List<BaseQuestion> questions)
@@ -152,6 +163,7 @@ namespace Rodgort.Services
             var newFeatures = new List<NewFeature>();
             var finishedBurns = new List<BurnFinished>();
             var burnsStarted = new List<BurnStarted>();
+            var burnsDeclined = new List<BurnDeclined>();
 
             var questionIds = questions.Select(q => q.QuestionId).Distinct().ToList();
 
@@ -250,6 +262,15 @@ namespace Rodgort.Services
                                     finishedBurns.Add(new BurnFinished {Tag = trackedTag.TagName});
                             }
                         }
+
+                        if (dbTag.TagName == DbMetaTag.STATUS_DECLINED)
+                        {
+                            if (isBurnRequest && dbMetaQuestion.FeaturedStarted.HasValue)
+                            {
+                                foreach (var trackedTag in trackedTags)
+                                    burnsDeclined.Add(new BurnDeclined { Tag = trackedTag.TagName });
+                            }
+                        }
                     }
                 }
 
@@ -314,7 +335,8 @@ namespace Rodgort.Services
             {
                 NewFeatures = newFeatures,
                 BurnsStarted = burnsStarted,
-                FinishedBurns = finishedBurns
+                FinishedBurns = finishedBurns,
+                BurnsDeclined = burnsDeclined
             };
         }
     }

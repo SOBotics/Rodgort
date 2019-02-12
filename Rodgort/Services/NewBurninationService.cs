@@ -100,6 +100,32 @@ namespace Rodgort.Services
             _rodgortContext.SaveChanges();
         }
 
+        public async Task BurnDeclined(string tag)
+        {
+            if (!_enabled)
+                return;
+
+            var follows = _rodgortContext.BurnakiFollows.Where(bf =>
+                bf.BurnakiId == ChatUserIds.GEMMY
+                && bf.Tag == tag
+                && !bf.FollowEnded.HasValue
+            ).ToList();
+
+            if (!follows.Any())
+                return;
+
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The request for the burnination of [tag:{tag}] has been declined");
+
+            foreach (var follow in follows)
+            {
+                await _chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
+                follow.FollowEnded = _dateService.UtcNow;
+            }
+
+            _rodgortContext.SaveChanges();
+        }
+
         public async Task NewBurnStarted(string metaPostUrl, List<string> tags)
         {
             if (!_enabled)
