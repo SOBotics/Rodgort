@@ -41,8 +41,12 @@ namespace Rodgort
             var connectionString = Configuration.GetConnectionString("RodgortDB");
             GlobalDiagnosticsContext.Set("connectionString", connectionString);
 
-            services.AddHangfire(config => config.UsePostgreSqlStorage(connectionString));
-            services.AddMvc(options => { options.Filters.Add(new IgnoreAntiforgeryTokenAttribute()); }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddHangfire(config =>
+            {
+                config.UseFilter(new IgnoreAntiforgeryTokenAttribute());
+                config.UsePostgreSqlStorage(connectionString);
+            });
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             var symmetricKey = Convert.FromBase64String(Configuration["JwtSigningKey"]);
             services.AddAuthentication(o =>
