@@ -238,15 +238,16 @@ namespace Rodgort.Controllers
 
                             RemainingOverTime = dateRange.Select(d =>
                             {
-                                var lastQuestionCount = bt.QuestionCountOverTime.FirstOrDefault(qc => Math.Abs((qc.DateTime - d).TotalMinutes) < 30);
-
+                                var timesAroundPoint = bt.QuestionCountOverTime.Where(qc => Math.Abs((qc.DateTime - d).TotalMinutes) < 30);
+                                var closestFoundTime = timesAroundPoint.OrderBy(qc => Math.Abs((qc.DateTime - d).TotalMinutes)).FirstOrDefault();
+                                
                                 return new
                                 {
                                     Date = d,
                                     Total =
-                                        lastQuestionCount == null 
+                                        closestFoundTime == null 
                                             ? (int?)null :
-                                            lastQuestionCount.QuestionCount 
+                                            closestFoundTime.QuestionCount 
                                             - questionStates.Select(qs => qs.LastOrDefault(s => s.Time <= d)).Count(qs => qs != null && qs.Closed && !qs.Deleted && !qs.RemovedTag)
                                 };
                             }).Where(r => r.Total != null),
