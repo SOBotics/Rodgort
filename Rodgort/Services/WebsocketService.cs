@@ -36,8 +36,11 @@ namespace Rodgort.Services
                             await SendData(webSocket, cancellationTokenSource, "ping");
                             await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cancellationTokenSource.Token);
                         });
-                        
-                        await _endPoints[context.Request.Path](webSocket, cancellationTokenSource);
+
+                        try
+                        {
+                            await _endPoints[context.Request.Path](webSocket, cancellationTokenSource);
+                        } catch (TaskCanceledException) { }
                     }
                     else
                     {
