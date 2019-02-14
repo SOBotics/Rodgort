@@ -35,15 +35,16 @@ namespace Rodgort.Services
                         {
                             Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async i =>
                             {
-                                await SendData(webSocket, cancellationTokenSource, "ping");
-                                await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cancellationTokenSource.Token);
-                            });
-                        } catch (WebSocketException) { }
+                                try
+                                {
+                                    await SendData(webSocket, cancellationTokenSource, "ping");
+                                    await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cancellationTokenSource.Token);
+                                }
+                                catch (WebSocketException) { cancellationTokenSource.Cancel(); }
+                            }, cancellationTokenSource.Token);
 
-                        try
-                        {
                             await _endPoints[context.Request.Path](webSocket, cancellationTokenSource);
-                        } catch (TaskCanceledException) { }
+                        } catch (TaskCanceledException) { cancellationTokenSource.Cancel(); }
                     }
                     else
                     {
