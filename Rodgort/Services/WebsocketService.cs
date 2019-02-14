@@ -34,7 +34,7 @@ namespace Rodgort.Services
                         Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async i =>
                         {
                             await SendData(webSocket, cancellationTokenSource, "ping");
-                            await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), CancellationToken.None);
+                            await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cancellationTokenSource.Token);
                         });
                         
                         await _endPoints[context.Request.Path](webSocket, cancellationTokenSource);
