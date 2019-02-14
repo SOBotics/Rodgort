@@ -158,9 +158,9 @@ namespace Rodgort.Controllers
             uriBuilder.Query = query.ToString();
             var redirectUrl = uriBuilder.ToString();
 
-            Response.Cookies.Append("access_token", accessToken, new CookieOptions { Path = "/Hangfire" });
+            Response.Cookies.Append("access_token", token, new CookieOptions { Path = "/Hangfire" });
 
-            return Redirect($"{redirectUrl}?access_token={token}");
+            return Redirect(redirectUrl);
         }
 
         private byte[] GetSigningKey()
