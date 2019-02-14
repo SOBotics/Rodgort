@@ -87,6 +87,7 @@ export class AuthService {
   }
   public Logout() {
     localStorage.removeItem(AccessTokenStorageKey);
+    document.cookie = 'access_token=; Path=/Hangfire; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     this.subject.next(this.getAuthDetails());
   }
 }

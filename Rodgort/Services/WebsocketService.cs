@@ -31,11 +31,14 @@ namespace Rodgort.Services
                         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         var cancellationTokenSource = new CancellationTokenSource();
 
-                        Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async i =>
+                        try
                         {
-                            await SendData(webSocket, cancellationTokenSource, "ping");
-                            await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cancellationTokenSource.Token);
-                        });
+                            Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async i =>
+                            {
+                                await SendData(webSocket, cancellationTokenSource, "ping");
+                                await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cancellationTokenSource.Token);
+                            });
+                        } catch (WebSocketException) { }
 
                         try
                         {

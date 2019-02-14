@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -71,6 +72,8 @@ namespace Rodgort.Controllers
 
                     var signingKey = GetSigningKey();
                     var token = CreateJwtToken(claims, signingKey);
+
+                    Response.Cookies.Append("access_token", token, new CookieOptions { Path = "/Hangfire" });
 
                     return Redirect($"{redirectURI}?access_token={token}");
                 }
@@ -154,6 +157,8 @@ namespace Rodgort.Controllers
             query["access_token"] = token;
             uriBuilder.Query = query.ToString();
             var redirectUrl = uriBuilder.ToString();
+
+            Response.Cookies.Append("access_token", accessToken, new CookieOptions { Path = "/Hangfire" });
 
             return Redirect($"{redirectUrl}?access_token={token}");
         }

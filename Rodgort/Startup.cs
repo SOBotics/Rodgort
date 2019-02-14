@@ -1,10 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,8 +20,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using NLog;
 using Rodgort.Data;
+using Rodgort.Data.Tables;
 using Rodgort.Services;
 using Rodgort.Services.HostedServices;
+using Rodgort.Utilities;
 using StackExchangeApi;
 using StackExchangeChat;
 using StackExchangeChat.Utilities;
@@ -47,24 +52,13 @@ namespace Rodgort
             });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            var symmetricKey = Convert.FromBase64String(Configuration["JwtSigningKey"]);
             services.AddAuthentication(o =>
                 {
                     o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                     o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 })
-                .AddJwtBearer(o =>
-                {
-                    o.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateAudience = false,
-                        ValidateIssuer = false,
-                        ValidateIssuerSigningKey = true,
-
-                        IssuerSigningKey = new SymmetricSecurityKey(symmetricKey)
-                    };
-                });
-
+                .AddJwtBearer(o => { o.TokenValidationParameters = GetTokenValidationParameters(); });
+            
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -114,7 +108,7 @@ namespace Rodgort
             app.UseHangfireServer();
             app.UseHangfireDashboard(options: new DashboardOptions
             {
-                Authorization = new List<IDashboardAuthorizationFilter> { new NoAuthorizationFilter() }
+                Authorization = new List<IDashboardAuthorizationFilter> { new CookieAuthorizationFilter(GetTokenValidationParameters()) }
             });
 
             if (env.IsDevelopment())
@@ -173,11 +167,40 @@ namespace Rodgort
             RecurringJob.AddOrUpdate<UserDisplayNameService>(UserDisplayNameService.SYNC_USERS_NO_NAME, service => service.SyncUsersWithNoNameSync(), "55 0 1 1 *");
         }
 
-        public class NoAuthorizationFilter : IDashboardAuthorizationFilter
+        private TokenValidationParameters GetTokenValidationParameters()
         {
+            var symmetricKey = Convert.FromBase64String(Configuration["JwtSigningKey"]);
+            return new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+
+                IssuerSigningKey = new SymmetricSecurityKey(symmetricKey)
+            };
+        }
+
+        public class CookieAuthorizationFilter : IDashboardAuthorizationFilter
+        {
+            private readonly TokenValidationParameters _tokenValidationParameters;
+
+            public CookieAuthorizationFilter(TokenValidationParameters tokenValidationParameters)
+            {
+                _tokenValidationParameters = tokenValidationParameters;
+            }
+
             public bool Authorize(DashboardContext context)
             {
-                return true;
+                var httpContext = context.GetHttpContext();
+                if (httpContext.Request.Cookies.TryGetValue("access_token", out var authCookie))
+                {
+                    var handler = new JwtSecurityTokenHandler();
+                    var principal = handler.ValidateToken(authCookie, _tokenValidationParameters, out var validToken);
+
+                    return validToken is JwtSecurityToken && principal.HasClaim(DbRole.RODGORT_ADMIN);
+                }
+
+                return false;
             }
         }
     }
