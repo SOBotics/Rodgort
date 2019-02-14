@@ -295,6 +295,7 @@ namespace Rodgort.Controllers
                                 }),
 
                             Overtime = bt.Actions
+                                .Where(u => u.UserId >= 0)
                                 .Where(ua => ua.Time > minDate)
                                 .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
                                 .GroupBy(a => new {a.User, a.UserId})
@@ -313,8 +314,8 @@ namespace Rodgort.Controllers
                                 .Take(10),
 
                             UserTotals = bt.Actions
-                                .Where(ua =>
-                                    ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
+                                .Where(u => u.UserId >= 0)
+                                .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                                 .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
                                 .GroupBy(g => new {g.Type, g.User, g.UserId}).Select(g => new
                                 {
@@ -324,8 +325,8 @@ namespace Rodgort.Controllers
                                     Total = g.Select(gg => gg.PostId).Distinct().Count()
                                 }),
                             UserGrandTotals = bt.Actions
-                                .Where(ua =>
-                                    ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
+                                .Where(u => u.UserId >= 0)
+                                .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                                 .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
                                 .GroupBy(g => new {g.User, g.UserId}).Select(g => new
                                 {
