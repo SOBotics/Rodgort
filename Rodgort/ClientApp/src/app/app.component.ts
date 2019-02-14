@@ -46,12 +46,12 @@ export class AppComponent implements OnInit {
       }
     });
 
-    const quotaRemainingSocket = new WebsocketHelper<{ quotaRemaining: number }>(`wss://${location.host}/ws/quotaRemaining`);
+    const quotaRemainingSocket = new WebsocketHelper<{ quotaRemaining: number }>('ws/quotaRemaining');
     quotaRemainingSocket.Observable.subscribe(payload => {
       this.quotaRemaining = payload.quotaRemaining;
     });
 
-    const pipelinesSocket = new WebsocketHelper<{ status: string }>(`wss://${location.host}/ws/pipelines`);
+    const pipelinesSocket = new WebsocketHelper<{ status: string }>('ws/pipelines');
     pipelinesSocket.Observable.subscribe(payload => {
       const status = payload.status;
       if (status === 'running') {
