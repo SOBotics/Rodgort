@@ -20,7 +20,9 @@ export class WebsocketHelper<T> {
                     console.warn('Websocket for ' + url + ' closed.');
                     if (autoReconnect) {
                         console.log('Restarting websocket for ' + url);
-                        createWebsocket();
+                        setTimeout(() => {
+                            createWebsocket();
+                        }, 5000);
                     }
                 };
             };
