@@ -12,7 +12,7 @@ using StackExchangeApi;
 
 namespace Rodgort.Services
 {
-    public static class QuotaRemainingWebsocketService
+    public static class WebsocketService
     {
         private static readonly Dictionary<string, Func<WebSocket, CancellationTokenSource, Task>> _endPoints = new Dictionary<string, Func<WebSocket, CancellationTokenSource, Task>>
         {
@@ -30,6 +30,9 @@ namespace Rodgort.Services
                     {
                         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                         var cancellationTokenSource = new CancellationTokenSource();
+
+                        Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async i => await SendData(webSocket, cancellationTokenSource, "ping"));
+                        
                         await _endPoints[context.Request.Path](webSocket, cancellationTokenSource);
                     }
                     else
@@ -66,6 +69,11 @@ namespace Rodgort.Services
         private static async Task SendData(WebSocket websocket, CancellationTokenSource cancellationTokenSource, object payload)
         {
             var payloadStr = JsonConvert.SerializeObject(payload);
+            await SendData(websocket, cancellationTokenSource, payloadStr);
+        }
+
+        private static async Task SendData(WebSocket websocket, CancellationTokenSource cancellationTokenSource, string payloadStr)
+        {
             var payloadBytes = Encoding.UTF8.GetBytes(payloadStr);
             var bytes = new ArraySegment<byte>(payloadBytes);
             if (!websocket.CloseStatus.HasValue)

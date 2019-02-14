@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, Params } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
+import { WebsocketHelper } from '../utils/WebsocketHelper';
 
 @Component({
   selector: 'app-root',
@@ -37,11 +38,6 @@ export class AppComponent implements OnInit {
       }
     });
 
-    const quotaRemainingSocket = new WebSocket(`wss://${location.host}/ws/quotaRemaining`);
-    quotaRemainingSocket.onmessage = event => {
-      const payload = JSON.parse(event.data);
-      this.quotaRemaining = payload.quotaRemaining;
-    };
     this.authService.GetAuthDetails().subscribe(details => {
       this.authService.RawToken = details.RawToken;
       this.isLoggedIn = details.IsAuthenticated;
@@ -50,10 +46,13 @@ export class AppComponent implements OnInit {
       }
     });
 
-    const pipelinesStatus = new WebSocket(`wss://${location.host}/ws/pipelines`);
-    console.log('Started pipelines websocket...');
-    pipelinesStatus.onmessage = event => {
-      const payload = JSON.parse(event.data);
+    const quotaRemainingSocket = new WebsocketHelper<{ quotaRemaining: number }>(`wss://${location.host}/ws/quotaRemaining`);
+    quotaRemainingSocket.Observable.subscribe(payload => {
+      this.quotaRemaining = payload.quotaRemaining;
+    });
+
+    const pipelinesSocket = new WebsocketHelper<{ status: string }>(`wss://${location.host}/ws/pipelines`);
+    pipelinesSocket.Observable.subscribe(payload => {
       const status = payload.status;
       if (status === 'running') {
         this.snackBar.openFromComponent(NewVersionDeployingComponent, {
@@ -62,12 +61,7 @@ export class AppComponent implements OnInit {
       } else {
         this.snackBar.dismiss();
       }
-    };
-
-    pipelinesStatus.onclose = () => {
-      console.log('Pipelines websocket closed...');
-      this.snackBar.dismiss();
-    };
+    });
   }
 
   public onLogoutClicked() {
