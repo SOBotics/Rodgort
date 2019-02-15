@@ -1,0 +1,4 @@
+<div [class.tag-tracked]="trackingStatusId === tagTrackingStatus.TRACKED" [class.tag-ignored]="trackingStatusId === tagTrackingStatus.IGNORED"
+  [class.tag-pending]="trackingStatusId === tagTrackingStatus.REQUIRES_TRACKING_APPROVAL || trackingStatusId === tagTrackingStatus.TRACKED_ELSEWHERE">
+  {{trackingStatusName}}
+</div>

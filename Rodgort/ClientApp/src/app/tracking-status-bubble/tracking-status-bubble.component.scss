@@ -1,0 +1,37 @@
+.tag-tracked, .tag-pending, .tag-ignored {
+    display: inline-block;
+
+    padding: .4em .5em;
+    margin: 2px 2px 2px 0;
+    line-height: 1;
+
+    white-space: nowrap;
+    text-decoration: none;
+    text-align: center;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 3px;
+
+    font-size: 12px;
+
+    white-space: normal;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;
+}
+
+.tag-ignored {
+    border:none;
+    background-color: #f1c0c0;
+}
+
+.tag-tracked {
+    border:none;
+    background-color: #a8f1a8;
+}
+
+.tag-pending {
+    border:none;
+    background-color: #f3bb84;
+}

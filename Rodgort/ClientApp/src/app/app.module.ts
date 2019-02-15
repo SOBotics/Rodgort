@@ -23,6 +23,8 @@ import { MatSnackBarModule } from '@angular/material';
 import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
 import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/tag-tracking-status-audits.component';
 import { UserComponent } from './user/user.component';
+import { TagBubbleComponent } from './tag-bubble/tag-bubble.component';
+import { TrackingStatusBubbleComponent } from './tracking-status-bubble/tracking-status-bubble.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +41,9 @@ import { UserComponent } from './user/user.component';
     PaginationComponent,
     NewVersionDeployingComponent,
     TagTrackingStatusAuditsComponent,
-    UserComponent
+    UserComponent,
+    TagBubbleComponent,
+    TrackingStatusBubbleComponent
   ],
   imports: [
     ChartModule,

@@ -5,8 +5,7 @@
         <div class="input-group-prepend">
             <label class="input-group-text" for="searchBySelector">Search by</label>
         </div>
-        <select class="custom-select" id="searchBySelector" [(ngModel)]="filter.searchBy"
-            [ngModelOptions]="{standalone: true}">
+        <select class="custom-select" id="searchBySelector" [(ngModel)]="filter.searchBy" [ngModelOptions]="{standalone: true}">
             <option value="">All</option>
             <option value="tag">Tag</option>
             <option value="content">Content</option>
@@ -118,7 +117,7 @@
                                     <ng-container *ngIf="tag.hasQuestionCountOverTimeData">
                                         <div class="row">
                                             <div class="col">
-                                                <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                                <app-tag-bubble [tag]="tag.tagName"></app-tag-bubble>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -129,21 +128,18 @@
                                         </div>
                                     </ng-container>
                                     <ng-container *ngIf="!tag.hasQuestionCountOverTimeData">
-                                        <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                        <app-tag-bubble [tag]="tag.tagName"></app-tag-bubble>
                                     </ng-container>
                                 </td>
                                 <td *ngIf="tag.synonymOf">
-                                    <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.tagName}}">{{tag.tagName}}</a></p>
+                                    <app-tag-bubble [tag]="tag.tagName"></app-tag-bubble>
                                     <span style="display: inline-block;">-></span>
-                                    <p class="post-tag"><a href="https://stackoverflow.com/questions/tagged/{{tag.synonymOf}}">{{tag.synonymOf}}</a></p>
+                                    <app-tag-bubble [tag]="tag.synonymOf"></app-tag-bubble>
                                 </td>
                                 <td>{{tag.numQuestions | number}}</td>
                                 <td>
-                                    <div [class.tag-tracked]="tag.trackingStatusId === tagTrackingStatus.TRACKED"
-                                        [class.tag-ignored]="tag.trackingStatusId === tagTrackingStatus.IGNORED"
-                                        [class.tag-pending]="tag.trackingStatusId === tagTrackingStatus.REQUIRES_TRACKING_APPROVAL || tag.trackingStatusId === tagTrackingStatus.TRACKED_ELSEWHERE">
-                                        {{tag.trackingStatusName}}
-                                    </div>
+                                    <app-tracking-status-bubble [trackingStatusName]="tag.trackingStatusName"
+                                        [trackingStatusId]="tag.trackingStatusId"></app-tracking-status-bubble>
                                 </td>
                                 <td *ngIf="isTrogdorRoomOwner">
                                     <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)"

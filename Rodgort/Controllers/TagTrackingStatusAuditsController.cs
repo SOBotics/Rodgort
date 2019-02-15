@@ -46,7 +46,9 @@ namespace Rodgort.Controllers
                     audit.MetaQuestionId,
                     MetaQuestionTitle = audit.MetaQuestion.Title,
                     audit.Tag,
+                    PreviousStatusId = audit.PreviousTrackingStatusId,
                     PreviousStatus = audit.PreviousTrackingStatus.Name,
+                    NewStatusId = audit.NewTrackingStatusId,
                     NewStatus = audit.NewTrackingStatus.Name
                 })
                 .OrderByDescending(a => a.TimeChanged)
