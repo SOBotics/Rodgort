@@ -22,6 +22,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material';
 import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
 import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/tag-tracking-status-audits.component';
+import { UserComponent } from './user/user.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/t
     ManualQuestionProcessingComponent,
     PaginationComponent,
     NewVersionDeployingComponent,
-    TagTrackingStatusAuditsComponent
+    TagTrackingStatusAuditsComponent,
+    UserComponent
   ],
   imports: [
     ChartModule,

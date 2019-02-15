@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rodgort.Data;
@@ -9,9 +10,10 @@ using Rodgort.Data;
 namespace Rodgort.Migrations
 {
     [DbContext(typeof(RodgortContext))]
-    partial class RodgortContextModelSnapshot : ModelSnapshot
+    [Migration("20190215025528_TrackRolesDateAddedAndByWho")]
+    partial class TrackRolesDateAddedAndByWho
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

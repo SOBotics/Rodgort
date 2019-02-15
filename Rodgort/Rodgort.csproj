@@ -50,6 +50,8 @@
     <Compile Remove="Migrations\20190122013959_AddDbMetaQuestionTagTrackingStatusAudit.Designer.cs" />
     <Compile Remove="Migrations\20190122014207_AddDbMetaQuestionTagTrackingStatusAudit.cs" />
     <Compile Remove="Migrations\20190122014207_AddDbMetaQuestionTagTrackingStatusAudit.Designer.cs" />
+    <Compile Remove="Migrations\20190215025206_TrackRolesDateAddedAndByWho.cs" />
+    <Compile Remove="Migrations\20190215025206_TrackRolesDateAddedAndByWho.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

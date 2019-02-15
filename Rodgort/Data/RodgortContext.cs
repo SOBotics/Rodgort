@@ -99,7 +99,10 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbSiteUserRole>().ToTable("SiteUserRoles");
             modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.User).WithMany(u => u.Roles).HasForeignKey(sur => sur.UserId);
+            modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.AddedByUser).WithMany(u => u.AddedRoles).HasForeignKey(sur => sur.AddedByUserId);
             modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.Role).WithMany(u => u.SiteUserRoles).HasForeignKey(sur => sur.RoleName);
+            modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.AddedByUserId).HasDefaultValue(-1);
+            modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.DateAdded).HasDefaultValueSql("now() at time zone 'utc'");
             modelBuilder.Entity<DbSiteUserRole>().HasKey(sur => new { sur.UserId, sur.RoleName });
 
             modelBuilder.Entity<DbRole>().ToTable("Roles");

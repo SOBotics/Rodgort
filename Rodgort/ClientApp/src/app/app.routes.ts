@@ -6,6 +6,7 @@ import { ProgressComponent } from './progress/progress.component';
 import { UnknownDeletionResolutionComponent } from './unknown-deletion-resolution/unknown-deletion-resolution.component';
 import { ManualQuestionProcessingComponent } from './manual-question-processing/manual-question-processing.component';
 import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/tag-tracking-status-audits.component';
+import { UserComponent } from './user/user.component';
 
 export const appRoutes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -14,5 +15,7 @@ export const appRoutes: Routes = [
     { path: 'progress', component: ProgressComponent },
     { path: 'tag-tracking-status-audits', component: TagTrackingStatusAuditsComponent },
     { path: 'unknown-deletion-resolution', component: UnknownDeletionResolutionComponent },
-    { path: 'manual-question-processing', component: ManualQuestionProcessingComponent }
+    { path: 'manual-question-processing', component: ManualQuestionProcessingComponent },
+    { path: 'user/:id', component: UserComponent },
+    { path: 'profile', component: UserComponent }
 ];
