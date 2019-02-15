@@ -179,7 +179,13 @@ namespace Rodgort.Controllers
                         if (minDate == DateTime.MinValue)
                             minDate = now.Date;
 
-                        var maxDate = now.Date.AddHours(now.Hour + 1);
+                        var inAnHour = now.Date.AddHours(now.Hour + 1);
+                        var maxDate =
+                            b.FeaturedEnded.HasValue && !b.BurnStarted.HasValue
+                                ? b.FeaturedEnded.Value
+                                : b.BurnStarted.HasValue && b.BurnEnded.HasValue
+                                    ? b.BurnEnded.Value
+                                    : inAnHour;
 
                         var dateRange = Enumerable.Range(0, (int)Math.Ceiling((maxDate - minDate).TotalHours)).Select(h => minDate.AddHours(h)).ToList();
 
