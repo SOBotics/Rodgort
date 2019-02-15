@@ -241,7 +241,7 @@ namespace Rodgort.Controllers
                         {
                             bt.Tag,
                             bt.NumberOfQuestions,
-                            bt.QuestionCountOverTime,
+                            QuestionCountOverTime = bt.QuestionCountOverTime.Where(q => q.DateTime <= maxDate).ToList(),
 
                             RemainingOverTime = dateRange.Select(d =>
                             {
