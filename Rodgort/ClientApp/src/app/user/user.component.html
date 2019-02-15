@@ -27,7 +27,7 @@
 
   <hr />
   <p class="h2">Rodgort triage</p>
-  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags}} tags, across {{userData.triageQuestions}} questions</a>
+  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags}} tags, across {{userData.triageQuestions}} requests</a>
 
   <ng-container *ngIf="userData.roles">
     <hr />
