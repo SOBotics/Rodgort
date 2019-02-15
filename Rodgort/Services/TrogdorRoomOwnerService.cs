@@ -12,13 +12,15 @@ namespace Rodgort.Services
     public class TrogdorRoomOwnerService
     {
         private readonly RodgortContext _context;
+        private readonly DateService _dateService;
         public const string SERVICE_NAME = "Sync trogdor room owners";
         private const string STACKOVERFLOW_CHAT_URL = "https://chat.stackoverflow.com";
         private const string TROGDOR_ROOM_INFO_PAGE_PATH = "rooms/info/165597/trogdor";
 
-        public TrogdorRoomOwnerService(RodgortContext context)
+        public TrogdorRoomOwnerService(RodgortContext context, DateService dateService)
         {
             _context = context;
+            _dateService = dateService;
         }
 
         public void SyncTrogdorRoomOwnersSync()
@@ -55,7 +57,23 @@ namespace Rodgort.Services
                 var roleAlreadyExists = _context.SiteUserRoles.Any(sur => sur.UserId == userId && sur.RoleName == DbRole.TROGDOR_ROOM_OWNER);
                 if (!roleAlreadyExists)
                 {
-                    _context.SiteUserRoles.Add(new DbSiteUserRole { UserId = userId, RoleName = DbRole.TROGDOR_ROOM_OWNER});
+                    _context.SiteUserRoles.Add(new DbSiteUserRole
+                    {
+                        UserId = userId,
+                        RoleName = DbRole.TROGDOR_ROOM_OWNER,
+                        AddedByUserId = -1,
+                        Enabled = true,
+                        DateAdded = _dateService.UtcNow
+                    });
+
+                    _context.SiteUserRoleAudits.Add(new DbSiteUserRoleAudit
+                    {
+                        Added = true,
+                        ChangedByUserId = -1,
+                        DateChanged = _dateService.UtcNow,
+                        RoleName = DbRole.TROGDOR_ROOM_OWNER,
+                        UserId = userId
+                    });
                 }
             }
 

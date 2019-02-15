@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rodgort.Data;
@@ -9,9 +10,10 @@ using Rodgort.Data;
 namespace Rodgort.Migrations
 {
     [DbContext(typeof(RodgortContext))]
-    partial class RodgortContextModelSnapshot : ModelSnapshot
+    [Migration("20190215050007_RemoveDatabaseDefaults")]
+    partial class RemoveDatabaseDefaults
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -305,8 +307,6 @@ namespace Rodgort.Migrations
 
                     b.Property<DateTime>("DateAdded");
 
-                    b.Property<bool>("Enabled");
-
                     b.HasKey("UserId", "RoleName");
 
                     b.HasIndex("AddedByUserId");
@@ -314,30 +314,6 @@ namespace Rodgort.Migrations
                     b.HasIndex("RoleName");
 
                     b.ToTable("SiteUserRoles");
-                });
-
-            modelBuilder.Entity("Rodgort.Data.Tables.DbSiteUserRoleAudit", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<bool>("Added");
-
-                    b.Property<int>("ChangedByUserId");
-
-                    b.Property<DateTime>("DateChanged");
-
-                    b.Property<string>("RoleName");
-
-                    b.Property<int>("UserId");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChangedByUserId");
-
-                    b.HasIndex("UserId", "RoleName");
-
-                    b.ToTable("SiteUserRoleAudits");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbTag", b =>
@@ -551,23 +527,6 @@ namespace Rodgort.Migrations
                         .WithMany("Roles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("Rodgort.Data.Tables.DbSiteUserRoleAudit", b =>
-                {
-                    b.HasOne("Rodgort.Data.Tables.DbSiteUser", "ChangedByUser")
-                        .WithMany("ChangedOtherRoles")
-                        .HasForeignKey("ChangedByUserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Rodgort.Data.Tables.DbSiteUser", "User")
-                        .WithMany("UserRolesChanged")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("Rodgort.Data.Tables.DbSiteUserRole", "Role")
-                        .WithMany("Audits")
-                        .HasForeignKey("UserId", "RoleName");
                 });
 
             modelBuilder.Entity("Rodgort.Data.Tables.DbTag", b =>

@@ -29,24 +29,38 @@
   <p class="h2">Rodgort triage</p>
   {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags}} tags, across {{userData.triageQuestions}} requests</a>
 
-  <ng-container *ngIf="userData.roles">
-    <hr />
-    <p class="h2">User access</p>
-    <table class="table mt-3">
-      <thead>
-        <tr>
-          <th>Role</th>
-          <th>Added by</th>
-          <th>Date added</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let role of userData.roles">
-          <td>{{role.name}}</td>
-          <td><a routerLink="/user/{{role.addedById}}">{{role.addedBy}} {{role.addedByIsModerator ? '♦' : ''}}</a></td>
-          <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
-        </tr>
-      </tbody>
-    </table>
-  </ng-container>
+  <hr />
+  <p class="h2">User access</p>
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>Role</th>
+        <th>Added by</th>
+        <th>Date added</th>
+        <th *ngIf="isAdmin">Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let role of userData.roles">
+        <td>{{role.name}}</td>
+        <td><a routerLink="/user/{{role.addedById}}">{{role.addedBy}} {{role.addedByIsModerator ? '♦' : ''}}</a></td>
+        <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
+        <td *ngIf="isAdmin"><a href="javascript:void(0);" (click)="removeRole(role.name)">Remove</a></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <form class="form-inline" #filterForm="ngForm">
+      <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+        <div class="input-group-prepend">
+          <label class="input-group-text" for="roleSelector">Add Role</label>
+        </div>
+        <select class="custom-select" id="roleSelector" [(ngModel)]="selectedRole" [ngModelOptions]="{standalone: true}">
+          <option value=""></option>
+          <option *ngFor="let availableRole of userData.availableRoles" value="{{availableRole.name}}">{{availableRole.name}}</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="addRole()">Add</button>
+    </form>
+    
 </div>

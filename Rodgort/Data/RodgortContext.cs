@@ -21,6 +21,8 @@ namespace Rodgort.Data
         public DbSet<DbUserAction> UserActions { get; set; }
         public DbSet<DbSiteUser> SiteUsers { get; set; }
         public DbSet<DbSiteUserRole> SiteUserRoles { get; set; }
+        public DbSet<DbSiteUserRoleAudit> SiteUserRoleAudits { get; set; }
+        public DbSet<DbRole> Roles { get; set; }
         public DbSet<DbUnknownDeletion> UnknownDeletions { get; set; }
         public DbSet<DbSeenQuestion> SeenQuestions { get; set; }
         public DbSet<DbMetaQuestionTagTrackingStatusAudit> MetaQuestionTagTrackingStatusAudits { get; set; }
@@ -79,12 +81,18 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.PreviousTrackingStatus).WithMany(ts => ts.PreviousTagTrackingStatusAudits).HasForeignKey(audit => audit.PreviousTrackingStatusId).IsRequired(false);
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.NewTrackingStatus).WithMany(ts => ts.NewTagTrackingStatusAudits).HasForeignKey(audit => audit.NewTrackingStatusId);
 
+            modelBuilder.Entity<DbSiteUserRoleAudit>().ToTable("SiteUserRoleAudits");
+            modelBuilder.Entity<DbSiteUserRoleAudit>().HasKey(a => a.Id);
+            modelBuilder.Entity<DbSiteUserRoleAudit>().HasOne(a => a.User).WithMany(u => u.UserRolesChanged).HasForeignKey(a => a.UserId);
+            modelBuilder.Entity<DbSiteUserRoleAudit>().HasOne(a => a.ChangedByUser).WithMany(u => u.ChangedOtherRoles).HasForeignKey(a => a.ChangedByUserId);
+            modelBuilder.Entity<DbSiteUserRoleAudit>().HasOne(a => a.Role).WithMany(u => u.Audits).HasForeignKey(a => new { a.UserId, a.RoleName });
+
             modelBuilder.Entity<DbUserAction>().ToTable("UserActions");
             modelBuilder.Entity<DbUserAction>().HasKey(ua => ua.Id);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.UserActionType).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.UserActionTypeId);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.SiteUser).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.SiteUserId);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.UnknownDeletion).WithMany(ud => ud.UserActions).HasForeignKey(ua => ua.UnknownDeletionId).IsRequired(false);
-            modelBuilder.Entity<DbUserAction>().Property(ua => ua.TimeProcessed).IsRequired().HasDefaultValueSql("now() at time zone 'utc'");
+            modelBuilder.Entity<DbUserAction>().Property(ua => ua.TimeProcessed).IsRequired();
 
             modelBuilder.Entity<DbUserActionType>().ToTable("UserActionTypes");
             modelBuilder.Entity<DbUserActionType>().HasKey(uat => uat.Id);
@@ -101,8 +109,8 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.User).WithMany(u => u.Roles).HasForeignKey(sur => sur.UserId);
             modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.AddedByUser).WithMany(u => u.AddedRoles).HasForeignKey(sur => sur.AddedByUserId);
             modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.Role).WithMany(u => u.SiteUserRoles).HasForeignKey(sur => sur.RoleName);
-            modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.AddedByUserId).HasDefaultValue(-1);
-            modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.DateAdded).HasDefaultValueSql("now() at time zone 'utc'");
+            modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.AddedByUserId).IsRequired();
+            modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.DateAdded).IsRequired();
             modelBuilder.Entity<DbSiteUserRole>().HasKey(sur => new { sur.UserId, sur.RoleName });
 
             modelBuilder.Entity<DbRole>().ToTable("Roles");
@@ -149,7 +157,7 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbRole>()
                 .HasData(
-                    new DbRole {Name = DbRole.TROGDOR_ROOM_OWNER },
+                    new DbRole { Name = DbRole.TROGDOR_ROOM_OWNER },
                     new DbRole { Name = DbRole.MODERATOR },
                     new DbRole { Name = DbRole.RODGORT_ADMIN }
                 );

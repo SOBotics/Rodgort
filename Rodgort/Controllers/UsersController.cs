@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
+using Rodgort.Services;
 using Rodgort.Utilities;
-using Rodgort.Utilities.Paging;
 
 namespace Rodgort.Controllers
 {
@@ -14,15 +14,19 @@ namespace Rodgort.Controllers
     public class UsersController : ControllerBase
     {
         private readonly RodgortContext _context;
+        private readonly DateService _dateService;
 
-        public UsersController(RodgortContext context)
+        public UsersController(RodgortContext context, DateService dateService)
         {
             _context = context;
+            _dateService = dateService;
         }
 
         [HttpGet]
         public object Get(int userId)
         {
+            var isRodgortAdmin = User.HasClaim(DbRole.RODGORT_ADMIN);
+
             return _context.SiteUsers
                 .Where(u => u.Id == userId)
                 .Select(u => new
@@ -58,14 +62,22 @@ namespace Rodgort.Controllers
                         .ToList(),
                     TriageTags = u.TagTrackingStatusAudits.Count,
                     TriageQuestions = u.TagTrackingStatusAudits.Select(audit => audit.MetaQuestionId).Distinct().Count(),
-                    Roles = u.Roles.Select(r => new
+                    Roles = u.Roles.Where(r => r.Enabled).Select(r => new
                     {
                         Name = r.RoleName,
                         AddedById = r.AddedByUserId,
                         AddedBy = r.AddedByUser.DisplayName,
                         AddedByIsModerator = r.AddedByUser.IsModerator,
                         r.DateAdded
-                    }).ToList()
+                    }).ToList(),
+
+                    AvailableRoles = isRodgortAdmin 
+                            ? _context.Roles.Where(r => !u.Roles.Where(rr => rr.Enabled).Select(rr => rr.RoleName).Contains(r.Name))
+                                .Select(r => new
+                                {
+                                    r.Name
+                                }).ToList() 
+                            : null
                 })
                 .FirstOrDefault();
         }
@@ -75,6 +87,93 @@ namespace Rodgort.Controllers
         public object Me()
         {
             return Get(User.UserId());
+        }
+
+        [Authorize]
+        [HttpPost("AddRole")]
+        public void AddRole([FromBody] ChangeRoleRequest request)
+        {
+            if (!User.HasClaim(DbRole.RODGORT_ADMIN))
+                throw new HttpStatusException(HttpStatusCode.Forbidden);
+
+            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleName == request.RoleName && sur.UserId == request.UserId);
+            if (existingRole != null && existingRole.Enabled)
+                return;
+
+            var roleExists = _context.Roles.FirstOrDefault(r => r.Name == request.RoleName);
+            if (roleExists == null)
+                throw new HttpStatusException(HttpStatusCode.BadRequest);
+
+            var userExists = _context.SiteUsers.FirstOrDefault(u => u.Id == request.UserId);
+            if (userExists == null)
+                throw new HttpStatusException(HttpStatusCode.BadRequest);
+
+            if (existingRole == null)
+            {
+                _context.SiteUserRoles.Add(new DbSiteUserRole
+                {
+                    AddedByUserId = User.UserId(),
+                    UserId = request.UserId,
+                    RoleName = request.RoleName,
+                    Enabled = true,
+                    DateAdded = _dateService.UtcNow
+                });
+            }
+            else
+            {
+                existingRole.Enabled = true;
+                existingRole.AddedByUserId = User.UserId();
+                existingRole.DateAdded = _dateService.UtcNow;
+            }
+
+            _context.SiteUserRoleAudits.Add(new DbSiteUserRoleAudit
+            {
+                Added = true,
+                ChangedByUserId = User.UserId(),
+                DateChanged = _dateService.UtcNow,
+                RoleName = request.RoleName,
+                UserId = request.UserId
+            });
+
+            _context.SaveChanges();
+        }
+
+        [Authorize]
+        [HttpPost("RemoveRole")]
+        public void RemoveRole([FromBody] ChangeRoleRequest request)
+        {
+            if (!User.HasClaim(DbRole.RODGORT_ADMIN))
+                throw new HttpStatusException(HttpStatusCode.Forbidden);
+
+            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleName == request.RoleName && sur.UserId == request.UserId);
+            if (existingRole == null || !existingRole.Enabled)
+                return;
+
+            var roleExists = _context.Roles.FirstOrDefault(r => r.Name == request.RoleName);
+            if (roleExists == null)
+                throw new HttpStatusException(HttpStatusCode.BadRequest);
+
+            var userExists = _context.SiteUsers.FirstOrDefault(u => u.Id == request.UserId);
+            if (userExists == null)
+                throw new HttpStatusException(HttpStatusCode.BadRequest);
+
+            existingRole.Enabled = false;
+
+            _context.SiteUserRoleAudits.Add(new DbSiteUserRoleAudit
+            {
+                Added = false,
+                ChangedByUserId = User.UserId(),
+                DateChanged = _dateService.UtcNow,
+                RoleName = request.RoleName,
+                UserId = request.UserId
+            });
+            _context.SaveChanges();
+        }
+
+        public class ChangeRoleRequest
+        {
+            public int UserId { get; set; }
+            public string RoleName { get; set; }
         }
     }
 }
