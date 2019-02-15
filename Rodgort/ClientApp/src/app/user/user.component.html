@@ -29,22 +29,24 @@
   <p class="h2">Rodgort triage</p>
   {{userData.displayName}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags}} tags, across {{userData.triageQuestions}} questions</a>
 
-  <hr *ngIf="userData.roles" />
-  <p class="h2">User access</p>
-  <table class="table mt-3">
-    <thead>
-      <tr>
-        <th>Role</th>
-        <th>Added by</th>
-        <th>Date added</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let role of userData.roles">
-        <td>{{role.name}}</td>
-        <td><a routerLink="/user/{{role.addedById}}">{{role.addedBy}}</a></td>
-        <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
-      </tr>
-    </tbody>
-  </table>
+  <ng-container *ngIf="userData.roles">
+    <hr />
+    <p class="h2">User access</p>
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Added by</th>
+          <th>Date added</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of userData.roles">
+          <td>{{role.name}}</td>
+          <td><a routerLink="/user/{{role.addedById}}">{{role.addedBy}}</a></td>
+          <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
 </div>
