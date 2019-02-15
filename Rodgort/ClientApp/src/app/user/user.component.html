@@ -20,12 +20,12 @@
       <tr *ngFor="let burn of userData.burns">
         <td title="{{burn.startDate}}">{{burn.startDateLocal}}</td>
         <td><a routerLink="/progress" [queryParams]="{metaQuestionId: burn.metaQuestionId}">{{burn.metaQuestionTitle}}</a></td>
-        <td>{{burn.numActions}} actions</td>
+        <td>{{burn.numActions | number}} actions</td>
       </tr>
       <tr>
           <td></td>
           <td></td>
-          <td><b>{{userData.totalActions}} total actions</b></td>
+          <td><b>{{userData.totalActions | number}} total actions</b></td>
         </tr>
     </tbody>
   </table>
