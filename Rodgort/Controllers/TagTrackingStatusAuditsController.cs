@@ -20,16 +20,12 @@ namespace Rodgort.Controllers
             _context = context;
         }
 
-        [Authorize]
         [HttpGet]
         public object Get(
             int? userId = null, 
             int? metaQuestionId = null,
             int page = 1, int pageSize = 30)
         {
-            if (!User.HasClaim(DbRole.RODGORT_ADMIN))
-                throw new HttpStatusException(HttpStatusCode.Forbidden);
-
             IQueryable<DbMetaQuestionTagTrackingStatusAudit> query = _context.MetaQuestionTagTrackingStatusAudits;
             if (userId.HasValue)
                 query = query.Where(q => q.ChangedByUserId == userId.Value);
