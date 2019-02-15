@@ -169,7 +169,7 @@ namespace Rodgort.Controllers
 
                 if (matchingQuestionMetaTag.TrackingStatusId != newStatusId)
                 {
-                    _context.MetaQuestionTagTrackingStatusAudit.Add(new DbMetaQuestionTagTrackingStatusAudit
+                    _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
                     {
                         Tag = request.TagName,
                         MetaQuestionId = request.MetaQuestionId,
@@ -209,7 +209,7 @@ namespace Rodgort.Controllers
                 var alreadyExistingTag = matchingQuestionMetaTag.MetaQuestionTags.FirstOrDefault(mqt => mqt.TagName == request.TagName);
                 if (alreadyExistingTag != null)
                 {
-                    _context.MetaQuestionTagTrackingStatusAudit.Add(new DbMetaQuestionTagTrackingStatusAudit
+                    _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
                     {
                         Tag = request.TagName,
                         MetaQuestionId = request.MetaQuestionId,
@@ -234,7 +234,7 @@ namespace Rodgort.Controllers
                         TagName = request.TagName
                     });
 
-                    _context.MetaQuestionTagTrackingStatusAudit.Add(new DbMetaQuestionTagTrackingStatusAudit
+                    _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
                     {
                         Tag = request.TagName,
                         MetaQuestionId = request.MetaQuestionId,

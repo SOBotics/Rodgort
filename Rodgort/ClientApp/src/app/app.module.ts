@@ -21,6 +21,7 @@ import { PaginationComponent } from './pagination/pagination.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBarModule } from '@angular/material';
 import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
+import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/tag-tracking-status-audits.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/n
     UnknownDeletionResolutionComponent,
     ManualQuestionProcessingComponent,
     PaginationComponent,
-    NewVersionDeployingComponent
+    NewVersionDeployingComponent,
+    TagTrackingStatusAuditsComponent
   ],
   imports: [
     ChartModule,

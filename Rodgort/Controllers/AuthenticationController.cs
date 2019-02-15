@@ -54,7 +54,7 @@ namespace Rodgort.Controllers
 
         [HttpGet("Login")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public RedirectResult Login([FromQuery(Name = "redirect_uri")] string redirectURI)
+        public RedirectResult Login([FromQuery(Name = "redirect_uri")] string redirectUri)
         {
             if (Request.Host.Host == "localhost" && _bypassLoopbackAuth)
             {
@@ -75,12 +75,18 @@ namespace Rodgort.Controllers
 
                     Response.Cookies.Append("access_token", token, new CookieOptions { Path = "/Hangfire" });
 
-                    return Redirect($"{redirectURI}?access_token={token}");
+                    var uriBuilder = new UriBuilder(redirectUri);
+                    var query = HttpUtility.ParseQueryString(uriBuilder.Query);
+                    query["access_token"] = token;
+                    uriBuilder.Query = query.ToString();
+                    var redirectUrl = uriBuilder.ToString();
+
+                    return Redirect(redirectUrl);
                 }
             }
 
             var clientId = _stackExchangeApiCredentials.ClientId;
-            var payload = JsonConvert.SerializeObject(new LoginState { RedirectUri = redirectURI });
+            var payload = JsonConvert.SerializeObject(new LoginState { RedirectUri = redirectUri });
             var encodedPayload = EncodeBase64(payload);
 
             return Redirect($"https://stackexchange.com/oauth?client_id={clientId}&scope=&redirect_uri={_oauthRedirect}&state={encodedPayload}");

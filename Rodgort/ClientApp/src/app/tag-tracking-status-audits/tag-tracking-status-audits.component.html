@@ -1,0 +1,31 @@
+<form class="form-inline" #filterForm="ngForm">
+  <input type="number" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" placeholder="User id" name="userId" [(ngModel)]="filter.userId" #search="ngModel">
+  <input type="number" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" placeholder="Meta question id" name="metaQuestionId" [(ngModel)]="filter.metaQuestionId" #search="ngModel">
+  <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
+</form>
+
+<table *ngIf="audits" class="table log-table mt-3 mb-3">
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>User</th>
+      <th>Question</th>
+      <th>Tag</th>
+      <th>Previous</th>
+      <th>New</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let audit of audits">
+      <td title="{{audit.timeChanged}}">{{audit.localTime}}</td>
+      <td><a routerLink="/users/{{audit.userId}}">{{audit.userName}}</a></td>
+      <td><a href="https://meta.stackoverflow.com/q/{{audit.metaQuestionId}}">{{audit.metaQuestionTitle}}</a></td> 
+      <td>{{audit.tag}}</td> 
+      <td>{{audit.previousStatus}}</td> 
+      <td>{{audit.newStatus}}</td> 
+    </tr>
+  </tbody>
+</table>
+
+<app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
+</app-pagination>

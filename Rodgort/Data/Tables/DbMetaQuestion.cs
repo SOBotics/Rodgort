@@ -33,5 +33,6 @@ namespace Rodgort.Data.Tables
         public List<DbMetaQuestionMetaTag> MetaQuestionMetaTags { get; set; } = new List<DbMetaQuestionMetaTag>();
         public List<DbMetaQuestionTag> MetaQuestionTags { get; set; } = new List<DbMetaQuestionTag>();
         public List<DbMetaQuestionStatistics> Statistics { get; set; } = new List<DbMetaQuestionStatistics>();
+        public List<DbMetaQuestionTagTrackingStatusAudit> TagTrackingStatusAudits { get; set; }
     }
 }
