@@ -90,6 +90,10 @@ export class UserComponent implements OnInit {
   }
 
   public addRole() {
+    if (this.selectedRole === '') {
+      return;
+    }
+
     this.authService.GetAuthDetails().subscribe(d => {
       this.httpClient.post(`api/users/addRole`, { userId: this.userData.userId, roleName: this.selectedRole },
         {
@@ -102,6 +106,9 @@ export class UserComponent implements OnInit {
   }
 
   public removeRole(roleName: string) {
+    if (roleName === '') {
+      return;
+    }
     this.authService.GetAuthDetails().subscribe(d => {
       this.httpClient.post(`api/users/removeRole`, { userId: this.userData.userId, roleName },
         {
