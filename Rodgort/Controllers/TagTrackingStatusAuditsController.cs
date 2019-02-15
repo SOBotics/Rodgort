@@ -42,6 +42,7 @@ namespace Rodgort.Controllers
                     audit.TimeChanged,
                     UserId = audit.ChangedByUserId,
                     UserName = audit.ChangedByUser.DisplayName,
+                    audit.ChangedByUser.IsModerator,
                     audit.MetaQuestionId,
                     MetaQuestionTitle = audit.MetaQuestion.Title,
                     audit.Tag,

@@ -136,13 +136,20 @@ namespace Rodgort.Controllers
             var userDetails = apiContent.items[0];
             int userId = userDetails.user_id;
             string displayName = userDetails.display_name;
+            string userType = userDetails.user_type;
 
             var signingKey = GetSigningKey();
 
             var user = _dbContext.SiteUsers.Include(su => su.Roles).FirstOrDefault(su => su.Id == userId);
             if (user == null)
             {
-                user = new DbSiteUser {Id = userId, DisplayName = displayName, Roles = new List<DbSiteUserRole>() };
+                user = new DbSiteUser
+                {
+                    Id = userId,
+                    DisplayName = displayName,
+                    IsModerator = string.Equals("moderator", userType),
+                    Roles = new List<DbSiteUserRole>()
+                };
                 _dbContext.SiteUsers.Add(user);
                 _dbContext.SaveChanges();
             }

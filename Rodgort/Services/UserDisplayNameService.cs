@@ -40,7 +40,11 @@ namespace Rodgort.Services
                 foreach (var siteUser in siteUsers.Items)
                 {
                     if (userLookup.ContainsKey(siteUser.UserId))
-                        userLookup[siteUser.UserId].DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
+                    {
+                        var user = userLookup[siteUser.UserId];
+                        user.DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
+                        user.IsModerator = string.Equals("moderator", siteUser.UserType);
+                    }
                 }
 
                 context.SaveChanges();
@@ -66,7 +70,11 @@ namespace Rodgort.Services
                 foreach (var siteUser in siteUsers.Items)
                 {
                     if (userLookup.ContainsKey(siteUser.UserId))
-                        userLookup[siteUser.UserId].DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
+                    {
+                        var user = userLookup[siteUser.UserId];
+                        user.DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
+                        user.IsModerator = string.Equals("moderator", siteUser.UserType);
+                    }
                 }
 
                 context.SaveChanges();

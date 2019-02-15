@@ -150,7 +150,8 @@ namespace Rodgort.Controllers
                                     {
                                         ua.PostId,
                                         UserId = ua.SiteUserId,
-                                        User = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
+                                        UserName = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
+                                        IsModerator = ua.SiteUser.IsModerator,
                                         ua.Time,
                                         TypeId = ua.UserActionTypeId,
                                         Type = ua.UserActionType.Name
@@ -298,10 +299,11 @@ namespace Rodgort.Controllers
                                 .Where(u => u.UserId >= 0)
                                 .Where(ua => ua.Time > minDate)
                                 .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
-                                .GroupBy(a => new {a.User, a.UserId})
+                                .GroupBy(a => new {a.UserName, a.IsModerator, a.UserId})
                                 .Select(g => new
                                 {
-                                    g.Key.User,
+                                    g.Key.UserName,
+                                    g.Key.IsModerator,
                                     Times = dateRange
                                         .Select(dr => new
                                         {
@@ -317,10 +319,11 @@ namespace Rodgort.Controllers
                                 .Where(u => u.UserId >= 0)
                                 .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                                 .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
-                                .GroupBy(g => new {g.Type, g.User, g.UserId}).Select(g => new
+                                .GroupBy(g => new {g.Type, g.UserName, g.IsModerator, g.UserId}).Select(g => new
                                 {
-                                    UserName = g.Key.User,
                                     g.Key.UserId,
+                                    g.Key.UserName,
+                                    g.Key.IsModerator,
                                     g.Key.Type,
                                     Total = g.Select(gg => gg.PostId).Distinct().Count()
                                 }),
@@ -328,10 +331,11 @@ namespace Rodgort.Controllers
                                 .Where(u => u.UserId >= 0)
                                 .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
                                 .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
-                                .GroupBy(g => new {g.User, g.UserId}).Select(g => new
+                                .GroupBy(g => new { g.UserId, g.UserName, g.IsModerator }).Select(g => new
                                 {
-                                    UserName = g.Key.User,
                                     g.Key.UserId,
+                                    g.Key.UserName,
+                                    g.Key.IsModerator,
                                     Total = g.Select(gg => gg.PostId).Distinct().Count()
                                 }),
 

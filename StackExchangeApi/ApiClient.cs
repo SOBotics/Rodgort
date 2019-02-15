@@ -104,12 +104,12 @@ namespace StackExchangeApi
 
             foreach (var batch in userIds.Batch(100))
             {
-                var postIdsString = string.Join(";", batch);
+                var userIdsString = string.Join(";", batch);
                 
-                var currentResult = await ApplyWithPaging<UserResponse>($"{BASE_URL}/users/{postIdsString}", new Dictionary<string, string>
+                var currentResult = await ApplyWithPaging<UserResponse>($"{BASE_URL}/users/{userIdsString}", new Dictionary<string, string>
                 {
                     {"site", siteName},
-                    {"filter", "!qGfMGCCrfTV2ZcZrapMx"}
+                    {"filter", "!)iua4.KHF.lCcLoe3BLvS"}
                 });
                 if (finalResult == null)
                     finalResult = currentResult;

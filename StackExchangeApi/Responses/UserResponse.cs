@@ -9,5 +9,8 @@ namespace StackExchangeApi.Responses
 
         [JsonProperty("display_name")]
         public string DisplayName { get; set; }
+
+        [JsonProperty("user_type")]
+        public string UserType { get; set; }
     }
 }

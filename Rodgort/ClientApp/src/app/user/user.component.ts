@@ -14,6 +14,7 @@ export class UserComponent implements OnInit {
   public userData: {
     userId: number;
     displayName: string;
+    isModerator: boolean;
     numBurninations: number;
     burns: {
       metaQuestionId: number;

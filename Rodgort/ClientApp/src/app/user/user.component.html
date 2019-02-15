@@ -1,12 +1,12 @@
 <div *ngIf="userData" class="container">
 
-  <p class="h1">{{userData.displayName}}</p>
+  <p class="h1">{{userData.displayName}} {{userData.isModerator ? '♦' : ''}}</p>
   <p class="lead"><a href="https://stackoverflow.com/users/{{userData.userId}}">View on site</a></p>
 
   <hr />
 
   <p class="h2">Burninations</p>
-  {{userData.displayName}} has contributed towards {{userData.numBurninations}} burninations
+  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has contributed towards {{userData.numBurninations}} burninations
 
   <table *ngIf="userData.numBurninations > 0" class="table mt-3">
     <thead>
@@ -27,7 +27,7 @@
 
   <hr />
   <p class="h2">Rodgort triage</p>
-  {{userData.displayName}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags}} tags, across {{userData.triageQuestions}} questions</a>
+  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags}} tags, across {{userData.triageQuestions}} questions</a>
 
   <ng-container *ngIf="userData.roles">
     <hr />
@@ -43,7 +43,7 @@
       <tbody>
         <tr *ngFor="let role of userData.roles">
           <td>{{role.name}}</td>
-          <td><a routerLink="/user/{{role.addedById}}">{{role.addedBy}}</a></td>
+          <td><a routerLink="/user/{{role.addedById}}">{{role.addedBy}} {{role.addedByIsModerator ? '♦' : ''}}</a></td>
           <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
         </tr>
       </tbody>
