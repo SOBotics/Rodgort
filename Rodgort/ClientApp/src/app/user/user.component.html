@@ -32,7 +32,7 @@
 
   <hr />
   <p class="h2">Rodgort triage</p>
-  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags}} tags, across {{userData.triageQuestions}} requests</a>
+  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags | number}} tags, across {{userData.triageQuestions | number}} requests</a>
 
   <hr />
   <p class="h2">User access</p>
