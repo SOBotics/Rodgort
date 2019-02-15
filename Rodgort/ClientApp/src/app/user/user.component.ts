@@ -26,6 +26,9 @@ export class UserComponent implements OnInit {
       startDateLocal: string;
       numActions: number;
     }[];
+
+    totalActions: number;
+
     triageTags: number;
     triageQuestions: number;
 
@@ -83,6 +86,8 @@ export class UserComponent implements OnInit {
           response.roles = response.roles.map((item: any) => ({
             ...item, dateAddedLocal: moment.utc(item.dateAdded).local().format('YYYY-MM-DD hh:mm:ss A')
           }));
+
+          response.totalActions = response.burns.reduce((current, burn) => current + burn.numActions, 0);
 
           this.userData = response;
         });
