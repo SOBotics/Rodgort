@@ -33,18 +33,18 @@ namespace Rodgort
 
         private Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var code = (int)HttpStatusCode.InternalServerError;
+            var httpStatusCode = (int)HttpStatusCode.InternalServerError;
             if (exception is HttpStatusException requestException)
-                code = (int) requestException.StatusCode;
+                httpStatusCode = (int) requestException.StatusCode;
 
-            if (code >= 400 && code < 500)
-                _logger.LogWarning(exception, $"{context.Request?.Path.Value} - {code} - {exception.Message}");
+            if (httpStatusCode >= 400 && httpStatusCode < 500)
+                _logger.LogWarning($"{httpStatusCode} ({context.Connection.RemoteIpAddress}) - {context.Request?.Path.Value}");
             else
-                _logger.LogError(exception, $"{context.Request?.Path.Value} - {code} - {exception.Message}");
+                _logger.LogError(exception, $"{context.Request?.Path.Value} - {httpStatusCode} - {exception.Message}");
 
             var result = JsonConvert.SerializeObject(new ErrorWrapper { Error = exception.Message });
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = code;
+            context.Response.StatusCode = httpStatusCode;
             return context.Response.WriteAsync(result);
         }
     }
