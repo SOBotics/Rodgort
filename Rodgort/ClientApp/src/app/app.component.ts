@@ -72,6 +72,7 @@ export class AppComponent implements OnInit {
 
   public onLogoutClicked() {
     this.authService.Logout();
+    this.router.navigate(['/']);
   }
 
   public getLoginUrl() {
