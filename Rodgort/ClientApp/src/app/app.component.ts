@@ -19,8 +19,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private httpClient: HttpClient,
-    private authService: AuthService,
     private router: Router,
+    private authService: AuthService,
     private activatedRoute: ActivatedRoute,
     private toasterService: ToasterService
   ) { }

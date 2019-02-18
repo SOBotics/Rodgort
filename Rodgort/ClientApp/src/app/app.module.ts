@@ -25,6 +25,7 @@ import { TagBubbleComponent } from './tag-bubble/tag-bubble.component';
 import { TrackingStatusBubbleComponent } from './tracking-status-bubble/tracking-status-bubble.component';
 import {ToasterModule } from 'angular2-toaster';
 import { HttpErrorInterceptor } from './interceptors/HttpErrorInterceptor';
+import { HttpAuthenticationInterceptor } from './interceptors/HttpAuthenticationInterceptor';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,11 @@ import { HttpErrorInterceptor } from './interceptors/HttpErrorInterceptor';
   ],
   providers: [
     AuthService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpAuthenticationInterceptor,
+      multi: true,
+    },
     {
       provide: HTTP_INTERCEPTORS,
       useClass: HttpErrorInterceptor,

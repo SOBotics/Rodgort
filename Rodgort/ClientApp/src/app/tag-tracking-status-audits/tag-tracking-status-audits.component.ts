@@ -25,8 +25,7 @@ export class TagTrackingStatusAuditsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private httpClient: HttpClient,
-    private authService: AuthService
+    private httpClient: HttpClient
   ) { }
 
   ngOnInit() {
@@ -46,22 +45,17 @@ export class TagTrackingStatusAuditsComponent implements OnInit {
       `&metaQuestionId=${this.filter.metaQuestionId}` +
       `&page=${this.filter.pageNumber}`;
 
-    this.authService.GetAuthDetails().subscribe(d => {
-      this.httpClient.get(query,
-        {
-          headers: { 'Authorization': 'Bearer ' + d.RawToken }
-        }).subscribe((response: any) => {
-          if (response.totalPages > 0 && response.pageNumber > response.totalPages) {
-            this.filter.pageNumber = 1;
-            this.reloadData();
-          } else {
-            this.audits = response.data.map((item: any) => ({
-              ...item,
-              localTime: moment.utc(item.timeChanged).local().format('YYYY-MM-DD hh:mm:ss A')
-            }));
-            this.pagingInfo = GetPagingInfo(response);
-          }
-        });
+    this.httpClient.get(query).subscribe((response: any) => {
+      if (response.totalPages > 0 && response.pageNumber > response.totalPages) {
+        this.filter.pageNumber = 1;
+        this.reloadData();
+      } else {
+        this.audits = response.data.map((item: any) => ({
+          ...item,
+          localTime: moment.utc(item.timeChanged).local().format('YYYY-MM-DD hh:mm:ss A')
+        }));
+        this.pagingInfo = GetPagingInfo(response);
+      }
     });
   }
 

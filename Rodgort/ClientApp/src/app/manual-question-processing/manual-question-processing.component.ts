@@ -16,15 +16,11 @@ export class ManualQuestionProcessingComponent implements OnInit {
   };
 
   public isLoading = false;
-  private rawToken: string;
 
-  constructor(private httpClient: HttpClient, private authService: AuthService) {
+  constructor(private httpClient: HttpClient) {
   }
 
   ngOnInit() {
-    this.authService.GetAuthDetails().subscribe(d => {
-      this.rawToken = d.RawToken;
-    });
   }
 
   public process() {
@@ -43,10 +39,8 @@ export class ManualQuestionProcessingComponent implements OnInit {
       roomId,
       followingId,
       questionIds
-    }, {
-        headers: { 'Authorization': 'Bearer ' + this.rawToken }
-      }).subscribe(_ => {
-        this.isLoading = false;
-      });
+    }).subscribe(_ => {
+      this.isLoading = false;
+    });
   }
 }

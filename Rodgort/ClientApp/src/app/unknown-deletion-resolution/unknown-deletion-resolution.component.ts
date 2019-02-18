@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, AuthDetails } from '../services/auth.service';
 
 @Component({
   selector: 'app-unknown-deletion-resolution',
@@ -14,9 +13,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
 
   private userIdRegex = /\/users\/(\-?\d+)/g;
 
-  private authDetails: AuthDetails;
-
-  constructor(private httpClient: HttpClient, private authService: AuthService) { }
+  constructor(private httpClient: HttpClient) { }
 
   ngOnInit() {
     const checkerInterval = setInterval(() => {
@@ -31,21 +28,15 @@ export class UnknownDeletionResolutionComponent implements OnInit {
   }
 
   private Setup() {
-    this.authService.GetAuthDetails().subscribe(authDetails => {
-      this.authDetails = authDetails;
-
-      this.httpClient.get('/api/admin/UnresolvedDeletions', {
-        headers: { 'Authorization': 'Bearer ' + authDetails.RawToken }
-      })
-        .subscribe((data: any) => {
-          this.postsToVisit = data.map(action => ({
-            unknownDeletionId: action.unknownDeletionId,
-            postId: action.postId,
-            info: '',
-            status: 'pending'
-          }));
-        });
-    });
+    this.httpClient.get('/api/admin/UnresolvedDeletions')
+      .subscribe((data: any) => {
+        this.postsToVisit = data.map(action => ({
+          unknownDeletionId: action.unknownDeletionId,
+          postId: action.postId,
+          info: '',
+          status: 'pending'
+        }));
+      });
   }
 
   public startProcessing() {
@@ -129,9 +120,7 @@ export class UnknownDeletionResolutionComponent implements OnInit {
         });
 
         if (requests.length) {
-          this.httpClient.post('/api/admin/ResolveUnresolvedDeletion', requests, {
-            headers: { 'Authorization': 'Bearer ' + this.authDetails.RawToken }
-          })
+          this.httpClient.post('/api/admin/ResolveUnresolvedDeletion', requests)
             .subscribe(_ => {
               postToVisit.status = 'done';
               setTimeout(processNext, 5000);

@@ -74,23 +74,18 @@ export class UserComponent implements OnInit {
       query = '/api/users/me';
     }
 
-    this.authService.GetAuthDetails().subscribe(d => {
-      this.httpClient.get(query,
-        {
-          headers: { 'Authorization': 'Bearer ' + d.RawToken }
-        }).subscribe((response: any) => {
-          response.burns = response.burns.map((item: any) => ({
-            ...item, startDateLocal: moment.utc(item.startDate).local().format('YYYY-MM-DD hh:mm:ss A')
-          }));
+    this.httpClient.get(query).subscribe((response: any) => {
+      response.burns = response.burns.map((item: any) => ({
+        ...item, startDateLocal: moment.utc(item.startDate).local().format('YYYY-MM-DD hh:mm:ss A')
+      }));
 
-          response.roles = response.roles.map((item: any) => ({
-            ...item, dateAddedLocal: moment.utc(item.dateAdded).local().format('YYYY-MM-DD hh:mm:ss A')
-          }));
+      response.roles = response.roles.map((item: any) => ({
+        ...item, dateAddedLocal: moment.utc(item.dateAdded).local().format('YYYY-MM-DD hh:mm:ss A')
+      }));
 
-          response.totalActions = response.burns.reduce((current, burn) => current + burn.numActions, 0);
+      response.totalActions = response.burns.reduce((current, burn) => current + burn.numActions, 0);
 
-          this.userData = response;
-        });
+      this.userData = response;
     });
   }
 
@@ -99,14 +94,9 @@ export class UserComponent implements OnInit {
       return;
     }
 
-    this.authService.GetAuthDetails().subscribe(d => {
-      this.httpClient.post(`api/users/addRole`, { userId: this.userData.userId, roleName: this.selectedRole },
-        {
-          headers: { 'Authorization': 'Bearer ' + d.RawToken }
-        }).subscribe((response) => {
-          this.reloadData(this.userData.userId);
-          this.selectedRole = '';
-        });
+    this.httpClient.post(`api/users/addRole`, { userId: this.userData.userId, roleName: this.selectedRole }).subscribe((response) => {
+      this.reloadData(this.userData.userId);
+      this.selectedRole = '';
     });
   }
 
@@ -114,14 +104,9 @@ export class UserComponent implements OnInit {
     if (roleName === '') {
       return;
     }
-    this.authService.GetAuthDetails().subscribe(d => {
-      this.httpClient.post(`api/users/removeRole`, { userId: this.userData.userId, roleName },
-        {
-          headers: { 'Authorization': 'Bearer ' + d.RawToken }
-        }).subscribe((response) => {
-          this.reloadData(this.userData.userId);
-          this.selectedRole = '';
-        });
+    this.httpClient.post(`api/users/removeRole`, { userId: this.userData.userId, roleName }).subscribe((response) => {
+      this.reloadData(this.userData.userId);
+      this.selectedRole = '';
     });
   }
 }
