@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { WebsocketHelper } from '../utils/WebsocketHelper';
-import { ToasterService, BodyOutputType } from 'angular2-toaster';
+import { ToasterService, BodyOutputType, Toast } from 'angular2-toaster';
 
 @Component({
   selector: 'app-root',
@@ -51,10 +51,14 @@ export class AppComponent implements OnInit {
     });
 
     const pipelinesSocket = new WebsocketHelper<{ status: string }>('ws/pipelines');
+    let currentToast: Toast;
     pipelinesSocket.Observable.subscribe(payload => {
       const status = payload.status;
       if (status === 'running') {
-        this.toasterService.pop({
+        if (currentToast) {
+          this.toasterService.clear(currentToast.toastId, currentToast.toastContainerId);
+        }
+        currentToast = this.toasterService.pop({
           type: 'info',
           title: 'New version',
           body: 'A new version of Rodgort is being <a class="deploy-link" href="https://gitlab.com/rjrudman/Rodgort/pipelines">deployed</a>.',

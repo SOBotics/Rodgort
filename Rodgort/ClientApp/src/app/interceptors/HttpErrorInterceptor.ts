@@ -14,7 +14,6 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request)
             .catch((err: HttpErrorResponse) => {
-                debugger;
                 this.toasterService.pop({
                     type: 'error',
                     title: `Error - ${err.status} (${err.statusText})`,
