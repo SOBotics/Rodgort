@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
 import { AppComponent } from './app.component';
@@ -24,6 +24,7 @@ import { UserComponent } from './user/user.component';
 import { TagBubbleComponent } from './tag-bubble/tag-bubble.component';
 import { TrackingStatusBubbleComponent } from './tracking-status-bubble/tracking-status-bubble.component';
 import {ToasterModule } from 'angular2-toaster';
+import { HttpErrorInterceptor } from './interceptors/HttpErrorInterceptor';
 
 @NgModule({
   declarations: [
@@ -50,10 +51,15 @@ import {ToasterModule } from 'angular2-toaster';
     FormsModule,
     RouterModule.forRoot(appRoutes),
     BrowserAnimationsModule,
-    ToasterModule.forRoot(),
+    ToasterModule.forRoot()
   ],
   providers: [
-    AuthService
+    AuthService,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: HttpErrorInterceptor,
+      multi: true,
+    }
   ],
   bootstrap: [AppComponent]
 })
