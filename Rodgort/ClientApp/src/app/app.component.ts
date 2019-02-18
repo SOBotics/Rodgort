@@ -2,9 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute, Params } from '@angular/router';
 import { AuthService } from './services/auth.service';
-import { MatSnackBar, MatSnackBarConfig } from '@angular/material';
-import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
 import { WebsocketHelper } from '../utils/WebsocketHelper';
+import { ToasterService, BodyOutputType } from 'angular2-toaster';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +22,7 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private snackBar: MatSnackBar
+    private toasterService: ToasterService
   ) { }
 
   ngOnInit() {
@@ -55,11 +54,14 @@ export class AppComponent implements OnInit {
     pipelinesSocket.Observable.subscribe(payload => {
       const status = payload.status;
       if (status === 'running') {
-        this.snackBar.openFromComponent(NewVersionDeployingComponent, {
-          verticalPosition: 'top'
+        this.toasterService.pop({
+          type: 'info',
+          title: 'New version',
+          body: 'A new version of Rodgort is being <a class="deploy-link" href="https://gitlab.com/rjrudman/Rodgort/pipelines">deployed</a>.',
+          bodyOutputType: BodyOutputType.TrustedHtml,
+          timeout: 0,
+          showCloseButton: false
         });
-      } else {
-        this.snackBar.dismiss();
       }
     });
   }

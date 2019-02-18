@@ -19,12 +19,11 @@ import { UnknownDeletionResolutionComponent } from './unknown-deletion-resolutio
 import { ManualQuestionProcessingComponent } from './manual-question-processing/manual-question-processing.component';
 import { PaginationComponent } from './pagination/pagination.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatSnackBarModule } from '@angular/material';
-import { NewVersionDeployingComponent } from './snackbar/new-version-deploying/new-version-deploying.component';
 import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/tag-tracking-status-audits.component';
 import { UserComponent } from './user/user.component';
 import { TagBubbleComponent } from './tag-bubble/tag-bubble.component';
 import { TrackingStatusBubbleComponent } from './tracking-status-bubble/tracking-status-bubble.component';
+import {ToasterModule } from 'angular2-toaster';
 
 @NgModule({
   declarations: [
@@ -39,7 +38,6 @@ import { TrackingStatusBubbleComponent } from './tracking-status-bubble/tracking
     UnknownDeletionResolutionComponent,
     ManualQuestionProcessingComponent,
     PaginationComponent,
-    NewVersionDeployingComponent,
     TagTrackingStatusAuditsComponent,
     UserComponent,
     TagBubbleComponent,
@@ -52,15 +50,12 @@ import { TrackingStatusBubbleComponent } from './tracking-status-bubble/tracking
     FormsModule,
     RouterModule.forRoot(appRoutes),
     BrowserAnimationsModule,
-    MatSnackBarModule
+    ToasterModule.forRoot(),
   ],
   providers: [
     AuthService
   ],
-  bootstrap: [AppComponent],
-  entryComponents: [
-    NewVersionDeployingComponent
-  ]
+  bootstrap: [AppComponent]
 })
 export class AppModule {
 }

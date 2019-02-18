@@ -35,9 +35,12 @@ namespace Rodgort
         {
             var code = (int)HttpStatusCode.InternalServerError;
             if (exception is HttpStatusException requestException)
-                code = (int)requestException.StatusCode;
+                code = (int) requestException.StatusCode;
 
-            _logger.LogError(exception, $"{context.Request?.Path.Value} - {code} - {exception.Message}");
+            if (code >= 400 && code < 500)
+                _logger.LogWarning(exception, $"{context.Request?.Path.Value} - {code} - {exception.Message}");
+            else
+                _logger.LogError(exception, $"{context.Request?.Path.Value} - {code} - {exception.Message}");
 
             var result = JsonConvert.SerializeObject(new ErrorWrapper { Error = exception.Message });
             context.Response.ContentType = "application/json";
