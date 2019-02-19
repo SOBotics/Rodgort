@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Rodgort.Data.Tables;
+using Rodgort.Data.Views;
 
 namespace Rodgort.Data
 {
@@ -128,6 +129,18 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbSeenQuestion>().ToTable("SeenQuestions");
             modelBuilder.Entity<DbSeenQuestion>().HasKey(sq => new { sq.Id, sq.Tag });
             modelBuilder.Entity<DbSeenQuestion>().HasIndex(sq => sq.Tag);
+
+
+            modelBuilder.Query<DbViewPostState>().ToView("poststates");
+            modelBuilder.Query<DbViewPostState>().Property(ps => ps.UserActionId).HasColumnName("useractionid");
+            modelBuilder.Query<DbViewPostState>().Property(ps => ps.PostId).HasColumnName("postid");
+            modelBuilder.Query<DbViewPostState>().Property(ps => ps.Tag).HasColumnName("tag");
+            modelBuilder.Query<DbViewPostState>().Property(ps => ps.Closed).HasColumnName("closed");
+            modelBuilder.Query<DbViewPostState>().Property(ps => ps.Deleted).HasColumnName("deleted");
+            modelBuilder.Query<DbViewPostState>().Property(ps => ps.RemovedTag).HasColumnName("removedtag");
+            modelBuilder.Query<DbViewPostState>().Property(ps => ps.Roombad).HasColumnName("roombad");
+
+            modelBuilder.Query<DbViewPostState>().HasOne(ps => ps.UserAction).WithOne(ua => ua.PostState).HasForeignKey<DbViewPostState>(a => a.UserActionId);
 
             modelBuilder.Entity<DbMetaTag>()
                 .HasData(

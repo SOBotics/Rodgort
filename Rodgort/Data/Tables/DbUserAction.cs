@@ -1,4 +1,5 @@
 ﻿using System;
+using Rodgort.Data.Views;
 
 namespace Rodgort.Data.Tables
 {
@@ -23,5 +24,6 @@ namespace Rodgort.Data.Tables
         public DbUserActionType UserActionType { get; set; }
         public DbSiteUser SiteUser { get; set; }
         public DbUnknownDeletion UnknownDeletion { get; set; }
+        public DbViewPostState PostState { get; set; }
     }
 }

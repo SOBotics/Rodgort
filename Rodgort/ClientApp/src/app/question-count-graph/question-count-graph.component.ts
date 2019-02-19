@@ -169,6 +169,13 @@ export class QuestionCountGraphComponent implements OnInit {
         plotBands: bands,
         tickInterval: 3600 * 24 * 1 * 1000,
       },
+      plotOptions: {
+        line: {
+          marker: {
+            enabled: false
+          }
+        }
+      },
       tooltip: {
         formatter: function () {
           const actionType =

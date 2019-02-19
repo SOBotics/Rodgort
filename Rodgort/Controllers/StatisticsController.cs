@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net.Http;
-using System.Threading.Tasks;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
+using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
@@ -127,6 +124,9 @@ namespace Rodgort.Controllers
         private object GenerateBurnsData(IQueryable<DbMetaQuestion> query)
         {
             var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER);
+            var now = _dateService.UtcNow;
+            var monthAgo = now.AddMonths(-1);
+            var inAnHour = now.AddHours(1);
 
             var burnsData = query
                 .Select(mq => new
@@ -135,29 +135,35 @@ namespace Rodgort.Controllers
                     mq.FeaturedEnded,
                     mq.BurnStarted,
                     mq.BurnEnded,
+                    StartTime = mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded ?? monthAgo,
+                    EndTime = mq.FeaturedEnded.HasValue && !mq.BurnStarted.HasValue
+                                ? mq.FeaturedEnded.Value
+                                : mq.BurnStarted.HasValue && mq.BurnEnded.HasValue
+                                    ? mq.BurnEnded.Value
+                                    : inAnHour,
                     mq.Title,
                     mq.Link,
                     BurningTags = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE)
-                        .Select(mqt =>
-                            new
-                            {
-                                Tag = mqt.TagName,
-                                mqt.Tag.NumberOfQuestions,
-                                QuestionCountOverTime = mqt.Tag.Statistics.Where(s => s.DateTime > (mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded))
-                                    .Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
-                                Actions = _context.UserActions
-                                    .Where(ua => ua.Tag == mqt.TagName).Select(ua => new
-                                    {
-                                        ua.PostId,
-                                        UserId = ua.SiteUserId,
-                                        UserName = ua.SiteUser.DisplayName ?? ua.SiteUserId.ToString(),
-                                        IsModerator = ua.SiteUser.IsModerator,
-                                        ua.Time,
-                                        TypeId = ua.UserActionTypeId,
-                                        Type = ua.UserActionType.Name
-                                    }).ToList()
-                            }).ToList()
-                }).ToList();
+                }).Select(mq => new
+                {
+                    mq.FeaturedStarted,
+                    mq.FeaturedEnded,
+                    mq.BurnStarted,
+                    mq.BurnEnded,
+                    mq.StartTime,
+                    mq.EndTime,
+                    mq.Title,
+                    mq.Link,
+
+                    BurningTags = mq.BurningTags.Select(mqt =>
+                        new
+                        {
+                            Tag = mqt.TagName,
+                            mqt.Tag.NumberOfQuestions,
+                            QuestionCountOverTime = mqt.Tag.Statistics.Where(s => s.DateTime > mq.StartTime).Select(s => new { s.DateTime, s.QuestionCount }).OrderBy(s => s.DateTime).ToList(),
+                        }).ToList()
+                })
+                .ToList();
 
             var res = new
             {
@@ -167,201 +173,22 @@ namespace Rodgort.Controllers
                     MetaQuestionLink = b.Link,
                     Tags = b.BurningTags.Select(bt =>
                     {
-                        var sortedActions = bt.Actions.OrderBy(t => t.Time).ToList();
-                        var minDate = 
-                            b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded ?? 
-                            (sortedActions.Any() 
-                                ? sortedActions.Select(a => a.Time).FirstOrDefault().Date 
-                                : bt.QuestionCountOverTime.OrderBy(qc => qc.DateTime).Select(qc => qc.DateTime).FirstOrDefault().Date
-                            );
-
-                        var now = _dateService.UtcNow;
-                        if (minDate == DateTime.MinValue)
-                            minDate = now.Date;
-
-                        var inAnHour = now.Date.AddHours(now.Hour + 1);
-                        var maxDate =
-                            b.FeaturedEnded.HasValue && !b.BurnStarted.HasValue
-                                ? b.FeaturedEnded.Value
-                                : b.BurnStarted.HasValue && b.BurnEnded.HasValue
-                                    ? b.BurnEnded.Value
-                                    : inAnHour;
-
-                        var dateRange = Enumerable.Range(0, (int)Math.Ceiling((maxDate - minDate).TotalHours)).Select(h => minDate.AddHours(h)).ToList();
-
-                        var questionStates = sortedActions
-                            .GroupBy(g => g.PostId)
-                            .Select(g =>
-                            {
-                                return g.Aggregate(MakeAnonymousList(new
-                                {
-                                    Time = default(DateTime),
-                                    Closed = default(bool),
-                                    Deleted = default(bool),
-                                    RemovedTag = default(bool),
-                                    Roombad = default(bool),
-
-                                }), (current, next) =>
-                                {
-                                    var state = current.Count > 0
-                                        ? current.Last()
-                                        : new { next.Time, Closed = false, Deleted = false, RemovedTag = false, Roombad = false };
-
-                                    switch (next.TypeId)
-                                    {
-                                        case DbUserActionType.CLOSED:
-                                            state = new { next.Time, Closed = true, state.Deleted, state.RemovedTag, state.Roombad };
-                                            break;
-                                        case DbUserActionType.REOPENED:
-                                            state = new { next.Time, Closed = false, state.Deleted, state.RemovedTag, state.Roombad };
-                                            break;
-                                        case DbUserActionType.DELETED:
-                                            state = new { next.Time, state.Closed, Deleted = true, state.RemovedTag, Roombad = next.UserId == -1 };
-                                            break;
-                                        case DbUserActionType.UNDELETED:
-                                            state = new { next.Time, state.Closed, Deleted = false, state.RemovedTag, Roombad = false };
-                                            break;
-                                        case DbUserActionType.REMOVED_TAG:
-                                            state = new { next.Time, state.Closed, state.Deleted, RemovedTag = true, state.Roombad };
-                                            break;
-                                        case DbUserActionType.ADDED_TAG:
-                                            state = new { next.Time, state.Closed, state.Deleted, RemovedTag = false, state.Roombad };
-                                            break;
-                                        default:
-                                            return current;
-                                    }
-
-                                    current.Add(state);
-                                    return current;
-                                });
-                            }).ToList();
-
-
                         return new
                         {
                             bt.Tag,
                             bt.NumberOfQuestions,
-                            QuestionCountOverTime = bt.QuestionCountOverTime.Where(q => q.DateTime <= maxDate).ToList(),
+                            QuestionCountOverTime = bt.QuestionCountOverTime.Where(q => q.DateTime <= b.EndTime).ToList(),
 
-                            RemainingOverTime = dateRange.Select(d =>
-                            {
-                                var timesAroundPoint = bt.QuestionCountOverTime.Where(qc => Math.Abs((qc.DateTime - d).TotalMinutes) < 30);
-                                var closestFoundTime = timesAroundPoint.OrderBy(qc => Math.Abs((qc.DateTime - d).TotalMinutes)).FirstOrDefault();
-                                
-                                return new
-                                {
-                                    Date = d,
-                                    Total =
-                                        closestFoundTime == null 
-                                            ? (int?)null :
-                                            closestFoundTime.QuestionCount 
-                                            - questionStates.Select(qs => qs.LastOrDefault(s => s.Time <= d)).Count(qs => qs != null && qs.Closed && !qs.Deleted && !qs.RemovedTag)
-                                };
-                            }).Where(r => r.Total != null),
+                            ClosuresOverTime = LoadClosuresOverTimeData(b.StartTime, b.EndTime, bt.Tag),
+                            DeletionsOverTime = LoadDeletionsOverTimeData(b.StartTime, b.EndTime, bt.Tag),
+                            RetagsOverTime = LoadRetagsOverTimeData(b.StartTime, b.EndTime, bt.Tag),
+                            RoombasOverTime = LoadRoombasOverTimeData(b.StartTime, b.EndTime, bt.Tag),
 
-                            ClosuresOverTime = dateRange.Select(d =>
-                                new
-                                {
-                                    Date = d,
-                                    Total = questionStates
-                                        .Select(qs => qs.LastOrDefault(s => s.Time <= d))
-                                        .Count(qs => qs != null && qs.Closed)
-                                }),
+                            Overtime = LoadOverTimeData(b.StartTime, b.EndTime, bt.Tag),
 
-                            DeletionsOverTime = dateRange
-                                .Where(d => d > minDate)
-                                .Select(d =>
-                                new
-                                {
-                                    Date = d,
-                                    Total = questionStates
-                                        .Select(qs => qs.LastOrDefault(s => s.Time <= d))
-                                        .Count(qs => qs != null && !qs.Roombad && qs.Deleted)
-                                }),
+                            UserTotals = LoadUserTotalsData(b.StartTime, b.EndTime, b.BurnStarted ?? b.StartTime, isRoomOwner, bt.Tag),
 
-                            RetagsOverTime = dateRange
-                                .Where(d => d > minDate)
-                                .Select(d =>
-                                new
-                                {
-                                    Date = d,
-                                    Total = questionStates
-                                        .Select(qs => qs.LastOrDefault(s => s.Time <= d))
-                                        .Count(qs => qs != null && qs.RemovedTag)
-                                }),
-
-                            RoombasOverTime = dateRange
-                                .Where(d => d > minDate)
-                                .Select(d =>
-                                new
-                                {
-                                    Date = d,
-                                    Total = questionStates
-                                        .Select(qs => qs.LastOrDefault(s => s.Time <= d))
-                                        .Count(qs => qs != null && qs.Roombad)
-                                }),
-
-                            Overtime = bt.Actions
-                                .Where(u => u.UserId >= 0)
-                                .Where(ua => ua.Time > minDate)
-                                .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
-                                .GroupBy(a => new {a.UserName, a.IsModerator, a.UserId})
-                                .Select(g => new
-                                {
-                                    g.Key.UserName,
-                                    g.Key.IsModerator,
-                                    Times = dateRange
-                                        .Select(dr => new
-                                        {
-                                            Date = dr,
-                                            Total = g.Where(gg => gg.Time.Date.AddHours(gg.Time.Hour) < dr).Select(gg => gg.PostId).Distinct().Count()
-                                        })
-                                        .OrderBy(gg => gg.Date)
-                                })
-                                .OrderByDescending(g => g.Times.Max(tt => tt.Total))
-                                .Take(10),
-
-                            UserTotals = bt.Actions
-                                .Where(u => u.UserId >= 0)
-                                .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
-                                .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
-                                .GroupBy(g => new {g.Type, g.UserName, g.IsModerator, g.UserId}).Select(g => new
-                                {
-                                    g.Key.UserId,
-                                    g.Key.UserName,
-                                    g.Key.IsModerator,
-                                    g.Key.Type,
-                                    Total = g.Select(gg => gg.PostId).Distinct().Count()
-                                }),
-                            UserGrandTotals = bt.Actions
-                                .Where(u => u.UserId >= 0)
-                                .Where(ua => ua.Time > (b.FeaturedStarted ?? b.FeaturedEnded ?? b.BurnStarted ?? b.BurnEnded))
-                                .Where(ua => isRoomOwner || ua.Time > b.BurnStarted)
-                                .GroupBy(g => new { g.UserId, g.UserName, g.IsModerator }).Select(g => new
-                                {
-                                    g.Key.UserId,
-                                    g.Key.UserName,
-                                    g.Key.IsModerator,
-                                    Total = g.Select(gg => gg.PostId).Distinct().Count()
-                                }),
-
-
-                            Totals =
-                                questionStates.Select(g => g.LastOrDefault())
-                                    .Where(g => g != null)
-                                    .Where(g => g.Time > minDate)
-                                    .GroupBy(g => g.Closed && !g.Deleted && !g.RemovedTag ? "Closed"
-                                        : !g.Roombad && g.Deleted ? "Deleted"
-                                        : g.Roombad ? "Roombad"
-                                        : g.RemovedTag ? "Removed tag"
-                                        : "None"
-                                    ).Where(g => g.Key != "None")
-                                    .Select(g => new
-                                        {
-                                            Type = g.Key,
-                                            Total = g.Count()
-                                        }
-                                    )
+                            UserGrandTotals = LoadUserGrandTotalsData(b.StartTime, b.EndTime, b.BurnStarted ?? b.StartTime, isRoomOwner, bt.Tag)
                         };
                     }),
 
@@ -369,16 +196,416 @@ namespace Rodgort.Controllers
                     b.FeaturedEnded,
                     b.BurnStarted,
                     b.BurnEnded
-                })
+                }).ToList()
             };
             return res;
         }
 
-        private List<T> MakeAnonymousList<T>(T obj)
+        private List<ActionOverTimeQuery> LoadClosuresOverTimeData(DateTime startTime, DateTime endTime, string tag)
         {
-            var list = new[] {obj}.ToList();
-            list.Clear();
-            return list;
+            return _context
+                .Database.GetDbConnection()
+                .Query<ActionOverTimeQuery>(@"
+with 
+hours as (
+	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+)
+
+
+select 
+	date_trunc('day', ""Time"") as ""Date"",
+	MAX(""RunningTotal"") as ""Total""
+from (
+	select 
+	*,
+	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	from (
+		select 
+			""Time"",
+			""Direction""
+		from (
+			select 
+			distinct
+			""PostId"",
+			""UserActionTypeId"",
+			""Time"",
+			case 
+				when ""UserActionTypeId"" = 3 then 1
+				when ""UserActionTypeId"" = 4 then -1
+				else 0
+			end as ""Direction""
+			from ""UserActions""
+			where 
+				""Time"" < @endTime
+				and ""Tag"" = @tag
+				and ""UserActionTypeId"" in (3, 4)
+		) innerQuery
+		
+		union all 
+		select 
+		hour as ""Time"",
+		0 as ""Direction""
+		from hours
+	) innerQuery
+) innerQuery
+where ""Time"" > @startTime 
+group by date_trunc('day', ""Time"")
+order by date_trunc('day', ""Time"")", new
+                {
+                    startTime,
+                    endTime,
+                    tag
+                })
+                .ToList();
+        }
+
+        private List<ActionOverTimeQuery> LoadDeletionsOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        {
+            return _context
+                .Database.GetDbConnection()
+                .Query<ActionOverTimeQuery>(@"
+with 
+hours as (
+	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+)
+
+select 
+	date_trunc('day', ""Time"") as ""Date"",
+	MAX(""RunningTotal"") as ""Total""
+from (
+	select 
+	*,
+	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	from (
+		select 
+			""Time"",
+			""Direction""
+		from (
+			select 
+			distinct
+			""PostId"",
+			""UserActionTypeId"",
+			""Time"",
+			case 
+				when ""UserActionTypeId"" = 5 then 1
+				when ""UserActionTypeId"" = 6 then -1
+				else 0
+			end as ""Direction""
+			from ""UserActions""
+			where 
+				""Time"" > @startTime and ""Time"" < @endTime
+				and ""Tag"" = @tag
+				and ""UserActionTypeId"" in (5, 6)
+		) innerQuery
+		
+		union all 
+		select 
+		hour as ""Time"",
+		0 as ""Direction""
+		from hours
+	) innerQuery
+) innerQuery
+group by date_trunc('day', ""Time"")
+order by date_trunc('day', ""Time"")", new
+                {
+                    startTime,
+                    endTime,
+                    tag
+                })
+                .ToList();
+        }
+
+        private List<ActionOverTimeQuery> LoadRetagsOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        {
+            return _context
+                .Database.GetDbConnection()
+                .Query<ActionOverTimeQuery>(@"
+with 
+hours as (
+	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+)
+
+
+select 
+	date_trunc('day', ""Time"") as ""Date"",
+	MAX(""RunningTotal"") as ""Total""
+from (
+	select 
+	*,
+	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	from (
+		select 
+			""Time"",
+			""Direction""
+		from (
+			select 
+			distinct
+			""PostId"",
+			""UserActionTypeId"",
+			""Time"",
+			case 
+				when ""UserActionTypeId"" = 1 then 1
+				when ""UserActionTypeId"" = 2 then -1
+				else 0
+			end as ""Direction""
+			from ""UserActions""
+			where 
+				""Time"" > @startTime and ""Time"" < @endTime
+				and ""Tag"" = @tag
+				and ""UserActionTypeId"" in (1, 2)
+		) innerQuery
+		
+		union all 
+		select 
+		hour as ""Time"",
+		0 as ""Direction""
+		from hours
+	) innerQuery
+) innerQuery
+group by date_trunc('day', ""Time"")
+order by date_trunc('day', ""Time"")", new
+                {
+                    startTime,
+                    endTime,
+                    tag
+                })
+                .ToList();
+        }
+
+        private List<ActionOverTimeQuery> LoadRoombasOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        {
+            return _context
+                .Database.GetDbConnection()
+                .Query<ActionOverTimeQuery>(@"
+with 
+hours as (
+	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+)
+
+
+select 
+	date_trunc('day', ""Time"") as ""Date"",
+	MAX(""RunningTotal"") as ""Total""
+from (
+	select 
+	*,
+	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	from (
+		select 
+			""Time"",
+			""Direction""
+		from (
+			select 
+			distinct
+			""PostId"",
+			""UserActionTypeId"",
+			""Time"",
+			case 
+				when ""UserActionTypeId"" = 5 and ""SiteUserId"" = -1 then 1
+				when ""UserActionTypeId"" = 6 then -1
+				else 0
+			end as ""Direction""
+			from ""UserActions""
+			where 
+				""Time"" > @startTime and ""Time"" < @endTime
+				and ""Tag"" = @tag
+				and ""UserActionTypeId"" in (5, 6)
+		) innerQuery
+		
+		union all 
+		select 
+		hour as ""Time"",
+		0 as ""Direction""
+		from hours
+	) innerQuery
+) innerQuery
+group by date_trunc('day', ""Time"")
+order by date_trunc('day', ""Time"")", new
+                {
+                    startTime,
+                    endTime,
+                    tag
+                })
+                .ToList();
+        }
+
+
+        private object LoadOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        {
+            return _context
+                .Database.GetDbConnection()
+                .Query<OverTimeQuery>(@"
+with 
+hours as (
+	select generate_series(date_trunc('day', @StartTime), date_trunc('day', @EndTime), interval '1 day' hour) as hour
+),
+siteUsers as (
+	select * from ""SiteUsers""
+	WHERE ""SiteUsers"".""Id"" in (
+		SELECT 
+			""SiteUserId"" 
+		FROM 
+			""UserActions""
+		WHERE ""SiteUserId"" != -1
+			and ""Tag"" = @Tag 
+			and ""Time"" > @StartTime 
+			and ""Time"" < @EndTime
+		GROUP BY 
+			""SiteUserId""
+		ORDER BY 
+			COUNT(*) DESC
+		LIMIT 10
+	)
+)
+
+select distinct
+""UserId"",
+""DisplayName"",
+""IsModerator"",
+""Hour"",
+SUM(""hourtotal"") over (partition by ""UserId"" order by ""Hour"" range between unbounded preceding and current row)::INTEGER as ""RunningTotal""
+from 
+(
+	select 
+		siteUsers.""Id"" as ""UserId"",
+		siteUsers.""DisplayName"",
+		siteUsers.""IsModerator"",
+		date_trunc('day', ""UserActions"".""Time"") as ""Hour"",
+		SUM(case when ""UserActions"".""Id"" is null then 0 else 1 end) as HourTotal
+	from 
+		siteUsers
+	inner join ""UserActions"" 
+		on ""UserActions"".""SiteUserId"" = siteUsers.""Id""
+		and ""UserActions"".""Tag"" = @Tag and ""UserActions"".""Time"" > @StartTime and ""UserActions"".""Time"" < @EndTime
+	group by 
+		siteUsers.""Id"",
+		siteUsers.""DisplayName"",
+		siteUsers,""IsModerator"",
+		date_trunc('day', ""UserActions"".""Time"")
+
+    UNION ALL
+
+    select 
+	siteUsers.""Id"" as ""UserId"",
+	siteUsers.""DisplayName"",
+	siteUsers.""IsModerator"",
+	""Hour"",
+    0 as HourTotal
+    from siteUsers
+    left join lateral (select hour as ""Hour"" from hours) h on true
+) hourlyQuery;", new {
+                    StartTime = startTime,
+                    EndTime = endTime,
+                    Tag = tag
+                })
+                .GroupBy(g => new { g.DisplayName, g.IsModerator, g.UserId })
+                .Select(g => new
+                {
+                    UserName = g.Key.DisplayName,
+                    g.Key.IsModerator,
+                    Times = g.OrderBy(gg => gg.Hour).Select(gg => new
+                    {
+                        Date = gg.Hour,
+                        Total = gg.RunningTotal
+                    })
+                })
+                .OrderByDescending(g => g.Times.Max(tt => tt.Total))
+                .ToList();
+        }
+
+        private List<UserTotalsData> LoadUserTotalsData(DateTime startTime, DateTime endTime, DateTime burnStart, bool isTrogdorRoomOwner, string tag)
+        {
+            return _context
+                .Database.GetDbConnection()
+                .Query<UserTotalsData>(@"
+select 
+	""SiteUsers"".""Id"" as ""UserId"",
+	""SiteUsers"".""DisplayName"" as ""UserName"",
+	""SiteUsers"".""IsModerator"",
+	""UserActionTypes"".""Name"" as ""Type"",
+	COUNT(distinct ""UserActions"".""PostId"") as ""Total""
+from ""UserActions""
+inner join ""SiteUsers"" on ""UserActions"".""SiteUserId"" = ""SiteUsers"".""Id""
+inner join ""UserActionTypes"" on ""UserActions"".""UserActionTypeId"" = ""UserActionTypes"".""Id""
+where (""Tag"" = @tag and ""Time"" > @startTime and ""Time"" < @endTime)
+and (@isTrogdorRoomOwner or ""Time"" > @burnStart) 
+and ""SiteUsers"".""Id"" > 0
+group by 
+	""SiteUsers"".""Id"",
+	""SiteUsers"".""DisplayName"",
+	""SiteUsers"".""IsModerator"",
+	""UserActionTypes"".""Name""
+order by COUNT(distinct ""UserActions"".""PostId"") desc", new
+                {
+                    startTime,
+                    endTime,
+                    burnStart,
+                    isTrogdorRoomOwner,
+                    tag
+                })
+                .ToList();
+        }
+
+        private List<UserTotalsData> LoadUserGrandTotalsData(DateTime startTime, DateTime endTime, DateTime burnStart, bool isTrogdorRoomOwner, string tag)
+        {
+            return _context
+                .Database.GetDbConnection()
+                .Query<UserTotalsData>(@"
+select 
+	""SiteUsers"".""Id"" as ""UserId"",
+	""SiteUsers"".""DisplayName"" as ""UserName"",
+	""SiteUsers"".""IsModerator"",
+	COUNT(distinct ""UserActions"".""PostId"") as ""Total""
+from ""UserActions""
+inner join ""SiteUsers"" on ""UserActions"".""SiteUserId"" = ""SiteUsers"".""Id""
+where (""Tag"" = @tag and ""Time"" > @startTime and ""Time"" < @endTime)
+and (@isTrogdorRoomOwner or ""Time"" > @burnStart) 
+and ""SiteUsers"".""Id"" > 0
+group by 
+	""SiteUsers"".""Id"",
+	""SiteUsers"".""DisplayName"",
+	""SiteUsers"".""IsModerator""
+order by COUNT(distinct ""UserActions"".""PostId"") desc", new
+                {
+                    startTime,
+                    endTime,
+                    burnStart,
+                    isTrogdorRoomOwner,
+                    tag
+                })
+                .ToList();
+        }
+
+        private class ActionOverTimeQuery
+        {
+            public DateTime Date { get; set; }
+            public int Total { get; set; }
+        }
+
+        private class OverTimeQuery
+        {
+            public int UserId { get; set; }
+            public string DisplayName { get; set; }
+            public bool IsModerator { get; set; }
+            public DateTime Hour { get; set; }
+            public int RunningTotal { get; set; }
+        }
+
+        private class UserTotalsData
+        {
+            public int UserId { get; set; }
+            public string UserName { get; set; }
+            public bool IsModerator { get; set; }
+            public string Type { get; set; }
+            public int Total { get; set; }
+        }
+
+        private class UserGrandTotalsData
+        {
+            public int UserId { get; set; }
+            public string UserName { get; set; }
+            public bool IsModerator { get; set; }
+            public int Total { get; set; }
         }
     }
 }

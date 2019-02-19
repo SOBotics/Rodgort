@@ -7,7 +7,8 @@
     No data found
   </ng-container>
   <ng-container *ngIf="!hasNoData && burns">
-    <ng-container *ngFor="let burn of burns">
+    <ng-container *ngFor="let burn of burns; let i = index">
+      <hr *ngIf="i > 0" />
       <h1>{{burn.metaQuestionTitle}}</h1>
       <p style="display: inline"><a href="{{burn.metaQuestionLink}}">View meta post</a></p>
       <ng-container *ngFor="let tag of burn.tags">
@@ -27,7 +28,7 @@
         <h2>User Activity</h2>
         <div *ngIf="tag.chart" [chart]="tag.chart"></div>
 
-        <ng-container *ngIf="tag.userGrandTotals.length">
+        <ng-container *ngIf="tag.userGrandTotals && tag.userGrandTotals.length">
           <h2>User grand totals</h2>
           
           <input type="checkbox" id="{{tag.tag}}-userGrandTotalShowAll" [(ngModel)]="tag.userGrandTotalShowAll" [ngModelOptions]="{standalone: true}" >
@@ -50,7 +51,7 @@
           </table>
         </ng-container>
 
-        <ng-container *ngIf="tag.userTotals.length">
+        <ng-container *ngIf="tag.userTotals && tag.userTotals.length">
           <h2>User total breakdown</h2>
 
           <input type="checkbox" id="{{tag.tag}}-userBreakdownShowAll" [(ngModel)]="tag.userBreakdownShowAll" [ngModelOptions]="{standalone: true}" >
@@ -70,24 +71,6 @@
                   <td>{{row.type}}</td>
                   <td>{{row.total}}</td>
                 </ng-container>
-              </tr>
-            </tbody>
-          </table>
-        </ng-container>
-
-        <ng-container *ngIf="tag.totals.length">
-          <h2>Grand totals</h2>
-          <table class="table">
-            <thead>
-              <tr>
-                <th style="width: 85%">Type</th>
-                <th style="width: 15%">Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of tag.totals | sortAscending: 'total'">
-                <td>{{row.type}}</td>
-                <td>{{row.total}}</td>
               </tr>
             </tbody>
           </table>
