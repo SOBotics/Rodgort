@@ -213,44 +213,44 @@ hours as (
 
 
 select 
-	date_trunc('day', ""Time"") as ""Date"",
-	MAX(""RunningTotal"") as ""Total""
+	date_trunc('day', time) as Date,
+	MAX(running_total) as Total
 from (
 	select 
 	*,
-	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	SUM(direction) over (order by time) as running_total
 	from (
 		select 
-			""Time"",
-			""Direction""
+			time,
+			direction
 		from (
 			select 
 			distinct
-			""PostId"",
-			""UserActionTypeId"",
-			""Time"",
+			post_id,
+			user_action_type_id,
+			time,
 			case 
-				when ""UserActionTypeId"" = 3 then 1
-				when ""UserActionTypeId"" = 4 then -1
+				when user_action_type_id = 3 then 1
+				when user_action_type_id = 4 then -1
 				else 0
-			end as ""Direction""
-			from ""UserActions""
+			end as direction
+			from user_actions
 			where 
-				""Time"" < @endTime
-				and ""Tag"" = @tag
-				and ""UserActionTypeId"" in (3, 4)
+				time < @endTime
+				and tag = @tag
+				and user_action_type_id in (3, 4)
 		) innerQuery
 		
 		union all 
 		select 
-		hour as ""Time"",
-		0 as ""Direction""
+		hour as time,
+		0 as direction
 		from hours
 	) innerQuery
 ) innerQuery
-where ""Time"" > @startTime 
-group by date_trunc('day', ""Time"")
-order by date_trunc('day', ""Time"")", new
+where date_trunc('day', time) > @startTime 
+group by date_trunc('day', time)
+order by date_trunc('day', time)", new
                 {
                     startTime,
                     endTime,
@@ -270,43 +270,44 @@ hours as (
 )
 
 select 
-	date_trunc('day', ""Time"") as ""Date"",
-	MAX(""RunningTotal"") as ""Total""
+	date_trunc('day', time) as Date,
+	MAX(running_total) as Total
 from (
 	select 
 	*,
-	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	SUM(direction) over (order by time) as running_total
 	from (
 		select 
-			""Time"",
-			""Direction""
+			time,
+			direction
 		from (
 			select 
 			distinct
-			""PostId"",
-			""UserActionTypeId"",
-			""Time"",
+			post_id,
+			user_action_type_id,
+			time,
 			case 
-				when ""UserActionTypeId"" = 5 then 1
-				when ""UserActionTypeId"" = 6 then -1
+				when user_action_type_id = 5 then 1
+				when user_action_type_id = 6 then -1
 				else 0
-			end as ""Direction""
-			from ""UserActions""
+			end as direction
+			from user_actions
 			where 
-				""Time"" > @startTime and ""Time"" < @endTime
-				and ""Tag"" = @tag
-				and ""UserActionTypeId"" in (5, 6)
+				time > @startTime and time < @endTime
+				and tag = @tag
+				and user_action_type_id in (5, 6)
 		) innerQuery
 		
 		union all 
 		select 
-		hour as ""Time"",
-		0 as ""Direction""
+		hour as time,
+		0 as direction
 		from hours
 	) innerQuery
 ) innerQuery
-group by date_trunc('day', ""Time"")
-order by date_trunc('day', ""Time"")", new
+where date_trunc('day', time) > @startTime 
+group by date_trunc('day', time)
+order by date_trunc('day', time)", new
                 {
                     startTime,
                     endTime,
@@ -325,45 +326,45 @@ hours as (
 	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
 )
 
-
 select 
-	date_trunc('day', ""Time"") as ""Date"",
-	MAX(""RunningTotal"") as ""Total""
+	date_trunc('day', time) as Date,
+	MAX(running_total) as Total
 from (
 	select 
 	*,
-	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	SUM(direction) over (order by time) as running_total
 	from (
 		select 
-			""Time"",
-			""Direction""
+			time,
+			direction
 		from (
 			select 
 			distinct
-			""PostId"",
-			""UserActionTypeId"",
-			""Time"",
+			post_id,
+			user_action_type_id,
+			time,
 			case 
-				when ""UserActionTypeId"" = 1 then 1
-				when ""UserActionTypeId"" = 2 then -1
+				when user_action_type_id = 1 then 1
+				when user_action_type_id = 2 then -1
 				else 0
-			end as ""Direction""
-			from ""UserActions""
+			end as direction
+			from user_actions
 			where 
-				""Time"" > @startTime and ""Time"" < @endTime
-				and ""Tag"" = @tag
-				and ""UserActionTypeId"" in (1, 2)
+				time > @startTime and time < @endTime
+				and tag = @tag
+				and user_action_type_id in (1, 2)
 		) innerQuery
 		
 		union all 
 		select 
-		hour as ""Time"",
-		0 as ""Direction""
+		hour as time,
+		0 as direction
 		from hours
 	) innerQuery
 ) innerQuery
-group by date_trunc('day', ""Time"")
-order by date_trunc('day', ""Time"")", new
+where date_trunc('day', time) > @startTime 
+group by date_trunc('day', time)
+order by date_trunc('day', time)", new
                 {
                     startTime,
                     endTime,
@@ -382,45 +383,45 @@ hours as (
 	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
 )
 
-
 select 
-	date_trunc('day', ""Time"") as ""Date"",
-	MAX(""RunningTotal"") as ""Total""
+	date_trunc('day', time) as Date,
+	MAX(running_total) as Total
 from (
 	select 
 	*,
-	SUM(""Direction"") over (order by ""Time"") as ""RunningTotal""
+	SUM(direction) over (order by time) as running_total
 	from (
 		select 
-			""Time"",
-			""Direction""
+			time,
+			direction
 		from (
 			select 
 			distinct
-			""PostId"",
-			""UserActionTypeId"",
-			""Time"",
+			post_id,
+			user_action_type_id,
+			time,
 			case 
-				when ""UserActionTypeId"" = 5 and ""SiteUserId"" = -1 then 1
-				when ""UserActionTypeId"" = 6 then -1
+				when user_action_type_id = 5 and site_user_id = -1 then 1
+				when user_action_type_id = 6 then -1
 				else 0
-			end as ""Direction""
-			from ""UserActions""
+			end as direction
+			from user_actions
 			where 
-				""Time"" > @startTime and ""Time"" < @endTime
-				and ""Tag"" = @tag
-				and ""UserActionTypeId"" in (5, 6)
+				time > @startTime and time < @endTime
+				and tag = @tag
+				and user_action_type_id in (5, 6)
 		) innerQuery
 		
 		union all 
 		select 
-		hour as ""Time"",
-		0 as ""Direction""
+		hour as time,
+		0 as direction
 		from hours
 	) innerQuery
 ) innerQuery
-group by date_trunc('day', ""Time"")
-order by date_trunc('day', ""Time"")", new
+where date_trunc('day', time) > @startTime 
+group by date_trunc('day', time)
+order by date_trunc('day', time)", new
                 {
                     startTime,
                     endTime,
@@ -440,18 +441,18 @@ hours as (
 	select generate_series(date_trunc('day', @StartTime), date_trunc('day', @EndTime), interval '1 day' hour) as hour
 ),
 siteUsers as (
-	select * from ""SiteUsers""
-	WHERE ""SiteUsers"".""Id"" in (
+	select * from site_users
+	WHERE site_users.id in (
 		SELECT 
-			""SiteUserId"" 
+			site_user_id 
 		FROM 
-			""UserActions""
-		WHERE ""SiteUserId"" != -1
-			and ""Tag"" = @Tag 
-			and ""Time"" > @StartTime 
-			and ""Time"" < @EndTime
+			user_actions
+		WHERE site_user_id != -1
+			and tag = @Tag 
+			and time > @StartTime 
+			and time < @EndTime
 		GROUP BY 
-			""SiteUserId""
+			site_user_id
 		ORDER BY 
 			COUNT(*) DESC
 		LIMIT 10
@@ -459,40 +460,40 @@ siteUsers as (
 )
 
 select distinct
-""UserId"",
-""DisplayName"",
-""IsModerator"",
-""Hour"",
-SUM(""hourtotal"") over (partition by ""UserId"" order by ""Hour"" range between unbounded preceding and current row)::INTEGER as ""RunningTotal""
+user_id as UserId,
+display_name as DisplayName,
+is_moderator as IsModerator,
+hour as Hour,
+SUM(hour_total) over (partition by user_id order by hour range between unbounded preceding and current row) as RunningTotal
 from 
 (
 	select 
-		siteUsers.""Id"" as ""UserId"",
-		siteUsers.""DisplayName"",
-		siteUsers.""IsModerator"",
-		date_trunc('day', ""UserActions"".""Time"") as ""Hour"",
-		SUM(case when ""UserActions"".""Id"" is null then 0 else 1 end) as HourTotal
+		siteUsers.id as user_id,
+		siteUsers.display_name,
+		siteUsers.is_moderator,
+		date_trunc('day', user_actions.time) as hour,
+		SUM(case when user_actions.id is null then 0 else 1 end) as hour_total
 	from 
 		siteUsers
-	inner join ""UserActions"" 
-		on ""UserActions"".""SiteUserId"" = siteUsers.""Id""
-		and ""UserActions"".""Tag"" = @Tag and ""UserActions"".""Time"" > @StartTime and ""UserActions"".""Time"" < @EndTime
+	inner join user_actions 
+		on user_actions.site_user_id = siteUsers.id
+		and user_actions.tag = @Tag and user_actions.time > @StartTime and user_actions.time < @EndTime
 	group by 
-		siteUsers.""Id"",
-		siteUsers.""DisplayName"",
-		siteUsers,""IsModerator"",
-		date_trunc('day', ""UserActions"".""Time"")
+		siteUsers.id,
+		siteUsers.display_name,
+		siteUsers,is_moderator,
+		date_trunc('day', user_actions.time)
 
     UNION ALL
 
     select 
-	siteUsers.""Id"" as ""UserId"",
-	siteUsers.""DisplayName"",
-	siteUsers.""IsModerator"",
-	""Hour"",
-    0 as HourTotal
+	siteUsers.id as user_id,
+	siteUsers.display_name,
+	siteUsers.is_moderator,
+	hour,
+    0 as hour_total
     from siteUsers
-    left join lateral (select hour as ""Hour"" from hours) h on true
+    left join lateral (select hour as hour from hours) h on true
 ) hourlyQuery;", new {
                     StartTime = startTime,
                     EndTime = endTime,
@@ -519,23 +520,23 @@ from
                 .Database.GetDbConnection()
                 .Query<UserTotalsData>(@"
 select 
-	""SiteUsers"".""Id"" as ""UserId"",
-	""SiteUsers"".""DisplayName"" as ""UserName"",
-	""SiteUsers"".""IsModerator"",
-	""UserActionTypes"".""Name"" as ""Type"",
-	COUNT(distinct ""UserActions"".""PostId"") as ""Total""
-from ""UserActions""
-inner join ""SiteUsers"" on ""UserActions"".""SiteUserId"" = ""SiteUsers"".""Id""
-inner join ""UserActionTypes"" on ""UserActions"".""UserActionTypeId"" = ""UserActionTypes"".""Id""
-where (""Tag"" = @tag and ""Time"" > @startTime and ""Time"" < @endTime)
-and (@isTrogdorRoomOwner or ""Time"" > @burnStart) 
-and ""SiteUsers"".""Id"" > 0
+	site_users.id as UserId,
+	site_users.display_name as UserName,
+	site_users.is_moderator as IsModerator,
+	user_action_types.name as Type,
+	COUNT(distinct user_actions.post_id) as Total
+from user_actions
+inner join site_users on user_actions.site_user_id = site_users.id
+inner join user_action_types on user_actions.user_action_type_id = user_action_types.id
+where (tag = @tag and time > @startTime and time < @endTime)
+and (@isTrogdorRoomOwner or time > @burnStart) 
+and site_users.id > 0
 group by 
-	""SiteUsers"".""Id"",
-	""SiteUsers"".""DisplayName"",
-	""SiteUsers"".""IsModerator"",
-	""UserActionTypes"".""Name""
-order by COUNT(distinct ""UserActions"".""PostId"") desc", new
+	site_users.id,
+	site_users.display_name,
+	site_users.is_moderator,
+	user_action_types.name
+order by COUNT(distinct user_actions.post_id) desc", new
                 {
                     startTime,
                     endTime,
@@ -552,20 +553,20 @@ order by COUNT(distinct ""UserActions"".""PostId"") desc", new
                 .Database.GetDbConnection()
                 .Query<UserTotalsData>(@"
 select 
-	""SiteUsers"".""Id"" as ""UserId"",
-	""SiteUsers"".""DisplayName"" as ""UserName"",
-	""SiteUsers"".""IsModerator"",
-	COUNT(distinct ""UserActions"".""PostId"") as ""Total""
-from ""UserActions""
-inner join ""SiteUsers"" on ""UserActions"".""SiteUserId"" = ""SiteUsers"".""Id""
-where (""Tag"" = @tag and ""Time"" > @startTime and ""Time"" < @endTime)
-and (@isTrogdorRoomOwner or ""Time"" > @burnStart) 
-and ""SiteUsers"".""Id"" > 0
+	site_users.id as UserId,
+	site_users.display_name as UserName,
+	site_users.is_moderator as IsModerator,
+	COUNT(distinct user_actions.post_id) as Total
+from user_actions
+inner join site_users on user_actions.site_user_id = site_users.id
+where (tag = @tag and time > @startTime and time < @endTime)
+and (@isTrogdorRoomOwner or time > @burnStart) 
+and site_users.id > 0
 group by 
-	""SiteUsers"".""Id"",
-	""SiteUsers"".""DisplayName"",
-	""SiteUsers"".""IsModerator""
-order by COUNT(distinct ""UserActions"".""PostId"") desc", new
+	site_users.id,
+	site_users.display_name,
+	site_users.is_moderator
+order by COUNT(distinct user_actions.post_id) desc", new
                 {
                     startTime,
                     endTime,
