@@ -173,18 +173,24 @@ namespace Rodgort.Controllers
                     MetaQuestionLink = b.Link,
                     Tags = b.BurningTags.Select(bt =>
                     {
+                        var breakdownSize = (b.EndTime - b.StartTime).TotalDays < 100
+                            ? "hour"
+                            : "day";
+
+                        var breakdownInterval = breakdownSize == "hour" ? TimeSpan.FromHours(1) : TimeSpan.FromDays(1);
+
                         return new
                         {
                             bt.Tag,
                             bt.NumberOfQuestions,
                             QuestionCountOverTime = bt.QuestionCountOverTime.Where(q => q.DateTime <= b.EndTime).ToList(),
 
-                            ClosuresOverTime = LoadClosuresOverTimeData(b.StartTime, b.EndTime, bt.Tag),
-                            DeletionsOverTime = LoadDeletionsOverTimeData(b.StartTime, b.EndTime, bt.Tag),
-                            RetagsOverTime = LoadRetagsOverTimeData(b.StartTime, b.EndTime, bt.Tag),
-                            RoombasOverTime = LoadRoombasOverTimeData(b.StartTime, b.EndTime, bt.Tag),
+                            ClosuresOverTime = LoadClosuresOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
+                            DeletionsOverTime = LoadDeletionsOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
+                            RetagsOverTime = LoadRetagsOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
+                            RoombasOverTime = LoadRoombasOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
 
-                            Overtime = LoadOverTimeData(b.StartTime, b.EndTime, bt.Tag),
+                            Overtime = LoadOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
 
                             UserTotals = LoadUserTotalsData(b.StartTime, b.EndTime, b.BurnStarted ?? b.StartTime, isRoomOwner, bt.Tag),
 
@@ -201,19 +207,18 @@ namespace Rodgort.Controllers
             return res;
         }
 
-        private List<ActionOverTimeQuery> LoadClosuresOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        private List<ActionOverTimeQuery> LoadClosuresOverTimeData(DateTime startTime, DateTime endTime, string tag, string breakdownSize, TimeSpan breakdownInterval)
         {
             return _context
                 .Database.GetDbConnection()
                 .Query<ActionOverTimeQuery>(@"
 with 
-hours as (
-	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+times as (
+	select generate_series(date_trunc(@breakdownSize, @startTime), date_trunc(@breakdownSize, @endTime), @breakdownInterval) as time
 )
 
-
 select 
-	date_trunc('day', time) as Date,
+	date_trunc(@breakdownSize, time) as Date,
 	MAX(running_total) as Total
 from (
 	select 
@@ -243,34 +248,36 @@ from (
 		
 		union all 
 		select 
-		hour as time,
+		time,
 		0 as direction
-		from hours
+		from times
 	) innerQuery
 ) innerQuery
-where date_trunc('day', time) > @startTime 
-group by date_trunc('day', time)
-order by date_trunc('day', time)", new
+where date_trunc(@breakdownSize, time) > @startTime 
+group by date_trunc(@breakdownSize, time)
+order by date_trunc(@breakdownSize, time)", new
                 {
                     startTime,
                     endTime,
-                    tag
+                    tag,
+                    breakdownSize,
+                    breakdownInterval
                 })
                 .ToList();
         }
 
-        private List<ActionOverTimeQuery> LoadDeletionsOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        private List<ActionOverTimeQuery> LoadDeletionsOverTimeData(DateTime startTime, DateTime endTime, string tag, string breakdownSize, TimeSpan breakdownInterval)
         {
             return _context
                 .Database.GetDbConnection()
                 .Query<ActionOverTimeQuery>(@"
 with 
-hours as (
-	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+times as (
+	select generate_series(date_trunc(@breakdownSize, @startTime), date_trunc(@breakdownSize, @endTime), @breakdownInterval) as time
 )
 
 select 
-	date_trunc('day', time) as Date,
+	date_trunc(@breakdownSize, time) as Date,
 	MAX(running_total) as Total
 from (
 	select 
@@ -300,34 +307,36 @@ from (
 		
 		union all 
 		select 
-		hour as time,
+		time,
 		0 as direction
-		from hours
+		from times
 	) innerQuery
 ) innerQuery
-where date_trunc('day', time) > @startTime 
-group by date_trunc('day', time)
-order by date_trunc('day', time)", new
+where date_trunc(@breakdownSize, time) > @startTime 
+group by date_trunc(@breakdownSize, time)
+order by date_trunc(@breakdownSize, time)", new
                 {
                     startTime,
                     endTime,
-                    tag
+                    tag,
+                    breakdownSize,
+                    breakdownInterval
                 })
                 .ToList();
         }
 
-        private List<ActionOverTimeQuery> LoadRetagsOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        private List<ActionOverTimeQuery> LoadRetagsOverTimeData(DateTime startTime, DateTime endTime, string tag, string breakdownSize, TimeSpan breakdownInterval)
         {
             return _context
                 .Database.GetDbConnection()
                 .Query<ActionOverTimeQuery>(@"
 with 
-hours as (
-	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+times as (
+	select generate_series(date_trunc(@breakdownSize, @startTime), date_trunc(@breakdownSize, @endTime), @breakdownInterval) as time
 )
 
 select 
-	date_trunc('day', time) as Date,
+	date_trunc(@breakdownSize, time) as Date,
 	MAX(running_total) as Total
 from (
 	select 
@@ -357,34 +366,36 @@ from (
 		
 		union all 
 		select 
-		hour as time,
+		time,
 		0 as direction
-		from hours
+		from times
 	) innerQuery
 ) innerQuery
-where date_trunc('day', time) > @startTime 
-group by date_trunc('day', time)
-order by date_trunc('day', time)", new
+where date_trunc(@breakdownSize, time) > @startTime 
+group by date_trunc(@breakdownSize, time)
+order by date_trunc(@breakdownSize, time)", new
                 {
                     startTime,
                     endTime,
-                    tag
+                    tag,
+                    breakdownSize,
+                    breakdownInterval
                 })
                 .ToList();
         }
 
-        private List<ActionOverTimeQuery> LoadRoombasOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        private List<ActionOverTimeQuery> LoadRoombasOverTimeData(DateTime startTime, DateTime endTime, string tag, string breakdownSize, TimeSpan breakdownInterval)
         {
             return _context
                 .Database.GetDbConnection()
                 .Query<ActionOverTimeQuery>(@"
 with 
-hours as (
-	select generate_series(date_trunc('day', @startTime), date_trunc('day', @endTime), interval '1 day' hour) as hour
+times as (
+	select generate_series(date_trunc(@breakdownSize, @startTime), date_trunc(@breakdownSize, @endTime), @breakdownInterval) as time
 )
 
 select 
-	date_trunc('day', time) as Date,
+	date_trunc(@breakdownSize, time) as Date,
 	MAX(running_total) as Total
 from (
 	select 
@@ -414,31 +425,33 @@ from (
 		
 		union all 
 		select 
-		hour as time,
+		time,
 		0 as direction
-		from hours
+		from times
 	) innerQuery
 ) innerQuery
-where date_trunc('day', time) > @startTime 
-group by date_trunc('day', time)
-order by date_trunc('day', time)", new
+where date_trunc(@breakdownSize, time) > @startTime 
+group by date_trunc(@breakdownSize, time)
+order by date_trunc(@breakdownSize, time)", new
                 {
                     startTime,
                     endTime,
-                    tag
+                    tag,
+                    breakdownSize,
+                    breakdownInterval
                 })
                 .ToList();
         }
 
 
-        private object LoadOverTimeData(DateTime startTime, DateTime endTime, string tag)
+        private object LoadOverTimeData(DateTime startTime, DateTime endTime, string tag, string breakdownSize, TimeSpan breakdownInterval)
         {
             return _context
                 .Database.GetDbConnection()
                 .Query<OverTimeQuery>(@"
 with 
-hours as (
-	select generate_series(date_trunc('day', @StartTime), date_trunc('day', @EndTime), interval '1 day' hour) as hour
+times as (
+	select generate_series(date_trunc(@breakdownSize, @StartTime), date_trunc(@breakdownSize, @EndTime), @breakdownInterval) as time
 ),
 siteUsers as (
 	select * from site_users
@@ -463,16 +476,16 @@ select distinct
 user_id as UserId,
 display_name as DisplayName,
 is_moderator as IsModerator,
-hour as Hour,
-SUM(hour_total) over (partition by user_id order by hour range between unbounded preceding and current row) as RunningTotal
+time as Time,
+SUM(time_total) over (partition by user_id order by time range between unbounded preceding and current row) as RunningTotal
 from 
 (
 	select 
 		siteUsers.id as user_id,
 		siteUsers.display_name,
 		siteUsers.is_moderator,
-		date_trunc('day', user_actions.time) as hour,
-		SUM(case when user_actions.id is null then 0 else 1 end) as hour_total
+		date_trunc(@breakdownSize, user_actions.time) as time,
+		SUM(case when user_actions.id is null then 0 else 1 end) as time_total
 	from 
 		siteUsers
 	inner join user_actions 
@@ -481,8 +494,8 @@ from
 	group by 
 		siteUsers.id,
 		siteUsers.display_name,
-		siteUsers,is_moderator,
-		date_trunc('day', user_actions.time)
+		siteUsers.is_moderator,
+		date_trunc(@breakdownSize, user_actions.time)
 
     UNION ALL
 
@@ -490,23 +503,25 @@ from
 	siteUsers.id as user_id,
 	siteUsers.display_name,
 	siteUsers.is_moderator,
-	hour,
-    0 as hour_total
+	time,
+    0 as time_total
     from siteUsers
-    left join lateral (select hour as hour from hours) h on true
+    left join lateral (select time from times) t on true
 ) hourlyQuery;", new {
                     StartTime = startTime,
                     EndTime = endTime,
-                    Tag = tag
+                    Tag = tag,
+                    breakdownSize,
+                    breakdownInterval
                 })
                 .GroupBy(g => new { g.DisplayName, g.IsModerator, g.UserId })
                 .Select(g => new
                 {
                     UserName = g.Key.DisplayName,
                     g.Key.IsModerator,
-                    Times = g.OrderBy(gg => gg.Hour).Select(gg => new
+                    Times = g.OrderBy(gg => gg.Time).Select(gg => new
                     {
-                        Date = gg.Hour,
+                        Date = gg.Time,
                         Total = gg.RunningTotal
                     })
                 })
@@ -588,7 +603,7 @@ order by COUNT(distinct user_actions.post_id) desc", new
             public int UserId { get; set; }
             public string DisplayName { get; set; }
             public bool IsModerator { get; set; }
-            public DateTime Hour { get; set; }
+            public DateTime Time { get; set; }
             public int RunningTotal { get; set; }
         }
 
