@@ -104,15 +104,14 @@ namespace Rodgort.Services
 
                     var metaQuestions = await _apiClient.MetaQuestionsByTag("meta.stackoverflow.com", tagToCrawl);
                     questions.AddRange(metaQuestions.Items);
-
-                    _logger.LogInformation($"{metaQuestions.Items.Count} meta questions retrieved for {tagToCrawl}. Processing...");
-
-                    var result = ProcessQuestions(metaQuestions.Items);
-                    newFeatures.AddRange(result.NewFeatures);
-                    finishedBurns.AddRange(result.FinishedBurns);
-                    burnsStarted.AddRange(result.BurnsStarted);
-                    burnsDeclined.AddRange(result.BurnsDeclined);
+                    _logger.LogInformation($"{metaQuestions.Items.Count} meta questions retrieved for {tagToCrawl}.");
                 }
+
+                var result = ProcessQuestions(questions, true);
+                newFeatures.AddRange(result.NewFeatures);
+                finishedBurns.AddRange(result.FinishedBurns);
+                burnsStarted.AddRange(result.BurnsStarted);
+                burnsDeclined.AddRange(result.BurnsDeclined);
 
                 await PostProcessQuestions(questions, finishedBurns, newFeatures, burnsStarted, burnsDeclined);
             }
@@ -158,7 +157,7 @@ namespace Rodgort.Services
             public List<BurnDeclined> BurnsDeclined { get; set; }
         }
 
-        public ProcessQuestionsResult ProcessQuestions(List<BaseQuestion> questions)
+        public ProcessQuestionsResult ProcessQuestions(List<BaseQuestion> questions, bool isFullSet)
         {
             var newFeatures = new List<NewFeature>();
             var finishedBurns = new List<BurnFinished>();
@@ -173,6 +172,18 @@ namespace Rodgort.Services
                 .Include(mq => mq.MetaQuestionMetaTags)
                 .Include(mq => mq.MetaQuestionTags)
                 .ToDictionary(q => q.Id, q => q);
+
+            if (isFullSet)
+            {
+                var missingQuestions = context.MetaQuestions.Where(q => !questionIds.Contains(q.Id)).Include(mq => mq.MetaQuestionMetaTags).ToList();
+
+                foreach (var missingQuestion in missingQuestions)
+                {
+                    var metaQuestionMetaTags = missingQuestion.MetaQuestionMetaTags.Where(mqmt => DbMetaTag.RequestTypes.Contains(mqmt.TagName)).ToList();
+                    foreach (var metaQuestionMetaTag in metaQuestionMetaTags)
+                        context.MetaQuestionMetaTags.Remove(metaQuestionMetaTag);
+                }
+            }
 
             var answerIds = questions.Where(q => q.Answers != null).SelectMany(q => q.Answers.Select(a => a.AnswerId)).Distinct().ToList();
             var answerLookup = context.MetaAnswers.Where(q => answerIds.Contains(q.Id)).ToDictionary(a => a.Id, a => a);
