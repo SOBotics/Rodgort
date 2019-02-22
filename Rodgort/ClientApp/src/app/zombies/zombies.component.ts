@@ -14,7 +14,8 @@ export class ZombiesComponent implements OnInit {
   public zombies: any;
 
   public filter = {
-    onlyAlive: true
+    onlyAlive: true,
+    tag: '',
   };
 
   constructor(
@@ -25,13 +26,17 @@ export class ZombiesComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.filter.onlyAlive = (params['onlyAlive'] || 'true') === 'true';
+      this.filter.tag = params['tag'] || '';
       this.reloadData();
     });
   }
 
   private reloadData() {
     this.loading = true;
-    this.httpClient.get(`/api/zombie?onlyAlive=${this.filter.onlyAlive}`).subscribe((d: any[]) => {
+    this.httpClient.get(`/api/zombie` +
+      `?onlyAlive=${this.filter.onlyAlive}` +
+      `&tag=${this.filter.tag}`
+    ).subscribe((d: any[]) => {
       this.loading = false;
       this.zombies = d.map(zombie => ({
         ...zombie,
