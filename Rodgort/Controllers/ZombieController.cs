@@ -43,7 +43,6 @@ select
     or t.name = @tag
 ) innerQuery
 where innerQuery.revived
-order by date_time
 ", new
                 {
                     allZombies = !onlyAlive,
@@ -63,7 +62,7 @@ order by date_time
                 {
                     Tag = t.Key,
                     Revivals = t.Select(tt => tt.DateRevived).ToList(),
-                    QuestionCountOverTime = questionCountsOverTime[t.Key]
+                    QuestionCountOverTime = questionCountsOverTime[t.Key].OrderBy(q => q.DateTime)
                 })
                 .OrderByDescending(r => r.Revivals.Count)
                 .ToList();
