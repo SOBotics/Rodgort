@@ -248,6 +248,15 @@ namespace Rodgort.Services
                                 burnsStarted.Add(new BurnStarted {MetaUrl = metaQuestion.Link, Tags = trackedTags.Select(t => t.TagName).ToList()});
                             }
                         }
+
+                        if (tag == DbMetaTag.STATUS_DECLINED)
+                        {
+                            if (isBurnRequest && dbMetaQuestion.FeaturedStarted.HasValue)
+                            {
+                                foreach (var trackedTag in trackedTags)
+                                    burnsDeclined.Add(new BurnDeclined { Tag = trackedTag.TagName });
+                            }
+                        }
                     }
                 }
 
@@ -271,15 +280,6 @@ namespace Rodgort.Services
                                 dbMetaQuestion.BurnEnded = utcNow;
                                 foreach (var trackedTag in trackedTags)
                                     finishedBurns.Add(new BurnFinished {Tag = trackedTag.TagName});
-                            }
-                        }
-
-                        if (dbTag.TagName == DbMetaTag.STATUS_DECLINED)
-                        {
-                            if (isBurnRequest && dbMetaQuestion.FeaturedStarted.HasValue)
-                            {
-                                foreach (var trackedTag in trackedTags)
-                                    burnsDeclined.Add(new BurnDeclined { Tag = trackedTag.TagName });
                             }
                         }
                     }
