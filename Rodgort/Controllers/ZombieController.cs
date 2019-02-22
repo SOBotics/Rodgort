@@ -43,6 +43,7 @@ select
     or t.name = @tag
 ) innerQuery
 where innerQuery.revived
+order by date_time
 ", new
                 {
                     allZombies = !onlyAlive,
