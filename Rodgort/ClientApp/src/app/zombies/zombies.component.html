@@ -9,7 +9,7 @@
     zombies</button>
   <ng-container *ngFor="let zombie of zombies; let i = index;">
     <hr *ngIf="i > 0" />
-    <h3>{{zombie.tag}} ({{zombie.revivals.length}} revival{{zombie.revivals.length == 1 ? '' : 's'}}) <a
+    <h3><a href="https://stackoverflow.com/questions/tagged/{{zombie.tag}}">{{zombie.tag}}</a> ({{zombie.revivals.length}} revival{{zombie.revivals.length == 1 ? '' : 's'}}) <a
         class="perma-link" routerLink="/zombies" [queryParams]="{tag: zombie.tag}">
         <img src="../../assets/permalink.png">
       </a>
