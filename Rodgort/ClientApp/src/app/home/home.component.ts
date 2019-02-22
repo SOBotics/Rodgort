@@ -10,25 +10,26 @@ import { AuthService, RODGORT_ADMIN } from '../services/auth.service';
 export class HomeComponent implements OnInit {
   public statistics: any = {
     requests: {
-      total: 0,
+      total: '?',
 
-      withTrackedTags: 0,
-      requireTrackingApproval: 0,
+      withTrackedTags: '?',
+      requireTrackingApproval: '?',
 
-      declined: 0,
-      completed: 0,
+      declined: '?',
+      completed: '?',
 
-      completedWithQuestionsLeft: 0,
-      noStatusButCompleted: 0,
+      completedWithQuestionsLeft: '?',
+      noStatusButCompleted: '?',
     },
     tags: {
-      total: 0,
-      noQuestions: 0,
-      synonymised: 0,
-      hasQuestionsAndAttachedToCompletedRequest: 0
+      total: '?',
+      noQuestions: '?',
+      synonymised: '?',
+      hasQuestionsAndAttachedToCompletedRequest: '?',
+      zombieCount: '?'
     },
     admin: {
-      unknownDeletions: 0
+      unknownDeletions: '?'
     }
   };
 
