@@ -118,7 +118,8 @@ namespace Rodgort.Services
                                 {
                                     QuestionCount = 0,
                                     DateTime = _dateService.UtcNow,
-                                    TagName = synonymTagName
+                                    TagName = synonymTagName,
+                                    IsSynonym = true
                                 });
                             }
                         }

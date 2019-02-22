@@ -81,7 +81,7 @@ FROM (
 		select NULL FROM
 		tag_statistics has_questions where has_questions.tag_name = no_questions.tag_name and has_questions.date_time > no_questions.date_time and has_questions.question_count > 0
 	)
-	and no_questions.question_count = 0
+	and no_questions.question_count = 0 and not no_questions.is_synonym
 ) innerQuery
 ").First().ZombieCount;
 

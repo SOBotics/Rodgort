@@ -12,6 +12,8 @@ namespace Rodgort.Data.Tables
 
         public int AnswerCount { get; set; }
 
+        public bool IsSynonym { get; set; }
+
         public DateTime DateTime { get; set; }
         
         public DbTag Tag { get; set; }

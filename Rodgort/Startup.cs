@@ -71,7 +71,7 @@ namespace Rodgort
                 .AddEntityFrameworkNpgsql()
                 .AddDbContext<RodgortContext>(options =>
                 {
-                    options.UseNpgsql(connectionString).ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+                    options.UseNpgsql(connectionString, opts => opts.CommandTimeout((int)TimeSpan.FromMinutes(10).TotalSeconds)).ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
                 });
 
             services.AddTransient<DateService>();

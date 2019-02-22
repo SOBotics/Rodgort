@@ -68,6 +68,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbTagStatistics>().ToTable("tag_statistics");
             modelBuilder.Entity<DbTagStatistics>().HasKey(ts => ts.Id);
             modelBuilder.Entity<DbTagStatistics>().HasOne(ts => ts.Tag).WithMany(t => t.Statistics).HasForeignKey(ts => ts.TagName);
+            modelBuilder.Entity<DbTagStatistics>().Property(ts => ts.IsSynonym).HasDefaultValue(false);
 
             modelBuilder.Entity<DbMetaTag>().ToTable("meta_tags");
             modelBuilder.Entity<DbMetaTag>().HasKey(tag => tag.Name);
