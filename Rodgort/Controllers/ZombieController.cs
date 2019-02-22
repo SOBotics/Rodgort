@@ -39,8 +39,7 @@ select
     tags t
     inner join tag_statistics a on t.name = a.tag_name
 	inner join meta_question_tags mqt on mqt.tag_name = t.name and mqt.tracking_status_id = 2
-    where 
-    and @tag is null and (@allZombies or t.number_of_questions > 0)
+    where @tag is null and (@allZombies or t.number_of_questions > 0)
     or t.name = @tag
 ) innerQuery
 where innerQuery.revived
