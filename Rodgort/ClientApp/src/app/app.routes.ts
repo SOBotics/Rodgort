@@ -7,6 +7,7 @@ import { UnknownDeletionResolutionComponent } from './unknown-deletion-resolutio
 import { ManualQuestionProcessingComponent } from './manual-question-processing/manual-question-processing.component';
 import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/tag-tracking-status-audits.component';
 import { UserComponent } from './user/user.component';
+import { ZombiesComponent } from './zombies/zombies.component';
 
 export const appRoutes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -17,5 +18,6 @@ export const appRoutes: Routes = [
     { path: 'unknown-deletion-resolution', component: UnknownDeletionResolutionComponent },
     { path: 'manual-question-processing', component: ManualQuestionProcessingComponent },
     { path: 'user/:id', component: UserComponent },
-    { path: 'profile', component: UserComponent }
+    { path: 'profile', component: UserComponent },
+    { path: 'zombies', component: ZombiesComponent }
 ];

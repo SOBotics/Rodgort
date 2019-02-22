@@ -4,6 +4,7 @@ import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
 import { AuthService } from '../services/auth.service';
 import { ActivatedRoute } from '@angular/router';
+import { toUtcDateTime } from '../../utils/ToUtcDateTime';
 
 @Component({
   selector: 'app-progress',
@@ -60,8 +61,8 @@ export class ProgressComponent implements OnInit {
           if (burn.featuredStarted && burn.featuredEnded) {
             bands.push({
               color: 'rgb(251, 237, 182)',
-              from: this.toUtcDateTime(burn.featuredStarted),
-              to: this.toUtcDateTime(burn.featuredEnded),
+              from: toUtcDateTime(burn.featuredStarted),
+              to: toUtcDateTime(burn.featuredEnded),
               label: {
                 text: 'featured'
               }
@@ -69,7 +70,7 @@ export class ProgressComponent implements OnInit {
           } else if (burn.featuredStarted) {
             lines.push({
               color: 'red',
-              value: this.toUtcDateTime(burn.featuredStarted),
+              value: toUtcDateTime(burn.featuredStarted),
               width: 2,
               label: {
                 text: 'featured start'
@@ -78,7 +79,7 @@ export class ProgressComponent implements OnInit {
           } else if (burn.featuredEnded) {
             lines.push({
               color: 'red',
-              value: this.toUtcDateTime(burn.featuredEnded),
+              value: toUtcDateTime(burn.featuredEnded),
               width: 2,
               label: {
                 text: 'featured end'
@@ -89,8 +90,8 @@ export class ProgressComponent implements OnInit {
           if (burn.burnStarted && burn.burnEnded) {
             bands.push({
               color: 'rgb(251, 189, 182)',
-              from: this.toUtcDateTime(burn.burnStarted),
-              to: this.toUtcDateTime(burn.burnEnded),
+              from: toUtcDateTime(burn.burnStarted),
+              to: toUtcDateTime(burn.burnEnded),
               label: {
                 text: 'burnination'
               }
@@ -98,7 +99,7 @@ export class ProgressComponent implements OnInit {
           } else if (burn.burnStarted) {
             lines.push({
               color: 'red',
-              value: this.toUtcDateTime(burn.burnStarted),
+              value: toUtcDateTime(burn.burnStarted),
               width: 2,
               label: {
                 text: 'burn start'
@@ -107,7 +108,7 @@ export class ProgressComponent implements OnInit {
           } else if (burn.burnEnded) {
             lines.push({
               color: 'red',
-              value: this.toUtcDateTime(burn.burnEnded),
+              value: toUtcDateTime(burn.burnEnded),
               width: 2,
               label: {
                 text: 'burn end'
@@ -115,7 +116,7 @@ export class ProgressComponent implements OnInit {
             });
           }
 
-          const minTime = this.toUtcDateTime(
+          const minTime = toUtcDateTime(
             burn.featuredStarted
             || burn.featuredEnded
             || burn.burnStarted
@@ -127,7 +128,7 @@ export class ProgressComponent implements OnInit {
               return {
                 name: o.userName + (o.isModerator ? ' ♦' : ''),
                 data: o.times.map((gd: any) => {
-                  const utcDate = this.toUtcDateTime(gd.date);
+                  const utcDate = toUtcDateTime(gd.date);
                   return [utcDate, gd.total];
                 })
               };
@@ -182,18 +183,5 @@ export class ProgressComponent implements OnInit {
           }
         }
       });
-  }
-
-  private toUtcDateTime(num: string): number {
-    const date = new Date(num);
-    const utcDate = Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      date.getMinutes(),
-      date.getSeconds()
-    );
-    return utcDate;
   }
 }

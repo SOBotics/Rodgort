@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
+import { toUtcDateTime } from '../../utils/ToUtcDateTime';
 
 @Component({
   selector: 'app-question-count-graph',
@@ -30,6 +31,8 @@ export class QuestionCountGraphComponent implements OnInit {
   public burnStarted?: string;
   @Input()
   public burnEnded?: string;
+  @Input()
+  public customLines?: { lineName?: string; position: any; width?: number; colour: string; }[];
 
   public chart: Chart = null;
 
@@ -37,12 +40,22 @@ export class QuestionCountGraphComponent implements OnInit {
 
   ngOnInit() {
     const bands = [];
-    const lines = [];
+    const lines = this.customLines ?
+      this.customLines.map(l => ({
+        color: l.colour,
+        value: l.position,
+        width: l.width || 1,
+        label: {
+          text: l.lineName
+        }
+      }))
+     : [];
+
     if (this.featuredStarted && this.featuredEnded) {
       bands.push({
         color: 'rgb(251, 237, 182)',
-        from: this.toUtcDateTime(this.featuredStarted),
-        to: this.toUtcDateTime(this.featuredEnded),
+        from: toUtcDateTime(this.featuredStarted),
+        to: toUtcDateTime(this.featuredEnded),
         label: {
           text: 'featured'
         }
@@ -50,7 +63,7 @@ export class QuestionCountGraphComponent implements OnInit {
     } else if (this.featuredStarted) {
       lines.push({
         color: 'red',
-        value: this.toUtcDateTime(this.featuredStarted),
+        value: toUtcDateTime(this.featuredStarted),
         width: 2,
         label: {
           text: 'featured start'
@@ -59,7 +72,7 @@ export class QuestionCountGraphComponent implements OnInit {
     } else if (this.featuredEnded) {
       lines.push({
         color: 'red',
-        value: this.toUtcDateTime(this.featuredEnded),
+        value: toUtcDateTime(this.featuredEnded),
         width: 2,
         label: {
           text: 'featured end'
@@ -70,8 +83,8 @@ export class QuestionCountGraphComponent implements OnInit {
     if (this.burnStarted && this.burnEnded) {
       bands.push({
         color: 'rgb(251, 189, 182)',
-        from: this.toUtcDateTime(this.burnStarted),
-        to: this.toUtcDateTime(this.burnEnded),
+        from: toUtcDateTime(this.burnStarted),
+        to: toUtcDateTime(this.burnEnded),
         label: {
           text: 'burnination'
         }
@@ -79,7 +92,7 @@ export class QuestionCountGraphComponent implements OnInit {
     } else if (this.burnStarted) {
       lines.push({
         color: 'red',
-        value: this.toUtcDateTime(this.burnStarted),
+        value: toUtcDateTime(this.burnStarted),
         width: 2,
         label: {
           text: 'burn start'
@@ -88,7 +101,7 @@ export class QuestionCountGraphComponent implements OnInit {
     } else if (this.burnEnded) {
       lines.push({
         color: 'red',
-        value: this.toUtcDateTime(this.burnEnded),
+        value: toUtcDateTime(this.burnEnded),
         width: 2,
         label: {
           text: 'burn end'
@@ -100,7 +113,7 @@ export class QuestionCountGraphComponent implements OnInit {
     series.push({
       name: 'Total',
       data: this.data.map(gd => {
-        const utcDate = this.toUtcDateTime(gd.dateTime);
+        const utcDate = toUtcDateTime(gd.dateTime);
         return [utcDate, gd.questionCount];
       })
     });
@@ -109,7 +122,7 @@ export class QuestionCountGraphComponent implements OnInit {
       series.push({
         name: 'Remaining',
         data: this.remainingOverTime.map(gd => {
-          const utcDate = this.toUtcDateTime(gd.date);
+          const utcDate = toUtcDateTime(gd.date);
           return [utcDate, gd.total];
         })
       });
@@ -119,7 +132,7 @@ export class QuestionCountGraphComponent implements OnInit {
       series.push({
         name: 'Closures',
         data: this.closuresOverTime.map(gd => {
-          const utcDate = this.toUtcDateTime(gd.date);
+          const utcDate = toUtcDateTime(gd.date);
           return [utcDate, gd.total];
         })
       });
@@ -128,7 +141,7 @@ export class QuestionCountGraphComponent implements OnInit {
       series.push({
         name: 'Deletions',
         data: this.deletionsOverTime.map(gd => {
-          const utcDate = this.toUtcDateTime(gd.date);
+          const utcDate = toUtcDateTime(gd.date);
           return [utcDate, gd.total];
         })
       });
@@ -137,7 +150,7 @@ export class QuestionCountGraphComponent implements OnInit {
       series.push({
         name: 'Retags',
         data: this.retagsOverTime.map(gd => {
-          const utcDate = this.toUtcDateTime(gd.date);
+          const utcDate = toUtcDateTime(gd.date);
           return [utcDate, gd.total];
         })
       });
@@ -146,7 +159,7 @@ export class QuestionCountGraphComponent implements OnInit {
       series.push({
         name: 'Roombas',
         data: this.roombasOverTime.map(gd => {
-          const utcDate = this.toUtcDateTime(gd.date);
+          const utcDate = toUtcDateTime(gd.date);
           return [utcDate, gd.total];
         })
       });
@@ -213,18 +226,5 @@ export class QuestionCountGraphComponent implements OnInit {
       },
       series: series
     });
-  }
-
-  private toUtcDateTime(num: string): number {
-    const date = new Date(num);
-    const utcDate = Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      date.getHours(),
-      date.getMinutes(),
-      date.getSeconds()
-    );
-    return utcDate;
   }
 }

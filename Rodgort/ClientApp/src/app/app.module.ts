@@ -26,6 +26,7 @@ import { TrackingStatusBubbleComponent } from './tracking-status-bubble/tracking
 import {ToasterModule } from 'angular2-toaster';
 import { HttpErrorInterceptor } from './interceptors/HttpErrorInterceptor';
 import { HttpAuthenticationInterceptor } from './interceptors/HttpAuthenticationInterceptor';
+import { ZombiesComponent } from './zombies/zombies.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { HttpAuthenticationInterceptor } from './interceptors/HttpAuthentication
     TagTrackingStatusAuditsComponent,
     UserComponent,
     TagBubbleComponent,
-    TrackingStatusBubbleComponent
+    TrackingStatusBubbleComponent,
+    ZombiesComponent
   ],
   imports: [
     ChartModule,

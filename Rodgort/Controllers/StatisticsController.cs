@@ -69,6 +69,22 @@ namespace Rodgort.Controllers
                     && mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqma => mqma.TagName == DbMetaTag.STATUS_COMPLETED))
             );
 
+            var numZombies = _context.Database.GetDbConnection().Query<ZombieQuery>(@"
+select COUNT(*) as ZombieCount
+FROM (
+	select
+	distinct no_questions.tag_name  
+	from 
+	tag_statistics no_questions
+  	inner join meta_question_tags mqt on mqt.tag_name = no_questions.tag_name and mqt.tracking_status_id = 2  
+	where exists (
+		select NULL FROM
+		tag_statistics has_questions where has_questions.tag_name = no_questions.tag_name and has_questions.date_time > no_questions.date_time and has_questions.question_count > 0
+	)
+	and no_questions.question_count = 0
+) innerQuery
+").First().ZombieCount;
+
             return new
             {
                 Requests = new
@@ -90,9 +106,10 @@ namespace Rodgort.Controllers
                 Tags = new
                 {
                     Total = tagCount,
-                    noQuestions = tagsNoQuestions,
-                    synonymised = synonomisedTags,
-                    hasQuestionsAndAttachedToCompletedRequest = tagsQuestionsOnCompleted
+                    NoQuestions = tagsNoQuestions,
+                    Synonymised = synonomisedTags,
+                    HasQuestionsAndAttachedToCompletedRequest = tagsQuestionsOnCompleted,
+                    ZombieCount = numZombies,
                 },
                 Admin = new
                 {
@@ -590,6 +607,11 @@ order by COUNT(distinct user_actions.post_id) desc", new
                     tag
                 })
                 .ToList();
+        }
+
+        private class ZombieQuery
+        {
+            public int ZombieCount { get; set; }
         }
 
         private class ActionOverTimeQuery

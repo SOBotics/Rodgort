@@ -1,0 +1,16 @@
+<div class="container loading-container">
+  <img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
+</div>
+
+<ng-container *ngIf="!loading">
+  <button *ngIf="filter.onlyAlive" routerLink="/zombies" [queryParams]="{onlyAlive: 'false'}" class="btn btn-primary pull-right">Show all zombies</button>
+  <button *ngIf="!filter.onlyAlive" routerLink="/zombies" class="btn btn-primary pull-right">Show only living zombies</button>
+  <ng-container *ngFor="let zombie of zombies; let i = index;">
+    <hr *ngIf="i > 0" />
+    <h3>{{zombie.tag}} ({{zombie.revivals.length}} revival{{zombie.revivals.length == 1 ? '' : 's'}})</h3>
+
+    <app-question-count-graph [data]="zombie.questionCountOverTime" [customLines]="zombie.lines">
+    </app-question-count-graph>
+  </ng-container>
+
+</ng-container>
