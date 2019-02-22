@@ -6,6 +6,7 @@ using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
 using Rodgort.Utilities;
+using Rodgort.Utilities.Paging;
 
 namespace Rodgort.Controllers
 {
@@ -21,6 +22,37 @@ namespace Rodgort.Controllers
             _context = context;
             _dateService = dateService;
         }
+
+        [HttpGet("all")]
+        public object GetAll(int pageNumber, int pageSize)
+        {
+            var query = _context.SiteUsers
+                .Select(su => new
+                {
+                    su.Id,
+                    su.DisplayName,
+                    su.IsModerator,
+                    NumBurnActions =
+                        _context.MetaQuestions.Where(mq => 
+                                mq.BurnStarted.HasValue 
+                                && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).Any(t => su.UserActions.Select(ua => ua.Tag).Contains(t.TagName))
+                        )
+                        .SelectMany(mq => su.UserActions.Where(ua =>
+                                    mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
+                                    .Select(mqt => mqt.TagName)
+                                    .Contains(ua.Tag)
+                                )
+                        )
+                        .Select(ua => ua.PostId).Distinct().Count(),
+
+                    TriageTags = su.TagTrackingStatusAudits.Count,
+                    TriageQuestions = su.TagTrackingStatusAudits.Select(audit => audit.MetaQuestionId).Distinct().Count(),
+                })
+                .OrderByDescending(su => su.NumBurnActions);
+
+            return query.Page(pageNumber, pageSize);
+        }
+        
 
         [HttpGet]
         public object Get(int userId)

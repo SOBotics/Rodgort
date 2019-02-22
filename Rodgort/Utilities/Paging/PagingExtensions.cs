@@ -11,8 +11,14 @@ namespace Rodgort.Utilities.Paging
         }
         public static PagingResponse<T> Page<T>(this IOrderedQueryable<T> query, int pageNumber, int pageSize)
         {
+            if (pageNumber <= 1)
+                pageNumber = 1;
+
             if (pageSize > 100)
                 pageSize = 100;
+
+            if (pageSize <= 0)
+                pageSize = 20;
 
             var count = query.Count();
             var data =

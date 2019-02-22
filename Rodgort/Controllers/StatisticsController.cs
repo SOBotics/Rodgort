@@ -85,6 +85,8 @@ FROM (
 ) innerQuery
 ").First().ZombieCount;
 
+            var numUsers = _context.SiteUsers.Count();
+
             return new
             {
                 Requests = new
@@ -101,7 +103,7 @@ FROM (
                     Completed = completedRequests,
 
                     CompletedWithQuestionsLeft = completedRequestsWithQuestions,
-                    NoStatusButCompleted = noStatusNoQuestions
+                    NoStatusButCompleted = noStatusNoQuestions,
                 }, 
                 Tags = new
                 {
@@ -114,6 +116,10 @@ FROM (
                 Admin = new
                 {
                     UnknownDeletions = unknownDeletions
+                },
+                Users = new
+                {
+                    TotalUsers = numUsers
                 }
             };
         }

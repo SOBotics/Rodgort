@@ -30,8 +30,13 @@ export class HomeComponent implements OnInit {
     },
     admin: {
       unknownDeletions: '?'
+    },
+    users: {
+      totalUsers: '?'
     }
   };
+
+  public loading = false;
 
   public isAdmin = false;
 
@@ -41,7 +46,9 @@ export class HomeComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.loading = true;
     this.httpClient.get('/api/statistics').subscribe(d => {
+      this.loading = false;
       this.statistics = d;
     });
 

@@ -27,6 +27,7 @@ import {ToasterModule } from 'angular2-toaster';
 import { HttpErrorInterceptor } from './interceptors/HttpErrorInterceptor';
 import { HttpAuthenticationInterceptor } from './interceptors/HttpAuthenticationInterceptor';
 import { ZombiesComponent } from './zombies/zombies.component';
+import { UsersComponent } from './users/users.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { ZombiesComponent } from './zombies/zombies.component';
     UserComponent,
     TagBubbleComponent,
     TrackingStatusBubbleComponent,
-    ZombiesComponent
+    ZombiesComponent,
+    UsersComponent
   ],
   imports: [
     ChartModule,

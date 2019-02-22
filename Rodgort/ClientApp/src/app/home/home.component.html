@@ -1,4 +1,7 @@
-<div class="container">
+<div class="container loading-container">
+    <img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
+</div>
+<div *ngIf="!loading" class="container">
     There are currently:
 
     <ul>
@@ -13,19 +16,21 @@
                     {{statistics.requests.proposedBurns == 1 ? 'is' : 'are'}} featured</a></li>
             <li><a routerLink="/requests" [queryParams]="{trackingStatusId:2}">{{statistics.requests.withTrackedTags}}
                     have a tracked tag</a></li>
-            <li><a routerLink="/requests" [queryParams]="{trackingStatusId:1}">{{statistics.requests.requireTrackingApproval}}
+            <li><a routerLink="/requests"
+                    [queryParams]="{trackingStatusId:1}">{{statistics.requests.requireTrackingApproval}}
                     require tag tracking approval</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined}}
                     were declined</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed}}
                     were completed</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}}
+            <li><a routerLink="/requests"
+                    [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}}
                     are completed but still have tracked tags with questions</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'none', hasQuestions: 'no'}">{{statistics.requests.noStatusButCompleted}}
+            <li><a routerLink="/requests"
+                    [queryParams]="{status:'none', hasQuestions: 'no'}">{{statistics.requests.noStatusButCompleted}}
                     have no status but none of the tracked tags have questions</a></li>
         </ul>
     </ul>
-
     <ul>
         <li>
             {{statistics.tags.total}} tags related to a burnination
@@ -39,6 +44,11 @@
                 status-completed request</li>
             <li><a routerLink="/zombies"> {{statistics.tags.zombieCount}} need a double tap</a></li>
         </ul>
+    </ul>
+    <ul>
+        <li>
+            <a routerLink="users">{{statistics.users.totalUsers}} total users</a>
+        </li>
     </ul>
 
     <hr />
