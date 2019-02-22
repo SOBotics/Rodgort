@@ -29,7 +29,9 @@ select
 	select 
 		a.*,
 		case 
-			when lag(question_count) over (partition by a.tag_name order by date_time) = 0 and question_count > 0 then true
+			when lag(question_count) over (partition by a.tag_name order by date_time) = 0 
+            and not lag(is_synonym) over (partition by a.tag_name order by date_time)
+            and question_count > 0 then true
 			else false
 		end 
 		as revived
@@ -38,7 +40,6 @@ select
     inner join tag_statistics a on t.name = a.tag_name
 	inner join meta_question_tags mqt on mqt.tag_name = t.name and mqt.tracking_status_id = 2
     where 
-    not a.is_synonym
     and @tag is null and (@allZombies or t.number_of_questions > 0)
     or t.name = @tag
 ) innerQuery
