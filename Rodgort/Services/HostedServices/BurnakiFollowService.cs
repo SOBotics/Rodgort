@@ -49,14 +49,20 @@ namespace Rodgort.Services.HostedServices
 
                 var burnakiFollows = context.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue).ToList();
                 foreach (var burnakiFollow in burnakiFollows)
-                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted,
-                        burnakiFollow.Tag, dateService, cancellationToken);
+                    FollowInRoom(burnakiFollow.RoomId, burnakiFollow.BurnakiId, burnakiFollow.FollowStarted, burnakiFollow.Tag, dateService, cancellationToken);
 
-                var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS);
-                await events.FirstAsync();
+                var headquarterEvents = chatClient.SubscribeToEvents(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS);
+                await headquarterEvents.FirstAsync();
+
                 chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, "o/");
                 _logger.LogInformation("Successfully joined headquarters");
-                events
+
+                var trogdorEvents = chatClient.SubscribeToEvents(ChatSite.StackOverflow, ChatRooms.TROGDOR);
+                await headquarterEvents.FirstAsync();
+                _logger.LogInformation("Successfully joined trogdor");
+
+                headquarterEvents
+                    .Merge(trogdorEvents)
                     .ReplyAlive()
                     .Pinged()
                     .SameRoomOnly()
@@ -130,7 +136,9 @@ namespace Rodgort.Services.HostedServices
             {
                 { "follow", ProcessFollow },
                 { "unfollow", ProcessUnfollow },
-                { "follows", ProcessFollows }
+                { "follows", ProcessFollows },
+                { "tracking", ProcessTracking },
+                { "untrack", ProcessUntrack }
             };
             
             var command = splitContent[1];
@@ -208,6 +216,44 @@ namespace Rodgort.Services.HostedServices
             else
             {
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} I'm not following anyone");
+            }
+        }
+
+        private async Task ProcessTracking(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
+        {
+            var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
+            var allFollows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue);
+            if (allFollows.Any())
+            {
+                var trackingMessage = $"The following tags are being tracked: {string.Join(", ", allFollows.Select(f => f.Tag).Distinct())}";
+                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {trackingMessage}");
+            }
+            else
+            {
+                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} I'm not following anyone");
+            }
+        }
+
+        private async Task ProcessUntrack(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
+        {
+            var tag = args[2];
+
+            var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
+            var trackedTags = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag);
+            if (trackedTags.Any())
+            {
+                await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
+                foreach (var trackedTag in trackedTags)
+                {
+                    await chatClient.SendMessage(ChatSite.StackOverflow, trackedTag.RoomId, "@Gemmy stop");
+                }
+
+                var trackingMessage = "Tags successfully untracked";
+                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {trackingMessage}");
+            }
+            else
+            {
+                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {tag} is not being tracked");
             }
         }
     }

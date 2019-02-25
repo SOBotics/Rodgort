@@ -182,6 +182,15 @@ namespace StackExchangeChat
             });
         }
 
+        public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, params int[] roomIds)
+        {
+            var obs = Observable.Empty<ChatEvent>();
+            foreach (var roomId in roomIds)
+                obs = obs.Merge(SubscribeToEvents(chatSite, roomId));
+
+            return obs;
+        }
+
         public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, int roomId)
         {
             return Observable.Create<ChatEvent>(async observer =>
