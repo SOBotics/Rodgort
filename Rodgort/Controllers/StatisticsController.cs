@@ -41,6 +41,8 @@ namespace Rodgort.Controllers
             var declinedRequests = burnRequests.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_DECLINED));
             var completedRequests = burnRequests.Count(mq => mq.MetaQuestionMetaTags.Any(mtqm => mtqm.TagName == DbMetaTag.STATUS_COMPLETED));
 
+            var trackedCompletedRequests = burnRequests.Count(mq => mq.BurnStarted.HasValue);
+
             var unknownDeletions = _context.UnknownDeletions.Count(ud => !ud.Processed.HasValue);
 
             var completedRequestsWithQuestions = burnRequests.Count(mq => 
@@ -103,6 +105,7 @@ FROM (
                     
                     Declined = declinedRequests,
                     Completed = completedRequests,
+                    TrackedCompleted = trackedCompletedRequests,
 
                     CompletedWithQuestionsLeft = completedRequestsWithQuestions,
                     NoStatusButCompleted = noStatusNoQuestions,
@@ -126,6 +129,29 @@ FROM (
             };
         }
 
+        [HttpGet("TrackedBurns")]
+        public object TrackedBurns()
+        {
+            return _context.MetaQuestions.Where(mq => mq.BurnStarted.HasValue)
+                .Select(mq => new
+                {
+                    mq.Id,
+                    mq.Title,
+                    Tags = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).Select(mqt => mqt.TagName),
+                    mq.BurnStarted,
+                    mq.BurnEnded
+                })
+                .OrderByDescending(mq => mq.BurnStarted)
+                .ToList();
+        }
+
+
+        [HttpGet("Leaderboard/All")]
+        public object AllLeaderboards()
+        {
+            return GenerateBurnsData(_context.MetaQuestions.Where(mq => mq.BurnStarted.HasValue));
+        }
+        
         [HttpGet("Leaderboard/Current")]
         public object CurrentLeaderboard()
         {
@@ -168,6 +194,7 @@ FROM (
                                     : inAnHour,
                     mq.Title,
                     mq.Link,
+                    mq.Id,
                     BurningTags = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED || mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE)
                 }).Select(mq => new
                 {
@@ -179,6 +206,7 @@ FROM (
                     mq.EndTime,
                     mq.Title,
                     mq.Link,
+                    mq.Id,
 
                     BurningTags = mq.BurningTags.Select(mqt =>
                         new
@@ -194,6 +222,7 @@ FROM (
             {
                 Burns = burnsData.Select(b => new
                 {
+                    MetaQuestionId = b.Id,
                     MetaQuestionTitle = b.Title,
                     MetaQuestionLink = b.Link,
                     Tags = b.BurningTags.Select(bt =>
@@ -227,7 +256,9 @@ FROM (
                     b.FeaturedEnded,
                     b.BurnStarted,
                     b.BurnEnded
-                }).ToList()
+                })
+                .OrderByDescending(b => b.BurnStarted)
+                .ToList()
             };
             return res;
         }

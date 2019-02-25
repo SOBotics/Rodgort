@@ -9,11 +9,13 @@ import { TagTrackingStatusAuditsComponent } from './tag-tracking-status-audits/t
 import { UserComponent } from './user/user.component';
 import { ZombiesComponent } from './zombies/zombies.component';
 import { UsersComponent } from './users/users.component';
+import { TrackedBurnsComponent } from './tracked-burns/tracked-burns.component';
 
 export const appRoutes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
     { path: 'requests', component: RequestsComponent, pathMatch: 'full' },
     { path: 'logs', component: LogsComponent },
+    { path: 'progress/:type', component: ProgressComponent },
     { path: 'progress', component: ProgressComponent },
     { path: 'tag-tracking-status-audits', component: TagTrackingStatusAuditsComponent },
     { path: 'unknown-deletion-resolution', component: UnknownDeletionResolutionComponent },
@@ -21,5 +23,6 @@ export const appRoutes: Routes = [
     { path: 'user/:id', component: UserComponent },
     { path: 'profile', component: UserComponent },
     { path: 'zombies', component: ZombiesComponent },
-    { path: 'users', component: UsersComponent }
+    { path: 'users', component: UsersComponent },
+    { path: 'tracked-burns', component: TrackedBurnsComponent }
 ];

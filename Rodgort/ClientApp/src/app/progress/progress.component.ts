@@ -21,7 +21,8 @@ export class ProgressComponent implements OnInit {
   public userBreakdownShowAll = false;
 
   public filter = {
-    metaQuestionId: -1
+    metaQuestionId: -1,
+    all: false,
   };
 
   constructor(
@@ -34,14 +35,22 @@ export class ProgressComponent implements OnInit {
       this.filter.metaQuestionId = +params['metaQuestionId'] || -1;
       this.reloadData();
     });
+
+    this.route.params.subscribe(params => {
+      this.filter.all = (params['type'] !== undefined);
+      this.reloadData();
+    });
   }
 
   private reloadData() {
     this.loading = true;
     this.hasNoData = false;
-    const endpoint = this.filter.metaQuestionId >= 0 ?
-      `/api/statistics/leaderboard?metaQuestionId=${this.filter.metaQuestionId}`
-      : '/api/statistics/leaderboard/current';
+    const endpoint =
+      this.filter.metaQuestionId >= 0 ?
+        `/api/statistics/leaderboard?metaQuestionId=${this.filter.metaQuestionId}`
+        : this.filter.all
+          ? '/api/statistics/leaderboard/all'
+          : '/api/statistics/leaderboard/current';
 
     this.httpClient.get(endpoint)
       .subscribe((data: any) => {

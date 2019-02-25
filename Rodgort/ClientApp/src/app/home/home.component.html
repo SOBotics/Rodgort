@@ -22,7 +22,7 @@
             <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined}}
                     were declined</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed}}
-                    were completed</a></li>
+                    were completed</a> (<a href="/tracked-burns">{{statistics.requests.trackedCompleted}} tracked</a>)</li>
             <li><a routerLink="/requests"
                     [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}}
                     are completed but still have tracked tags with questions</a></li>

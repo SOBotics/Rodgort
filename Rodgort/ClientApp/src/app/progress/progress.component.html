@@ -9,7 +9,10 @@
   <ng-container *ngIf="!hasNoData && burns">
     <ng-container *ngFor="let burn of burns; let i = index">
       <hr *ngIf="i > 0" />
-      <h1>{{burn.metaQuestionTitle}}</h1>
+      <h1>{{burn.metaQuestionTitle}} <a class="perma-link" routerLink="/progress"
+          [queryParams]="{metaQuestionId: burn.metaQuestionId}">
+          <img src="../../assets/permalink.png">
+        </a></h1>
       <p style="display: inline"><a href="{{burn.metaQuestionLink}}">View meta post</a></p>
       <ng-container *ngFor="let tag of burn.tags">
         <div class="container mt-3 mb-3">
@@ -18,8 +21,9 @@
         </div>
 
         <h2>Tag Progress</h2>
-        <app-question-count-graph [data]="tag.questionCountOverTime" [remainingOverTime]="tag.remainingOverTime" [closuresOverTime]="tag.closuresOverTime"
-          [deletionsOverTime]="tag.deletionsOverTime" [retagsOverTime]="tag.retagsOverTime" [roombasOverTime]="tag.roombasOverTime"
+        <app-question-count-graph [data]="tag.questionCountOverTime" [remainingOverTime]="tag.remainingOverTime"
+          [closuresOverTime]="tag.closuresOverTime" [deletionsOverTime]="tag.deletionsOverTime"
+          [retagsOverTime]="tag.retagsOverTime" [roombasOverTime]="tag.roombasOverTime"
           [featuredStarted]="burn.featuredStarted" [featuredEnded]="burn.featuredEnded" [burnStarted]="burn.burnStarted"
           [burnEnded]="burn.burnEnded">
 
@@ -30,8 +34,9 @@
 
         <ng-container *ngIf="tag.userGrandTotals && tag.userGrandTotals.length">
           <h2>User grand totals</h2>
-          
-          <input type="checkbox" id="{{tag.tag}}-userGrandTotalShowAll" [(ngModel)]="tag.userGrandTotalShowAll" [ngModelOptions]="{standalone: true}" >
+
+          <input type="checkbox" id="{{tag.tag}}-userGrandTotalShowAll" [(ngModel)]="tag.userGrandTotalShowAll"
+            [ngModelOptions]="{standalone: true}">
           <label for="{{tag.tag}}-userGrandTotalShowAll">Show all</label>
           <table class="table">
             <thead>
@@ -54,7 +59,8 @@
         <ng-container *ngIf="tag.userTotals && tag.userTotals.length">
           <h2>User total breakdown</h2>
 
-          <input type="checkbox" id="{{tag.tag}}-userBreakdownShowAll" [(ngModel)]="tag.userBreakdownShowAll" [ngModelOptions]="{standalone: true}" >
+          <input type="checkbox" id="{{tag.tag}}-userBreakdownShowAll" [(ngModel)]="tag.userBreakdownShowAll"
+            [ngModelOptions]="{standalone: true}">
           <label for="{{tag.tag}}-userBreakdownShowAll">Show all</label>
           <table class="table">
             <thead>
