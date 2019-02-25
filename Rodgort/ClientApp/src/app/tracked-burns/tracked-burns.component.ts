@@ -16,12 +16,33 @@ export class TrackedBurnsComponent implements OnInit {
 
   ngOnInit() {
     this.loading = true;
-    this.httpClient.get('/api/statistics/trackedBurns').subscribe((response: any[]) => {
-      this.burns = response.map(d => ({
-        ...d,
-        burnStartedLocal: moment.utc(d.burnStarted).local().format('YYYY-MM-DD hh:mm:ss A'),
-        burnEndedLocal: d.burnEnded ? moment.utc(d.burnEnded).local().format('YYYY-MM-DD hh:mm:ss A') : undefined,
-      }));
+    this.httpClient.get('/api/statistics/trackedBurns').subscribe((burns: any[]) => {
+      this.burns = burns.map(burn => {
+        const momBurnStarted = moment.utc(burn.burnStarted);
+        const momBurnEnded = burn.burnEnded ? moment.utc(burn.burnEnded) : undefined;
+
+        let durationStr: string | undefined;
+        if (momBurnEnded) {
+          let duration = moment.duration(momBurnEnded.diff(momBurnStarted));
+          const days = duration.days();
+          duration = duration.subtract(days, 'days');
+          const hours = duration.hours();
+          duration = duration.subtract(hours, 'hours');
+          const minutes = duration.minutes();
+          durationStr = days > 0
+            ? `${days} days, ${hours} hours and ${minutes} minutes`
+            : hours > 0 ? `${hours} hours and ${minutes} minutes`
+              : `${minutes} minutes`;
+        }
+        const result = {
+          ...burn,
+          burnStartedLocal: momBurnStarted.local().format('YYYY-MM-DD hh:mm:ss A'),
+          burnEndedLocal: momBurnEnded ? momBurnEnded.local().format('YYYY-MM-DD hh:mm:ss A') : undefined,
+          duration: durationStr
+        };
+        return result;
+      });
+      console.log(this.burns);
       this.loading = false;
     });
   }
