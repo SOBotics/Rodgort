@@ -1,9 +1,8 @@
-﻿using System;
-using System.Linq;
-using Dapper;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
+using Rodgort.Data.Views;
 
 namespace Rodgort.Controllers
 {
@@ -20,60 +19,32 @@ namespace Rodgort.Controllers
         [HttpGet]
         public object Index(string tag, bool onlyAlive)
         {
-            var zombies = _context.Database.GetDbConnection()
-                .Query<ZombieQuery>(@"
-select 
-	tag_name as Tag,
-	date_time DateRevived
- from (
-	select 
-		a.*,
-		case 
-			when lag(question_count) over (partition by a.tag_name order by date_time) = 0 
-            and not lag(is_synonym) over (partition by a.tag_name order by date_time)
-            and question_count > 0 then true
-			else false
-		end 
-		as revived
-	from 
-    tags t
-    inner join tag_statistics a on t.name = a.tag_name
-	inner join meta_question_tags mqt on mqt.tag_name = t.name and mqt.tracking_status_id = 2
-    where @tag is null and (@allZombies or t.number_of_questions > 0)
-    or t.name = @tag
-) innerQuery
-where innerQuery.revived
-", new
-                {
-                    allZombies = !onlyAlive,
-                    tag
-                }).ToList();
-
-            var zombiedTags = zombies.Select(z => z.Tag).Distinct();
-
-            var questionCountsOverTime = _context.TagStatistics.Where(t => zombiedTags.Contains(t.TagName))
-                .ToList()
-                .GroupBy(t => t.TagName)
-                .ToDictionary(t => t.Key);
+            IQueryable<DbZombieTagsView> zombieQuery = _context.ZombieTagsView;
+            if (!string.IsNullOrWhiteSpace(tag))
+                zombieQuery = zombieQuery.Where(z => z.TagName == tag);
+            if (onlyAlive)
+                zombieQuery = zombieQuery.Where(z => z.Tag.NumberOfQuestions > 0);
+            
+            var zombies = zombieQuery
+                .Include(z => z.Tag.Statistics)
+                .ToList();
 
             var result = zombies
                 .GroupBy(z => z.Tag)
-                .Select(t => new
+                .Select(g => new
                 {
-                    Tag = t.Key,
-                    Revivals = t.Select(tt => tt.DateRevived).ToList(),
-                    QuestionCountOverTime = questionCountsOverTime[t.Key].OrderBy(q => q.DateTime)
-                })
-                .OrderByDescending(r => r.Revivals.Count)
-                .ToList();
+                    Tag = g.Key.Name,
+                    Revivals = g.Select(tt => tt.TimeRevived).ToList(),
+                    QuestionCountOverTime = g.First().Tag.Statistics
+                        .Select(stat => new
+                        {
+                            stat.QuestionCount,
+                            stat.DateTime
+                        })
+                        .OrderByDescending(s => s.DateTime)
+                }).ToList();
 
             return result;
-        }
-
-        private class ZombieQuery
-        {
-            public string Tag { get; set; }
-            public DateTime DateRevived { get; set; }
         }
     }
 }

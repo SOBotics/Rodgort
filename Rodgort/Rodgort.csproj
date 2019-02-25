@@ -69,7 +69,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Data\Views\" />
     <Folder Include="Properties\" />
   </ItemGroup>
 

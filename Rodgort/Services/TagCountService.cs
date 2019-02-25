@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
@@ -154,6 +155,9 @@ namespace Rodgort.Services
             }
 
             _context.SaveChanges();
+
+            _context.Database.ExecuteSqlCommand("REFRESH MATERIALIZED VIEW zombie_tags");
+
             _logger.LogInformation("Finished fetching question counts");
         }
     }

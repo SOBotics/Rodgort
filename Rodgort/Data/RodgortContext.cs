@@ -1,5 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Rodgort.Data.Tables;
+using Rodgort.Data.Views;
 using Rodgort.Utilities;
 
 namespace Rodgort.Data
@@ -27,6 +30,8 @@ namespace Rodgort.Data
         public DbSet<DbUnknownDeletion> UnknownDeletions { get; set; }
         public DbSet<DbSeenQuestion> SeenQuestions { get; set; }
         public DbSet<DbMetaQuestionTagTrackingStatusAudit> MetaQuestionTagTrackingStatusAudits { get; set; }
+
+        public DbQuery<DbZombieTagsView> ZombieTagsView { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -133,6 +138,11 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbSeenQuestion>().HasKey(sq => new { sq.Id, sq.Tag });
             modelBuilder.Entity<DbSeenQuestion>().HasIndex(sq => sq.Tag);
 
+            modelBuilder.Query<DbZombieTagsView>().ToView("zombie_tags");
+            modelBuilder.Query<DbZombieTagsView>().HasOne(z => z.Tag).WithMany().HasForeignKey(z => z.TagName);
+            modelBuilder.Query<DbZombieTagsView>().Property(z => z.TagName).HasColumnName("tag_name");
+            modelBuilder.Query<DbZombieTagsView>().Property(z => z.TimeRevived).HasColumnName("time_revived");
+            
             modelBuilder.Entity<DbMetaTag>()
                 .HasData(
                     new DbMetaTag {Name = DbMetaTag.STATUS_COMPLETED},
@@ -170,7 +180,7 @@ namespace Rodgort.Data
         // https://andrewlock.net/customising-asp-net-core-identity-ef-core-naming-conventions-for-postgresql/
         public void SnakeCaseMembers(ModelBuilder modelBuilder)
         {
-            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            foreach (var entity in modelBuilder.Model.GetEntityTypes().Where(t => !t.IsQueryType))
             {
                 foreach (var property in entity.GetProperties())
                 {

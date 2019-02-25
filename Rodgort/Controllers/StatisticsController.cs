@@ -71,23 +71,25 @@ namespace Rodgort.Controllers
                     && mqt.MetaQuestion.MetaQuestionMetaTags.Any(mqma => mqma.TagName == DbMetaTag.STATUS_COMPLETED))
             );
 
-            var numZombies = _context.Database.GetDbConnection().Query<ZombieQuery>(@"
-select COUNT(*) as ZombieCount
-FROM (
-	select
-	distinct no_questions.tag_name  
-	from 
-    tags
-    inner join tag_statistics no_questions on no_questions.tag_name = tags.name
-  	inner join meta_question_tags mqt on mqt.tag_name = tags.name and mqt.tracking_status_id = 2  
-	where exists (
-		select NULL FROM
-		tag_statistics has_questions where has_questions.tag_name = tags.name and has_questions.date_time > no_questions.date_time and has_questions.question_count > 0
-	)
-	and no_questions.question_count = 0 and not no_questions.is_synonym
-    and tags.number_of_questions > 0
-) innerQuery
-").First().ZombieCount;
+            var numZombies = _context.ZombieTagsView.Where(z => z.Tag.NumberOfQuestions > 0).Select(z => z.TagName).Distinct().Count();
+
+//            var numZombies = _context.Database.GetDbConnection().Query<ZombieQuery>(@"
+//select COUNT(*) as ZombieCount
+//FROM (
+//	select
+//	distinct no_questions.tag_name  
+//	from 
+//    tags
+//    inner join tag_statistics no_questions on no_questions.tag_name = tags.name
+//  	inner join meta_question_tags mqt on mqt.tag_name = tags.name and mqt.tracking_status_id = 2  
+//	where exists (
+//		select NULL FROM
+//		tag_statistics has_questions where has_questions.tag_name = tags.name and has_questions.date_time > no_questions.date_time and has_questions.question_count > 0
+//	)
+//	and no_questions.question_count = 0 and not no_questions.is_synonym
+//    and tags.number_of_questions > 0
+//) innerQuery
+//").First().ZombieCount;
 
             var numUsers = _context.SiteUsers.Count();
 
