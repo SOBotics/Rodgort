@@ -30,9 +30,9 @@ export class TrackedBurnsComponent implements OnInit {
           duration = duration.subtract(hours, 'hours');
           const minutes = duration.minutes();
           durationStr = days > 0
-            ? `${days} days, ${hours} hours and ${minutes} minutes`
-            : hours > 0 ? `${hours} hours and ${minutes} minutes`
-              : `${minutes} minutes`;
+            ? `${days} day${days > 1 ? 's' : ''}, ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`
+            : hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`
+              : `${minutes} minute${minutes > 1 ? 's' : ''}`;
         }
         const result = {
           ...burn,
