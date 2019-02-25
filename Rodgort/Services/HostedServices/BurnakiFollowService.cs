@@ -236,7 +236,7 @@ namespace Rodgort.Services.HostedServices
 
         private async Task ProcessUntrack(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
         {
-            var tag = args[2];
+            var tag = args[0];
 
             var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
             var trackedTags = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag);
