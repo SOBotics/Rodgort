@@ -74,56 +74,20 @@ namespace Rodgort.Services
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burn of {metaPostUrl} started, but there are multiple observation rooms: {string.Join(", ", roomIds)}");
         }
         
-        public async Task StopBurn(string tag)
+        public async Task AnnounceBurnEnded(string metaQuestionName, int metaQuestionId, IEnumerable<string> tags)
         {
             if (!_enabled)
                 return;
-
-            var follows = _rodgortContext.BurnakiFollows.Where(bf =>
-                bf.BurnakiId == ChatUserIds.GEMMY
-                && bf.Tag == tag
-                && !bf.FollowEnded.HasValue
-            ).ToList();
-
-            if (!follows.Any())
-                return;
-
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [tag:{tag}] has finished!");
             
-            foreach (var follow in follows)
-            {
-                await _chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
-                follow.FollowEnded = _dateService.UtcNow;
-            }
-
-            _rodgortContext.SaveChanges();
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [{metaQuestionName}](https://meta.stackoverflow.com/q/{metaQuestionId}) {string.Join(", ", tags.Select(t => $"[tag:{t}]"))} has finished!");
         }
 
-        public async Task BurnDeclined(string tag)
+        public async Task AnnounceBurnDeclined(string metaQuestionName, int metaQuestionId, IEnumerable<string> tags)
         {
             if (!_enabled)
                 return;
 
-            var follows = _rodgortContext.BurnakiFollows.Where(bf =>
-                bf.BurnakiId == ChatUserIds.GEMMY
-                && bf.Tag == tag
-                && !bf.FollowEnded.HasValue
-            ).ToList();
-
-            if (!follows.Any())
-                return;
-
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The request for the burnination of [tag:{tag}] has been declined");
-
-            foreach (var follow in follows)
-            {
-                await _chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
-                follow.FollowEnded = _dateService.UtcNow;
-            }
-
-            _rodgortContext.SaveChanges();
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The request for the burnination [{metaQuestionName}](https://meta.stackoverflow.com/q/{metaQuestionId}) {string.Join(", ", tags.Select(t => $"[tag:{t}]"))} has been declined");
         }
 
         public async Task NewBurnStarted(string metaPostUrl, List<string> tags)
