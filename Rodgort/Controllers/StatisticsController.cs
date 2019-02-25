@@ -75,13 +75,15 @@ FROM (
 	select
 	distinct no_questions.tag_name  
 	from 
-	tag_statistics no_questions
-  	inner join meta_question_tags mqt on mqt.tag_name = no_questions.tag_name and mqt.tracking_status_id = 2  
+    tags
+    inner join tag_statistics no_questions on no_questions.tag_name = tags.name
+  	inner join meta_question_tags mqt on mqt.tag_name = tags.name and mqt.tracking_status_id = 2  
 	where exists (
 		select NULL FROM
-		tag_statistics has_questions where has_questions.tag_name = no_questions.tag_name and has_questions.date_time > no_questions.date_time and has_questions.question_count > 0
+		tag_statistics has_questions where has_questions.tag_name = tags.name and has_questions.date_time > no_questions.date_time and has_questions.question_count > 0
 	)
 	and no_questions.question_count = 0 and not no_questions.is_synonym
+    and tags.number_of_questions > 0
 ) innerQuery
 ").First().ZombieCount;
 
