@@ -9,6 +9,7 @@
     <thead>
       <tr>
         <th>Meta Question</th>
+        <th></th>
         <th>Tag(s)</th>
         <th>Burn started</th>
         <th>Burn ended</th>
@@ -16,7 +17,8 @@
     </thead>
     <tbody>
       <tr *ngFor="let burn of burns">
-        <td><a href="https://meta.stackoverflow.com/q/{{burn.id}}">{{burn.title}}</a> (<a routerLink="/progress" [queryParams]="{metaQuestionId: burn.id}">Dashboard</a>)</td>
+        <td><a href="https://meta.stackoverflow.com/q/{{burn.id}}">{{burn.title}}</a></td>
+        <td><a routerLink="/progress" [queryParams]="{metaQuestionId: burn.id}">Dashboard</a></td>
         <td>
           <app-tag-bubble *ngFor="let tag of burn.tags" [tag]="tag"></app-tag-bubble>
         </td>
