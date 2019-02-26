@@ -19,7 +19,7 @@ namespace Rodgort.Controllers
         [HttpGet]
         public object Index(string tag, bool onlyAlive)
         {
-            IQueryable<DbZombieTagsView> zombieQuery = _context.ZombieTagsView;
+            IQueryable<DbZombieTagsView> zombieQuery = _context.ZombieTagsView.Where(z => z.Tag.SynonymOf == null);
             if (!string.IsNullOrWhiteSpace(tag))
                 zombieQuery = zombieQuery.Where(z => z.TagName == tag);
             if (onlyAlive)
