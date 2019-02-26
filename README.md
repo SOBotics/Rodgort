@@ -33,7 +33,7 @@ In short, it provides an insight into:
 
 - When Burnaki reports a post, Rodgort will use the API to detect the changes made to the question: closures, re-opens, tag removal, tag addition, deletion and undeletion. In addition, Rodgort will also query the tag every day to identify changes Burnaki failed to post in the room.
 
-## What's left to do?
+## What's left to do? 
 
 - We're currently tracking a *heap* of information regarding tags. However, not everything is easily accessible. I plan to create dashboards to:
     - Suggest requests which might be worth declining, based on question count, request score, request views and answers to the request
