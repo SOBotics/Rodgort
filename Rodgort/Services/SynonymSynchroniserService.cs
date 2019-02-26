@@ -55,7 +55,8 @@ namespace Rodgort.Services
                         {
                             QuestionCount = 0,
                             DateTime = _dateService.UtcNow,
-                            TagName = existingTag.Name
+                            TagName = existingTag.Name,
+                            IsSynonym = true
                         });
                     }
                 }

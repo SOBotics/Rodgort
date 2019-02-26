@@ -98,7 +98,8 @@ namespace Rodgort.Services
                         {
                             QuestionCount = responseTag.Count,
                             DateTime = _dateService.UtcNow,
-                            TagName = responseTag.Name
+                            TagName = responseTag.Name,
+                            IsSynonym = false
                         });
 
                         tagLookup[responseTag.Name].NumberOfQuestions = responseTag.Count;
@@ -141,7 +142,8 @@ namespace Rodgort.Services
                     {
                         QuestionCount = 0,
                         DateTime = _dateService.UtcNow,
-                        TagName = tag.Name
+                        TagName = tag.Name,
+                        IsSynonym = true
                     });
                 }
             }
