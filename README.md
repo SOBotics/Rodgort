@@ -4,7 +4,7 @@
 
 ## What is this?
 
-A project designed to make managing burnination, synonym and merge requests easier on Stack Overflow. You can find the dashboard [here](https://rodgort.sobotics.org/), and the source code [here](https://gitlab.com/rjrudman/Rodgort).
+A project created by the team in SOBotics ([Chat](https://chat.stackoverflow.com/rooms/111347/sobotics), [GitHub](https://github.com/SOBotics/)) designed to make managing burnination, synonym and merge requests easier on Stack Overflow. You can find the dashboard [here](https://rodgort.sobotics.org/), and the source code [here](https://gitlab.com/rjrudman/Rodgort).
 
 In short, it provides an insight into:
 
