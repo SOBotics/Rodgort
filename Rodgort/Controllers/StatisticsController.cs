@@ -229,9 +229,9 @@ namespace Rodgort.Controllers
 
                             Overtime = LoadOverTimeData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
 
-                            UserTotals = LoadUserTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, b.BurnStarted ?? b.StartTime, bt.Tag),
+                            UserTotals = LoadUserTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag),
 
-                            UserGrandTotals = LoadUserGrandTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, b.BurnStarted ?? b.StartTime, bt.Tag)
+                            UserGrandTotals = LoadUserGrandTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag)
                         };
                     }),
 
@@ -568,7 +568,7 @@ from
                 .ToList();
         }
 
-        private List<UserTotalsData> LoadUserTotalsData(DateTime startTime, DateTime endTime, DateTime burnStart, string tag)
+        private List<UserTotalsData> LoadUserTotalsData(DateTime startTime, DateTime endTime, string tag)
         {
             return _context
                 .Database.GetDbConnection()
@@ -583,7 +583,6 @@ from user_actions
 inner join site_users on user_actions.site_user_id = site_users.id
 inner join user_action_types on user_actions.user_action_type_id = user_action_types.id
 where (tag = @tag and time > @startTime and time < @endTime)
-and time > @burnStart
 and site_users.id > 0
 group by 
 	site_users.id,
@@ -594,13 +593,12 @@ order by COUNT(distinct user_actions.post_id) desc", new
                 {
                     startTime,
                     endTime,
-                    burnStart,
                     tag
                 })
                 .ToList();
         }
 
-        private List<UserTotalsData> LoadUserGrandTotalsData(DateTime startTime, DateTime endTime, DateTime burnStart, string tag)
+        private List<UserTotalsData> LoadUserGrandTotalsData(DateTime startTime, DateTime endTime, string tag)
         {
             return _context
                 .Database.GetDbConnection()
@@ -613,7 +611,6 @@ select
 from user_actions
 inner join site_users on user_actions.site_user_id = site_users.id
 where (tag = @tag and time > @startTime and time < @endTime)
-and time > @burnStart
 and site_users.id > 0
 group by 
 	site_users.id,
@@ -623,7 +620,6 @@ order by COUNT(distinct user_actions.post_id) desc", new
                 {
                     startTime,
                     endTime,
-                    burnStart,
                     tag
                 })
                 .ToList();
