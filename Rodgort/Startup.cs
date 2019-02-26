@@ -159,8 +159,6 @@ namespace Rodgort
 
             RecurringJob.AddOrUpdate<InitialTagQueryService>(InitialTagQueryService.SERVICE_NAME, service => service.QuerySync(), "25 0 * * *");
 
-            RecurringJob.AddOrUpdate<InitialTagQueryService>(InitialTagQueryService.SERVICE_NAME, service => service.QuerySync(), "30 0 * * *");
-
             RecurringJob.AddOrUpdate<SynonymSynchroniserService>(SynonymSynchroniserService.SERVICE_NAME, service => service.SynchroniseSync(), "35 0 * * *");
 
             RecurringJob.AddOrUpdate<LogCleanupService>(LogCleanupService.SERVICE_NAME, service => service.Execute(), "40 0 * * *");
