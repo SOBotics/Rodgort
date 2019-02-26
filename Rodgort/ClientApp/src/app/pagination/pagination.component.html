@@ -4,7 +4,7 @@
             <a class="page-link" 
                 [class.minified-shown]="page.MinifiedShown" 
                 [class.minified-hidden]="page.MinifiedHidden" 
-                (click)="pageWasClicked(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
+                (click)="page.Active ? false : pageWasClicked(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
         </li>
     </ul>
 </nav>

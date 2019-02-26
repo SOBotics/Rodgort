@@ -10,6 +10,13 @@
     }
 }
 
+.active > a {
+    cursor: default;
+}
+.active > a:focus {
+    box-shadow: none;
+}
+
 .pagination .minified-hidden {
     display: block;
 }
