@@ -1,3 +1,5 @@
+<!-- thumbnail: https://i.stack.imgur.com/iXnc9.png --> 
+
 # Rodgort
 
 ## What is this?
