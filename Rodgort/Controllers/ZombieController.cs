@@ -35,7 +35,7 @@ namespace Rodgort.Controllers
                 {
                     Tag = g.Key.Name,
                     Revivals = g.Select(tt => tt.TimeRevived).ToList(),
-                    QuestionCountOverTime = g.First().Tag.Statistics
+                    QuestionCountOverTime = g.Key.Statistics
                         .Select(stat => new
                         {
                             stat.QuestionCount,
