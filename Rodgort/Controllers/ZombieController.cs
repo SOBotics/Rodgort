@@ -22,7 +22,7 @@ namespace Rodgort.Controllers
             IQueryable<DbZombieTagsView> zombieQuery = _context.ZombieTagsView.Where(z => z.Tag.SynonymOf == null);
             if (!string.IsNullOrWhiteSpace(tag))
                 zombieQuery = zombieQuery.Where(z => z.TagName == tag);
-            if (onlyAlive)
+            else if (onlyAlive)
                 zombieQuery = zombieQuery.Where(z => z.Tag.NumberOfQuestions > 0);
             
             var zombies = zombieQuery
