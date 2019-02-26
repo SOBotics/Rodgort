@@ -15,7 +15,7 @@ In short, it provides an insight into:
     - [The burn of 'ratio'](https://rodgort.sobotics.org/progress?metaQuestionId=277705)
     - [All burns tracked by Rodgort](https://rodgort.sobotics.org/tracked-burns)
 - Manages [Burnaki](https://stackapps.com/questions/7027/burnaki-tracking-progress-and-helping-burnination-efforts-on-stack-exchange) (currently running under the account [Gemmy](https://chat.stackoverflow.com/users/8300708/gemmy)).   
-    When a request is tagged `featured`, Rodgort will create an observation room ([an example](https://chat.stackoverflow.com/rooms/188947/observation-room-for-atlassian-burnination)) and instruct Burnaki to track the tag being discussed.  
+    When a request is tagged `featured`, Rodgort will create an observation room ([an example](https://chat.stackoverflow.com/transcript/188947)) and instruct Burnaki to track the tag being discussed.  
     Rodgort also has a command (`@Rodgort untrack [tag]`) to which will automatically clean up any tracking Rodgort has asked Burnaki to do for that tag.
 
 ## How?
