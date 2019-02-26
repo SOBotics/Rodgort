@@ -32,18 +32,16 @@ namespace Rodgort.Controllers
                     su.Id,
                     su.DisplayName,
                     su.IsModerator,
-                    NumBurnActions =
-                        _context.MetaQuestions.Where(mq => 
-                                mq.BurnStarted.HasValue 
-                                && mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).Any(t => su.UserActions.Select(ua => ua.Tag).Contains(t.TagName))
-                        )
-                        .SelectMany(mq => su.UserActions.Where(ua =>
-                                    mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
-                                    .Select(mqt => mqt.TagName)
-                                    .Contains(ua.Tag)
-                                )
-                        )
-                        .Select(ua => ua.PostId).Distinct().Count(),
+                    NumBurnActions = 
+                            su.UserActions.Join(
+                                _context.MetaQuestionTags
+                                    .Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
+                                    .Where(mqt => mqt.MetaQuestion.BurnStarted.HasValue),
+                                ua => ua.Tag, 
+                                mqt => mqt.TagName, 
+                                (userAction, metaQuestionTag) => new { metaQuestionTag, userAction}
+                            )
+                            .Select(a => a.userAction.PostId).Distinct().Count(),
 
                     TriageTags = su.TagTrackingStatusAudits.Count,
                     TriageQuestions = su.TagTrackingStatusAudits.Select(audit => audit.MetaQuestionId).Distinct().Count(),
