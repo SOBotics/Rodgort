@@ -50,6 +50,12 @@ namespace Rodgort.Controllers
                 .ToList();
         }
 
+        [HttpGet("ThrowError")]
+        public void ThrowError()
+        {
+            throw new InvalidOperationException();
+        }
+
         [HttpPost("ResolveUnresolvedDeletion")]
         public object ResolveUnresolvedDeletion([FromBody] List<ResolveUnresolvedDeletionRequest> requestItems)
         {
