@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Threading;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -13,13 +15,15 @@ namespace Rodgort.Controllers
     {
         private readonly ILogger<GitlabWebhookController> _logger;
 
-        public static IObservable<string> PipelineStatus;
-        private static Action<string> _updatePipelinesStatus;
+        public static IObservable<bool> PipelineStatus;
+        private static Action<bool> _updatePipelinesStatus;
+        private static int _runCount;
+        private static readonly object _runCountLocker = new object();
 
         static GitlabWebhookController()
         {
-            var replaySubject = new ReplaySubject<string>(1);
-            Observable.Create<string>(o =>
+            var replaySubject = new ReplaySubject<bool>(1);
+            Observable.Create<bool>(o =>
             {
                 _updatePipelinesStatus = o.OnNext;
                 return Disposable.Empty;
@@ -36,9 +40,33 @@ namespace Rodgort.Controllers
         [HttpPost("pipelines")]
         public void ProcessPipelinesWebhook([FromBody] PipelineHook request)
         {
+            var startingStates = new[] {"running"};
+            var endingStates = new[] {"canceled", "success", "failed" };
+
             _logger.LogDebug("Received: " + JsonConvert.SerializeObject(request));
-            if (!string.IsNullOrEmpty(request?.ObjectAttributes?.Status))
-                _updatePipelinesStatus(request.ObjectAttributes.Status);
+            if (!string.IsNullOrEmpty(request?.ObjectAttributes?.Status) && !string.IsNullOrEmpty(request?.ObjectAttributes?.Ref))
+            {
+                if (!string.Equals(request.ObjectAttributes.Ref, "master"))
+                {
+                    _logger.LogDebug("Not processing, as the build wasn't on master");
+                    return;
+                }
+
+                int currentRunCount;
+                lock (_runCountLocker)
+                {
+                    if (startingStates.Contains(request.ObjectAttributes.Status))
+                        _runCount++;
+                    else if (endingStates.Contains(request.ObjectAttributes.Status))
+                        _runCount--;
+
+                    if (_runCount < 0)
+                        _runCount = 0;
+
+                    currentRunCount = _runCount;
+                }
+                _updatePipelinesStatus(currentRunCount > 0);
+            }
             else
             {
                 _logger.LogDebug("Failed to process webhook: " + JsonConvert.SerializeObject(request));
@@ -59,5 +87,6 @@ namespace Rodgort.Controllers
     {
         public int Id { get; set; }
         public string Status { get; set; }
+        public string Ref { get; set; }
     }
 }

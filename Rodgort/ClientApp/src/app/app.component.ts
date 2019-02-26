@@ -53,11 +53,10 @@ export class AppComponent implements OnInit {
     const pipelinesSocket = new WebsocketHelper<{ status: string }>('ws/pipelines');
     let currentToast: Toast;
     pipelinesSocket.Observable.subscribe(payload => {
-      const status = payload.status;
-      if (status === 'running') {
-        if (currentToast) {
-          this.toasterService.clear(currentToast.toastId, currentToast.toastContainerId);
-        }
+      if (currentToast) {
+        this.toasterService.clear(currentToast.toastId, currentToast.toastContainerId);
+      }
+      if (payload && payload.status) {
         currentToast = this.toasterService.pop({
           type: 'info',
           title: 'New version',
