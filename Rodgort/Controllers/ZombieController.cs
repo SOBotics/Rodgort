@@ -34,14 +34,16 @@ namespace Rodgort.Controllers
                 .Select(g => new
                 {
                     Tag = g.Key.Name,
-                    Revivals = g.Select(tt => tt.TimeRevived).ToList(),
+                    Revivals = g.Select(tt => tt.TimeRevived)
+                        .OrderBy(t => t)
+                        .ToList(),
                     QuestionCountOverTime = g.Key.Statistics
                         .Select(stat => new
                         {
                             stat.QuestionCount,
                             stat.DateTime
                         })
-                        .OrderByDescending(s => s.DateTime)
+                        .OrderBy(s => s.DateTime)
                 }).ToList();
 
             return result;
