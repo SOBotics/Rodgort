@@ -24,8 +24,12 @@ namespace Rodgort.Controllers
         }
 
         [HttpGet("actions")]
+        [Authorize]
         public object Actions(int userId, string tag, int actionTypeId, int pageNumber)
         {
+            if (!User.HasRole(DbRole.TRUSTED))
+                throw new HttpStatusException(HttpStatusCode.Forbidden);
+
             var query = _context.UserActions.Where(u => u.SiteUserId == userId);
             if (!string.IsNullOrWhiteSpace(tag))
                 query = query.Where(ua => ua.Tag == tag);
@@ -36,7 +40,7 @@ namespace Rodgort.Controllers
                 .Select(q => new
                 {
                     q.PostId,
-                    q.Tag,
+                    Tags = q.Tag,
                     Type = q.UserActionType.Name,
                     q.Time
                 })

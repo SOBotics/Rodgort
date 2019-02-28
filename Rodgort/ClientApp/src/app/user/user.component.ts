@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, ADMIN } from '../services/auth.service';
+import { AuthService, ADMIN, TRUSTED } from '../services/auth.service';
 import * as moment from 'moment';
 
 @Component({
@@ -11,7 +11,7 @@ import * as moment from 'moment';
 })
 export class UserComponent implements OnInit {
   public isAdmin = false;
-  public isTrusted = true;
+  public isTrusted = false;
 
   public selectedRole: number;
 
@@ -55,6 +55,7 @@ export class UserComponent implements OnInit {
   ngOnInit() {
     this.authService.GetAuthDetails().subscribe(d => {
       this.isAdmin = d.HasRole(ADMIN);
+      this.isTrusted = d.HasRole(TRUSTED);
     });
 
     this.route.params.subscribe(params => {
