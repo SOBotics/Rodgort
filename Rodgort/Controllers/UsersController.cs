@@ -1,7 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
+using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
@@ -25,27 +28,73 @@ namespace Rodgort.Controllers
 
         [HttpGet("actions")]
         [Authorize]
-        public object Actions(int userId, string tag, int actionTypeId, int pageNumber)
+        public object Actions(int userId, string tag, int? actionTypeId, int pageNumber)
         {
             if (!User.HasRole(DbRole.TRUSTED))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
-            var query = _context.UserActions.Where(u => u.SiteUserId == userId);
-            if (!string.IsNullOrWhiteSpace(tag))
-                query = query.Where(ua => ua.Tag == tag);
-            if (actionTypeId > 0)
-                query = query.Where(ua => ua.UserActionTypeId == actionTypeId);
+            const int pageSize = 50;
 
-            return query
-                .Select(q => new
+            var result = _context.Database.GetDbConnection()
+                .Query<ActionsResult>(@"
+select 
+ua.post_id as PostId,
+string_agg(ua.tag, ', ') as Tags,
+uat.name as Name,
+ua.time as Time
+from 
+user_actions ua
+inner join user_action_types uat ON ua.user_action_type_id = uat.id
+where @userId = ua.site_user_id
+and (@tag is null or @tag = ua.tag)
+and (@actionTypeId is null or @actionTypeId = ua.user_action_type_id)
+group by
+ua.post_id, ua.user_action_type_id, uat.name, ua.time
+order by ua.time desc
+limit @pageSize
+offset @offset
+", new
                 {
-                    q.PostId,
-                    Tags = q.Tag,
-                    Type = q.UserActionType.Name,
-                    q.Time
-                })
-                .OrderByDescending(q => q.Time)
-                .Page(pageNumber, 50);
+                    userId,
+                    tag,
+                    actionTypeId,
+                    offset = (pageNumber - 1) * pageSize,
+                    pageSize
+                });
+
+            var total = _context.Database.GetDbConnection()
+                .QuerySingle<int>(@"
+select count(*) 
+from 
+(
+	select 1 from 
+	user_actions ua
+	where @userId = ua.site_user_id
+	and (@tag is null or @tag = ua.tag)
+	and (@actionTypeId is null or @actionTypeId = ua.user_action_type_id)
+	group by
+	ua.post_id, ua.user_action_type_id, ua.time
+) innerQuery", new
+                {
+                    userId,
+                    tag,
+                    actionTypeId
+                });
+
+            return new {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(1.0 * total / pageSize),
+                Data = result
+            };
+        }
+
+        private class ActionsResult
+        {
+            public int PostId { get; set; }
+            public string Tags { get; set; }
+            public string Name { get; set; }
+            public DateTime Time { get; set; }
         }
 
         [HttpGet("all")]
