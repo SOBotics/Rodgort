@@ -109,7 +109,7 @@ namespace StackExchangeApi
                 var currentResult = await ApplyWithPaging<UserResponse>($"{BASE_URL}/users/{userIdsString}", new Dictionary<string, string>
                 {
                     {"site", siteName},
-                    {"filter", "!)iua4.KHF.lCcLoe3BLvS"}
+                    {"filter", "!JlNR05FuMA99pPFc(m7tLG4"}
                 });
                 if (finalResult == null)
                     finalResult = currentResult;

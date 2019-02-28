@@ -12,5 +12,7 @@ namespace StackExchangeApi.Responses
 
         [JsonProperty("user_type")]
         public string UserType { get; set; }
+
+        public int Reputation { get; set; }
     }
 }

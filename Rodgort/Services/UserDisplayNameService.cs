@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
+using Rodgort.Data.Tables;
 using StackExchangeApi;
 
 namespace Rodgort.Services
@@ -28,27 +31,7 @@ namespace Rodgort.Services
 
         private async Task SyncAllUsers()
         {
-            using (var context = new RodgortContext(_dbContextOptions))
-            {
-                var dbUsers = context.SiteUsers.ToList();
-                if (!dbUsers.Any())
-                    return;
-
-                var userLookup = dbUsers.ToDictionary(u => u.Id, u => u);
-
-                var siteUsers = await _apiClient.Users("stackoverflow.com", dbUsers.Select(u => u.Id));
-                foreach (var siteUser in siteUsers.Items)
-                {
-                    if (userLookup.ContainsKey(siteUser.UserId))
-                    {
-                        var user = userLookup[siteUser.UserId];
-                        user.DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
-                        user.IsModerator = string.Equals("moderator", siteUser.UserType);
-                    }
-                }
-
-                context.SaveChanges();
-            }
+            await SyncUsers();
         }
 
         public void SyncUsersWithNoNameSync()
@@ -58,9 +41,18 @@ namespace Rodgort.Services
 
         private async Task SyncUsersWithNoName()
         {
+            await SyncUsers(su => su.DisplayName == null);
+        }
+
+        private async Task SyncUsers(Expression<Func<DbSiteUser, bool>> userPredicate = null)
+        {
             using (var context = new RodgortContext(_dbContextOptions))
             {
-                var dbUsers = context.SiteUsers.Where(su => su.DisplayName == null).ToList();
+                IQueryable<DbSiteUser> usersQuery = context.SiteUsers;
+                if (userPredicate != null)
+                    usersQuery = usersQuery.Where(userPredicate);
+
+                var dbUsers = usersQuery.ToList();
                 if (!dbUsers.Any())
                     return;
 
@@ -74,6 +66,7 @@ namespace Rodgort.Services
                         var user = userLookup[siteUser.UserId];
                         user.DisplayName = HttpUtility.HtmlDecode(siteUser.DisplayName);
                         user.IsModerator = string.Equals("moderator", siteUser.UserType);
+                        user.Reputation = siteUser.Reputation;
                     }
                 }
 
