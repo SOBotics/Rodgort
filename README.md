@@ -6,13 +6,13 @@
 
 A project created by the team in SOBotics ([Chat](https://chat.stackoverflow.com/rooms/111347/sobotics), [GitHub](https://github.com/SOBotics/)) designed to make managing burnination, synonym and merge requests easier on Stack Overflow. You can find the dashboard [here](https://rodgort.sobotics.org/), and the source code [here](https://gitlab.com/rjrudman/Rodgort).
 
-In short, it provides an insight into:
+In short, it:
 
-- Tags which were burnt that have re-appeared. [All 'zombies' detected since the start of Rodgort](https://rodgort.sobotics.org/zombies?onlyAlive=false).
-- Requests for which the tracked tags have zero questions, but have not been marked `status-completed`. [Example](https://rodgort.sobotics.org/requests?status=none&hasQuestions=no).
-- Remove the manual process of tracking burnination requests. [A filterable view of all requests found](https://rodgort.sobotics.org/requests).
-- Requests which were completed, but there are still questions found in the burnt tags. [Example](https://rodgort.sobotics.org/requests?status=status-completed&hasQuestions=yes).
-- Track the progress of burns, and review past burns. 
+- Shows tags which at one point had zero questions and later re-appeared. [All 'zombies' detected since the start of Rodgort](https://rodgort.sobotics.org/zombies?onlyAlive=false).
+- Shows requests for which the tracked tags have zero questions, but have not been marked `status-completed`. [Example](https://rodgort.sobotics.org/requests?status=none&hasQuestions=no).
+- Removes the manual process of tracking burnination requests. [A filterable view of all requests found](https://rodgort.sobotics.org/requests).
+- Shows requests which were completed, but there are still questions found in the burnt tags. [Example](https://rodgort.sobotics.org/requests?status=status-completed&hasQuestions=yes).
+- Tracks the progress of burns and allows users to review past burns. 
     - [Current burns](https://rodgort.sobotics.org/progress)
     - [The burn of 'ratio'](https://rodgort.sobotics.org/progress?metaQuestionId=277705)
     - [All burns tracked by Rodgort](https://rodgort.sobotics.org/tracked-burns)
@@ -31,11 +31,11 @@ In short, it provides an insight into:
 
 - When a request is tagged `featured`, Rodgort will orchestrate Burnaki to setup an observation room, and instruct Burnaki to start tracking the tag. The burn will also now appear on Rodgort's [progress page](https://rodgort.sobotics.org/progress).
 
-- When Burnaki reports a post, Rodgort will use the API to detect the changes made to the question: closures, re-opens, tag removal, tag addition, deletion and undeletion. In addition, Rodgort will also query the tag every day to identify changes Burnaki failed to post in the room.
+- When Burnaki reports a post, Rodgort will use the API to detect the changes made to the question: closures, re-opens, tag removal, tag additions, deletions and undeletions. In addition, Rodgort will also query the tag every day to identify changes Burnaki failed to post in the room.
 
 ## What's left to do? 
 
 - We're currently tracking a *heap* of information regarding tags. However, not everything is easily accessible. I plan to create dashboards to:
     - Suggest requests which might be worth declining, based on question count, request score, request views and answers to the request
     - Suggest candidates for the next burnination from the pool of requests
-- Due to the enormous amount of burnination requests (currently at 2466 - of which 1,131 have been marked `status-completed` or `status-declined`), there's still a large amount of triage to do. Currently, 630 requests need triaging. Triaging requests will instruct Rodgort to being tracking the question counts of tags - without which, we're unable to gain proper insight into the status of burns and tags.
+- Due to the enormous amount of burnination requests (currently at 2466 - of which 1,131 have been marked `status-completed` or `status-declined`), there's still a large amount of triage to do. Currently, 630 requests need triaging. Triaging requests will instruct Rodgort to begin tracking the question counts of tags - without which, we're unable to gain proper insight into the status of burns and tags.
