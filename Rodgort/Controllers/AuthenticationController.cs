@@ -129,7 +129,7 @@ namespace Rodgort.Controllers
             apiRequest.AddParameter("key", _stackExchangeApiCredentials.AppKey);
             apiRequest.AddParameter("site", "stackoverflow");
             apiRequest.AddParameter("access_token", accessToken);
-            apiRequest.AddParameter("filter", "!)iua4.KHF.lCb61RIH7hp");
+            apiRequest.AddParameter("filter", "!JlNR05FuMA99pPENDZMz72S");
             var apiResponse = await stackExchangeApiClient.ExecuteTaskAsync(apiRequest);
             var apiContent = JsonConvert.DeserializeObject<dynamic>(apiResponse.Content);
 
@@ -137,6 +137,7 @@ namespace Rodgort.Controllers
             int userId = userDetails.user_id;
             string displayName = userDetails.display_name;
             string userType = userDetails.user_type;
+            int reputation = userDetails.reputation;
 
             var signingKey = GetSigningKey();
 
@@ -148,6 +149,7 @@ namespace Rodgort.Controllers
                     Id = userId,
                     DisplayName = displayName,
                     IsModerator = string.Equals("moderator", userType),
+                    Reputation = reputation,
                     Roles = new List<DbSiteUserRole>()
                 };
                 _dbContext.SiteUsers.Add(user);
