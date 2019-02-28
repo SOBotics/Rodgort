@@ -40,7 +40,7 @@ namespace Rodgort.Controllers
 select 
 ua.post_id as PostId,
 string_agg(ua.tag, ', ') as Tags,
-uat.name as Name,
+uat.name as Type,
 ua.time as Time
 from 
 user_actions ua
@@ -93,7 +93,7 @@ from
         {
             public int PostId { get; set; }
             public string Tags { get; set; }
-            public string Name { get; set; }
+            public string Type { get; set; }
             public DateTime Time { get; set; }
         }
 
