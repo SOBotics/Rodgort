@@ -109,7 +109,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbSiteUser>().ToTable("site_users");
             modelBuilder.Entity<DbSiteUser>().HasKey(su => su.Id);
             modelBuilder.Entity<DbSiteUser>().Property(rt => rt.Id).ValueGeneratedNever();
-            modelBuilder.Entity<DbSiteUser>().Property(rt => rt.Reputation).IsRequired().HasDefaultValue(0);
+            modelBuilder.Entity<DbSiteUser>().Property(rt => rt.Reputation).IsRequired();
 
             modelBuilder.Entity<DbLog>().ToTable("logs");
             modelBuilder.Entity<DbLog>().HasKey(tag => tag.Id);
