@@ -21,7 +21,7 @@
   <tbody>
     <tr *ngFor="let audit of audits">
       <td title="{{audit.timeChanged}}">{{audit.localTime}}</td>
-      <td><app-render-username [user]="row"></app-render-username></td>
+      <td><app-render-username [user]="audit"></app-render-username></td>
       <td><a href="https://meta.stackoverflow.com/q/{{audit.metaQuestionId}}">{{audit.metaQuestionTitle}}</a></td> 
       <td><app-tag-bubble [tag]="audit.tag"></app-tag-bubble></td> 
       <td><app-tracking-status-bubble [trackingStatusName]="audit.previousStatus" [trackingStatusId]="audit.previousStatusId"></app-tracking-status-bubble></td> 
