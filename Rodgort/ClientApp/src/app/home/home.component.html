@@ -50,9 +50,8 @@
             <a routerLink="users">{{statistics.users.totalUsers}} total users</a>
         </li>
     </ul>
-
-    <hr />
     <ng-container *ngIf="isAdmin">
+        <hr />
         <h2>Administration</h2>
         <ul>
             <li><a routerLink="/logs" [queryParams]="{level:'Info'}">Logs</a></li>
