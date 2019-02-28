@@ -1,0 +1,8 @@
+<ng-container *ngIf="user" >
+    <a *ngIf="hyperlinkName" routerLink="/user/{{user.userId}}">{{user.userName}}{{user.isModerator ? ' ♦' : ''}}</a>
+    <span *ngIf="!hyperlinkName">{{user.userName}}{{user.isModerator ? ' ♦' : ''}}</span>
+    <span
+        class="tooltip-info"
+        *ngIf="warnEditPrivileges && user.reputation < 2000"
+        title="User does not have edit privileges">⚠️</span>
+</ng-container>

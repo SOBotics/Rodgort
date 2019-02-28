@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
-import { AuthService } from '../services/auth.service';
+import { AuthService, ROLE_MODERATOR } from '../services/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { toUtcDateTime } from '../../utils/ToUtcDateTime';
 
@@ -14,6 +14,8 @@ import { toUtcDateTime } from '../../utils/ToUtcDateTime';
 export class ProgressComponent implements OnInit {
   public loading = true;
   public hasNoData = false;
+
+  public isModerator = false;
 
   public burns: any;
 
@@ -28,18 +30,32 @@ export class ProgressComponent implements OnInit {
   constructor(
     private httpClient: HttpClient,
     private route: ActivatedRoute,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => {
-      this.filter.metaQuestionId = +params['metaQuestionId'] || -1;
-      this.reloadData();
+    this.authService.GetAuthDetails().subscribe(d => {
+      this.isModerator = d.HasRole(ROLE_MODERATOR);
     });
 
+    let isQueryParamsFirstUpdate = true;
+    this.route.queryParams.subscribe(params => {
+      this.filter.metaQuestionId = +params['metaQuestionId'] || -1;
+      if (!isQueryParamsFirstUpdate) {
+        this.reloadData();
+      }
+      isQueryParamsFirstUpdate = false;
+    });
+
+    let isParamsFirstUpdate = true;
     this.route.params.subscribe(params => {
       this.filter.all = (params['type'] !== undefined);
-      this.reloadData();
+      if (!isParamsFirstUpdate) {
+        this.reloadData();
+      }
+      isParamsFirstUpdate = false;
     });
+    this.reloadData();
   }
 
   private reloadData() {

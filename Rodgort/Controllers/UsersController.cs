@@ -62,7 +62,7 @@ namespace Rodgort.Controllers
                 .Select(u => new
                 {
                     UserId = u.Id,
-                    u.DisplayName,
+                    UserName = u.DisplayName,
                     u.IsModerator,
                     NumBurninations =
                         _context.MetaQuestions.Count(
@@ -96,8 +96,12 @@ namespace Rodgort.Controllers
                     {
                         r.RoleId,
                         r.Role.Name,
-                        AddedById = r.AddedByUserId,
-                        AddedBy = r.AddedByUser.DisplayName,
+                        AddedBy = new
+                        {
+                            UserId = r.AddedByUserId,
+                            UserName = r.AddedByUser.DisplayName,
+                            IsModerator = r.AddedByUser.IsModerator
+                        },
                         AddedByIsModerator = r.AddedByUser.IsModerator,
                         r.DateAdded
                     }).ToList(),

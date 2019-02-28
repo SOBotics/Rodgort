@@ -55,7 +55,6 @@ export class RequestsComponent implements OnInit {
     });
 
     this.authService.GetAuthDetails().subscribe(d => {
-      debugger;
       this.isSuperUser = d.HasRole(RODGORT_SUPER_USER);
     });
   }

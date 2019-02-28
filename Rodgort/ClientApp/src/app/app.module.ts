@@ -29,6 +29,7 @@ import { HttpAuthenticationInterceptor } from './interceptors/HttpAuthentication
 import { ZombiesComponent } from './zombies/zombies.component';
 import { UsersComponent } from './users/users.component';
 import { TrackedBurnsComponent } from './tracked-burns/tracked-burns.component';
+import { RenderUsernameComponent } from './render-username/render-username.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +50,8 @@ import { TrackedBurnsComponent } from './tracked-burns/tracked-burns.component';
     TrackingStatusBubbleComponent,
     ZombiesComponent,
     UsersComponent,
-    TrackedBurnsComponent
+    TrackedBurnsComponent,
+    RenderUsernameComponent
   ],
   imports: [
     ChartModule,

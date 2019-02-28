@@ -577,6 +577,7 @@ select
 	site_users.id as UserId,
 	site_users.display_name as UserName,
 	site_users.is_moderator as IsModerator,
+    site_users.reputation as Reputation,
 	user_action_types.name as Type,
 	COUNT(distinct user_actions.post_id) as Total
 from user_actions
@@ -588,6 +589,7 @@ group by
 	site_users.id,
 	site_users.display_name,
 	site_users.is_moderator,
+    site_users.reputation,
 	user_action_types.name
 order by COUNT(distinct user_actions.post_id) desc", new
                 {
@@ -607,6 +609,7 @@ select
 	site_users.id as UserId,
 	site_users.display_name as UserName,
 	site_users.is_moderator as IsModerator,
+    site_users.reputation as Reputation,
 	COUNT(distinct user_actions.post_id) as Total
 from user_actions
 inner join site_users on user_actions.site_user_id = site_users.id
@@ -615,7 +618,8 @@ and site_users.id > 0
 group by 
 	site_users.id,
 	site_users.display_name,
-	site_users.is_moderator
+	site_users.is_moderator,
+    site_users.reputation
 order by COUNT(distinct user_actions.post_id) desc", new
                 {
                     startTime,
@@ -650,6 +654,7 @@ order by COUNT(distinct user_actions.post_id) desc", new
             public int UserId { get; set; }
             public string UserName { get; set; }
             public bool IsModerator { get; set; }
+            public int Reputation { get; set; }
             public string Type { get; set; }
             public int Total { get; set; }
         }

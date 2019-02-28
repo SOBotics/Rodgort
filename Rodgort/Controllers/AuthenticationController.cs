@@ -68,7 +68,9 @@ namespace Rodgort.Controllers
                     {
                         new Claim(ClaimTypes.Name, user.DisplayName),
                         new Claim("accountId", user.Id.ToString())
-                    }.Concat(userRoles.Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
+                    }.Concat(userRoles.Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString()))).ToList();
+                    if (user.IsModerator)
+                        claims.Add(new Claim(ClaimTypes.Role, "moderator"));
                     
                     var signingKey = GetSigningKey();
                     var token = CreateJwtToken(claims, signingKey);
@@ -163,7 +165,10 @@ namespace Rodgort.Controllers
             {
                 new Claim(ClaimTypes.Name, displayName),
                 new Claim("accountId", userId.ToString())
-            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
+            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString()))).ToList();
+
+            if (user.IsModerator)
+                claims.Add(new Claim(ClaimTypes.Role, "moderator"));
 
             var token = CreateJwtToken(claims, signingKey);
 

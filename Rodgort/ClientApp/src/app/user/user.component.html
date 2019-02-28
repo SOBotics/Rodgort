@@ -1,12 +1,12 @@
 <div *ngIf="userData" class="container">
 
-  <p class="h1">{{userData.displayName}} {{userData.isModerator ? '♦' : ''}}</p>
+  <p class="h1"><app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username></p>
   <p class="lead"><a href="https://stackoverflow.com/users/{{userData.userId}}">View on site</a></p>
 
   <hr />
 
   <p class="h2">Burninations</p>
-  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has contributed towards {{userData.numBurninations}} burninations
+  <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has contributed towards {{userData.numBurninations}} burninations
 
   <table *ngIf="userData.numBurninations > 0" class="table mt-3">
     <thead>
@@ -32,7 +32,7 @@
 
   <hr />
   <p class="h2">Rodgort triage</p>
-  {{userData.displayName}} {{userData.isModerator ? '♦' : ''}} has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags | number}} tags, across {{userData.triageQuestions | number}} requests</a>
+  <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags | number}} tags, across {{userData.triageQuestions | number}} requests</a>
 
   <hr />
   <p class="h2">User access</p>
@@ -48,7 +48,7 @@
     <tbody>
       <tr *ngFor="let role of userData.roles">
         <td>{{role.name}}</td>
-        <td><a routerLink="/user/{{role.addedById}}">{{role.addedBy}} {{role.addedByIsModerator ? '♦' : ''}}</a></td>
+        <td><app-render-username [user]="role.addedBy"></app-render-username></td>
         <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
         <td *ngIf="isAdmin"><a href="javascript:void(0);" (click)="removeRole(role.name)">Remove</a></td>
       </tr>
