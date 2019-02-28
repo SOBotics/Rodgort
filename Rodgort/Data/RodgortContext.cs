@@ -172,8 +172,9 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbRole>()
                 .HasData(
-                    new DbRole { Id = DbRole.RODGORT_SUPER_USER, Name = "Super user" },
-                    new DbRole { Id = DbRole.RODGORT_ADMIN, Name = "Admin" }
+                    new DbRole { Id = DbRole.TRIAGER, Name = "Triager" },
+                    new DbRole { Id = DbRole.ADMIN, Name = "Admin" },
+                    new DbRole { Id = DbRole.TRUSTED, Name = "Trusted" }
                 );
         }
 

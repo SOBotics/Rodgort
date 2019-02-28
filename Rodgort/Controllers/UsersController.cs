@@ -55,7 +55,7 @@ namespace Rodgort.Controllers
         [HttpGet]
         public object Get(int userId)
         {
-            var isRodgortAdmin = User.HasRole(DbRole.RODGORT_ADMIN);
+            var isRodgortAdmin = User.HasRole(DbRole.ADMIN);
 
             return _context.SiteUsers
                 .Where(u => u.Id == userId)
@@ -129,7 +129,7 @@ namespace Rodgort.Controllers
         [HttpPost("AddRole")]
         public void AddRole([FromBody] ChangeRoleRequest request)
         {
-            if (!User.HasRole(DbRole.RODGORT_ADMIN))
+            if (!User.HasRole(DbRole.ADMIN))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
             var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);
@@ -178,7 +178,7 @@ namespace Rodgort.Controllers
         [HttpPost("RemoveRole")]
         public void RemoveRole([FromBody] ChangeRoleRequest request)
         {
-            if (!User.HasRole(DbRole.RODGORT_ADMIN))
+            if (!User.HasRole(DbRole.ADMIN))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
             var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);

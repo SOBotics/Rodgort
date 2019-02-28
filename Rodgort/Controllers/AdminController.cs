@@ -36,7 +36,7 @@ namespace Rodgort.Controllers
         [HttpGet("UnresolvedDeletions")]
         public object GetUnresolvedDeletions()
         {
-            var isAdmin = User.HasRole(DbRole.RODGORT_ADMIN);
+            var isAdmin = User.HasRole(DbRole.ADMIN);
             if (!isAdmin)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
@@ -53,7 +53,7 @@ namespace Rodgort.Controllers
         [HttpPost("ResolveUnresolvedDeletion")]
         public object ResolveUnresolvedDeletion([FromBody] List<ResolveUnresolvedDeletionRequest> requestItems)
         {
-            var isAdmin = User.HasRole(DbRole.RODGORT_ADMIN);
+            var isAdmin = User.HasRole(DbRole.ADMIN);
             if (!isAdmin)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
@@ -156,7 +156,7 @@ namespace Rodgort.Controllers
         [HttpPost("ManuallyProcessQuestions")]
         public async Task ManuallyProcessQuestions([FromBody] ManuallyProcessQuestionsRequest request)
         {
-            var isAdmin = User.HasRole(DbRole.RODGORT_ADMIN);
+            var isAdmin = User.HasRole(DbRole.ADMIN);
             if (!isAdmin)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 

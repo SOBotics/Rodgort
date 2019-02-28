@@ -10,14 +10,14 @@ export interface AuthDetails {
   TokenData: any;
   IsAuthenticated: boolean;
   Claims: Claim[];
-  HasRole: (role: number | string) => any;
+  HasRole: (role: number) => any;
 }
 
 const ROLE_TYPE = 'role';
 
-export const RODGORT_SUPER_USER = 1;
-export const RODGORT_ADMIN = 2;
-export const ROLE_MODERATOR = 'moderator';
+export const TRIAGER = 1;
+export const ADMIN = 2;
+export const TRUSTED = 3;
 
 @Injectable()
 export class AuthService {
@@ -54,7 +54,7 @@ export class AuthService {
         }
       });
     }
-    const hasRole = (role: number | string) => {
+    const hasRole = (role: number) => {
       const matchingClaim = claims.find(a => a.key === ROLE_TYPE && a.value === (role + ''));
       return !!matchingClaim;
     };

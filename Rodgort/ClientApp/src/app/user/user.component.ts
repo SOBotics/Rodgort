@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, RODGORT_ADMIN } from '../services/auth.service';
+import { AuthService, ADMIN } from '../services/auth.service';
 import * as moment from 'moment';
 
 @Component({
@@ -53,7 +53,7 @@ export class UserComponent implements OnInit {
 
   ngOnInit() {
     this.authService.GetAuthDetails().subscribe(d => {
-      this.isAdmin = d.HasRole(RODGORT_ADMIN);
+      this.isAdmin = d.HasRole(ADMIN);
     });
 
     this.route.params.subscribe(params => {

@@ -120,6 +120,16 @@ namespace StackExchangeApi
             return finalResult;
         }
 
+        public async Task<ApiItemsResponse<ModeratorResponse>> Moderators(string siteName)
+        {
+            return await ApplyWithPaging<ModeratorResponse>($"{BASE_URL}/users/moderators",
+                new Dictionary<string, string>
+                {
+                    {"site", siteName},
+                    {"filter", "!qH8bjUGDbuo.sdwpgswz"}
+                });
+        }
+
         public Task<ApiItemsResponse<TagSynonymsResponse>> TagSynonyms(string siteName)
         {
             return ApplyWithPaging<TagSynonymsResponse>($"{BASE_URL}/tags/synonyms", new Dictionary<string, string>

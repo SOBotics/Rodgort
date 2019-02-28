@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService, RODGORT_SUPER_USER } from '../services/auth.service';
+import { AuthService, TRIAGER } from '../services/auth.service';
 import { tagTrackingStatus } from '../../constants/tag-tracking-status';
 
 @Component({
@@ -15,7 +15,7 @@ export class RequestsComponent implements OnInit {
   public pagingInfo: PagingInfo[];
   public showIgnoredTags: boolean;
 
-  public isSuperUser = false;
+  public isRodgortTriager = false;
 
   public filter = {
     query: '',
@@ -55,7 +55,7 @@ export class RequestsComponent implements OnInit {
     });
 
     this.authService.GetAuthDetails().subscribe(d => {
-      this.isSuperUser = d.HasRole(RODGORT_SUPER_USER);
+      this.isRodgortTriager = d.HasRole(TRIAGER);
     });
   }
 

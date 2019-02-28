@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, RODGORT_ADMIN } from '../services/auth.service';
+import { AuthService, ADMIN } from '../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -53,7 +53,7 @@ export class HomeComponent implements OnInit {
     });
 
     this.authService.GetAuthDetails().subscribe(d => {
-      this.isAdmin = d.HasRole(RODGORT_ADMIN);
+      this.isAdmin = d.HasRole(ADMIN);
     });
   }
 }

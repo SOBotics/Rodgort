@@ -151,7 +151,7 @@ namespace Rodgort
 
             RecurringJob.AddOrUpdate<UserDisplayNameService>(UserDisplayNameService.SYNC_ALL_USERS, service => service.SyncAllUsersSync(), "10 0 * * *");
 
-            RecurringJob.AddOrUpdate<TrogdorRoomOwnerService>(TrogdorRoomOwnerService.SERVICE_NAME, service => service.SyncTrogdorRoomOwnersSync(), "15 0 * * *");
+            RecurringJob.AddOrUpdate<RoleSyncService>(RoleSyncService.SERVICE_NAME, service => service.SyncRolesSync(), "15 0 * * *");
 
             RecurringJob.AddOrUpdate<BurnCatchupService>(BurnCatchupService.SERVICE_NAME, service => service.CatchupSync(), "20 0 * * *");
 
@@ -196,7 +196,7 @@ namespace Rodgort
                     var handler = new JwtSecurityTokenHandler();
                     var principal = handler.ValidateToken(authCookie, _tokenValidationParameters, out var validToken);
 
-                    return validToken is JwtSecurityToken && principal.HasRole(DbRole.RODGORT_ADMIN);
+                    return validToken is JwtSecurityToken && principal.HasRole(DbRole.ADMIN);
                 }
 
                 return false;

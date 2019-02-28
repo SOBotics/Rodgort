@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
-import { AuthService, ROLE_MODERATOR } from '../services/auth.service';
+import { AuthService, TRUSTED } from '../services/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { toUtcDateTime } from '../../utils/ToUtcDateTime';
 
@@ -35,7 +35,7 @@ export class ProgressComponent implements OnInit {
 
   ngOnInit() {
     this.authService.GetAuthDetails().subscribe(d => {
-      this.isModerator = d.HasRole(ROLE_MODERATOR);
+      this.isModerator = d.HasRole(TRUSTED);
     });
 
     let isQueryParamsFirstUpdate = true;
