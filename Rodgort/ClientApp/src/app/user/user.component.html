@@ -25,7 +25,8 @@
       <tr>
           <td></td>
           <td></td>
-          <td><b>{{userData.totalActions | number}} total actions</b></td>
+          <td *ngIf="!isTrusted"><b>{{userData.totalActions | number}} total actions</b></td>
+          <td *ngIf="isTrusted"><a [routerLink]="['/user-actions', userData.userId]">{{userData.totalActions | number}} total actions</a></td>
         </tr>
     </tbody>
   </table>

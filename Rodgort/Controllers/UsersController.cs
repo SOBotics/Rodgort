@@ -23,6 +23,27 @@ namespace Rodgort.Controllers
             _dateService = dateService;
         }
 
+        [HttpGet("actions")]
+        public object Actions(int userId, string tag, int actionTypeId, int pageNumber)
+        {
+            var query = _context.UserActions.Where(u => u.SiteUserId == userId);
+            if (!string.IsNullOrWhiteSpace(tag))
+                query = query.Where(ua => ua.Tag == tag);
+            if (actionTypeId > 0)
+                query = query.Where(ua => ua.UserActionTypeId == actionTypeId);
+
+            return query
+                .Select(q => new
+                {
+                    q.PostId,
+                    q.Tag,
+                    Type = q.UserActionType.Name,
+                    q.Time
+                })
+                .OrderByDescending(q => q.Time)
+                .Page(pageNumber, 50);
+        }
+
         [HttpGet("all")]
         public object GetAll(int pageNumber, int pageSize)
         {

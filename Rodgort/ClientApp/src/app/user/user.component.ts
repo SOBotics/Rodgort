@@ -11,6 +11,7 @@ import * as moment from 'moment';
 })
 export class UserComponent implements OnInit {
   public isAdmin = false;
+  public isTrusted = true;
 
   public selectedRole: number;
 
