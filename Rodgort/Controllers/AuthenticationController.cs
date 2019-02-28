@@ -62,14 +62,14 @@ namespace Rodgort.Controllers
                 var user = _dbContext.SiteUsers.Include(u => u.Roles).FirstOrDefault(u => u.Id == ChatUserIds.ROB);
                 if (user != null)
                 {
-                    var userScopes = user.Roles.Where(r => r.Enabled).Select(s => s.RoleName).ToList();
+                    var userRoles = user.Roles.Where(r => r.Enabled);
 
                     var claims = new[]
                     {
                         new Claim(ClaimTypes.Name, user.DisplayName),
                         new Claim("accountId", user.Id.ToString())
-                    }.Concat(userScopes.Select(c => new Claim(c, "true")));
-
+                    }.Concat(userRoles.Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
+                    
                     var signingKey = GetSigningKey();
                     var token = CreateJwtToken(claims, signingKey);
 
@@ -161,7 +161,7 @@ namespace Rodgort.Controllers
             {
                 new Claim(ClaimTypes.Name, displayName),
                 new Claim("accountId", userId.ToString())
-            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(r.RoleName, "true")));
+            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
 
             var token = CreateJwtToken(claims, signingKey);
 

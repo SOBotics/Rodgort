@@ -62,10 +62,10 @@
         </div>
         <select class="custom-select" id="roleSelector" [(ngModel)]="selectedRole" [ngModelOptions]="{standalone: true}">
           <option value=""></option>
-          <option *ngFor="let availableRole of userData.availableRoles" value="{{availableRole.name}}">{{availableRole.name}}</option>
+          <option *ngFor="let availableRole of userData.availableRoles" value="{{availableRole.id}}">{{availableRole.name}}</option>
         </select>
       </div>
-      <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="addRole()">Add</button>
+      <button type="submit" [attr.disabled]="!selectedRole ? '' : null" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="addRole()">Add</button>
     </form>
     
 </div>

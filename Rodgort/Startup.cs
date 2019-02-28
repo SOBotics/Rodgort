@@ -6,8 +6,6 @@ using System.Net.Http;
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -198,7 +196,7 @@ namespace Rodgort
                     var handler = new JwtSecurityTokenHandler();
                     var principal = handler.ValidateToken(authCookie, _tokenValidationParameters, out var validToken);
 
-                    return validToken is JwtSecurityToken && principal.HasClaim(DbRole.RODGORT_ADMIN);
+                    return validToken is JwtSecurityToken && principal.HasRole(DbRole.RODGORT_ADMIN);
                 }
 
                 return false;

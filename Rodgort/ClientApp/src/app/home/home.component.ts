@@ -53,7 +53,7 @@ export class HomeComponent implements OnInit {
     });
 
     this.authService.GetAuthDetails().subscribe(d => {
-      this.isAdmin = !!d.GetClaim(RODGORT_ADMIN);
+      this.isAdmin = d.HasRole(RODGORT_ADMIN);
     });
   }
 }

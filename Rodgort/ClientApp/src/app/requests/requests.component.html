@@ -107,7 +107,7 @@
                             <td style="width: 35%;">Tag</td>
                             <td style="width: 15%;"># questions</td>
                             <td style="width: 25%;">Status</td>
-                            <td style="width: 25%;" *ngIf="isTrogdorRoomOwner">Admin</td>
+                            <td style="width: 25%;" *ngIf="isSuperUser">Admin</td>
                         </tr>
                     </thead>
                     <tbody>
@@ -141,7 +141,7 @@
                                     <app-tracking-status-bubble [trackingStatusName]="tag.trackingStatusName"
                                         [trackingStatusId]="tag.trackingStatusId"></app-tracking-status-bubble>
                                 </td>
-                                <td *ngIf="isTrogdorRoomOwner">
+                                <td *ngIf="isSuperUser">
                                     <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)"
                                         (click)="setTagTrackingStatus(question.id, tag, true)">Track</a>
                                     <span *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED && tag.trackingStatusId !== tagTrackingStatus.IGNORED">|</span>
@@ -150,7 +150,7 @@
                                 </td>
                             </tr>
                             <tr *ngIf="tag.showingMore && tag.questionCountOverTime">
-                                <td [attr.colspan]="isTrogdorRoomOwner ? 4 : 3">
+                                <td [attr.colspan]="isSuperUser ? 4 : 3">
                                     <app-question-count-graph [data]="tag.questionCountOverTime" [featuredStarted]="question.featuredStarted"
                                         [featuredEnded]="question.featuredEnded" [burnStarted]="question.burnStarted"
                                         [burnEnded]="question.burnEnded">
@@ -160,7 +160,7 @@
                         </ng-container>
                     </tbody>
                 </table>
-                <input *ngIf="isTrogdorRoomOwner" type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
+                <input *ngIf="isSuperUser" type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
             </div>
             <hr />
         </div>

@@ -157,7 +157,7 @@ namespace Rodgort.Controllers
 
         private object GenerateBurnsData(IQueryable<DbMetaQuestion> query)
         {
-            var isRoomOwner = User.HasClaim(DbRole.TROGDOR_ROOM_OWNER);
+            var isRoomOwner = User.HasRole(DbRole.RODGORT_SUPER_USER);
             var now = _dateService.UtcNow;
             var monthAgo = now.AddMonths(-1);
             var inAnHour = now.AddHours(1);

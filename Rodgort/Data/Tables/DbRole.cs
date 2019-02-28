@@ -4,9 +4,10 @@ namespace Rodgort.Data.Tables
 {
     public class DbRole
     {
-        public const string TROGDOR_ROOM_OWNER = "Trogdor Room Owner";
-        public const string RODGORT_ADMIN = "Rodgort Admin";
-        public const string MODERATOR = "Moderator";
+        public const int RODGORT_SUPER_USER = 1;
+        public const int RODGORT_ADMIN = 2;
+        
+        public int Id { get; set; }
 
         public string Name { get; set; }
 

@@ -55,7 +55,7 @@ namespace Rodgort.Controllers
         [HttpGet]
         public object Get(int userId)
         {
-            var isRodgortAdmin = User.HasClaim(DbRole.RODGORT_ADMIN);
+            var isRodgortAdmin = User.HasRole(DbRole.RODGORT_ADMIN);
 
             return _context.SiteUsers
                 .Where(u => u.Id == userId)
@@ -94,7 +94,8 @@ namespace Rodgort.Controllers
                     TriageQuestions = u.TagTrackingStatusAudits.Select(audit => audit.MetaQuestionId).Distinct().Count(),
                     Roles = u.Roles.Where(r => r.Enabled).Select(r => new
                     {
-                        Name = r.RoleName,
+                        r.RoleId,
+                        r.Role.Name,
                         AddedById = r.AddedByUserId,
                         AddedBy = r.AddedByUser.DisplayName,
                         AddedByIsModerator = r.AddedByUser.IsModerator,
@@ -102,9 +103,10 @@ namespace Rodgort.Controllers
                     }).ToList(),
 
                     AvailableRoles = isRodgortAdmin 
-                            ? _context.Roles.Where(r => !u.Roles.Where(rr => rr.Enabled).Select(rr => rr.RoleName).Contains(r.Name))
+                            ? _context.Roles.Where(r => !u.Roles.Where(rr => rr.Enabled).Select(rr => rr.RoleId).Contains(r.Id))
                                 .Select(r => new
                                 {
+                                    r.Id,
                                     r.Name
                                 }).ToList() 
                             : null
@@ -123,14 +125,14 @@ namespace Rodgort.Controllers
         [HttpPost("AddRole")]
         public void AddRole([FromBody] ChangeRoleRequest request)
         {
-            if (!User.HasClaim(DbRole.RODGORT_ADMIN))
+            if (!User.HasRole(DbRole.RODGORT_ADMIN))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
-            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleName == request.RoleName && sur.UserId == request.UserId);
+            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);
             if (existingRole != null && existingRole.Enabled)
                 return;
 
-            var roleExists = _context.Roles.FirstOrDefault(r => r.Name == request.RoleName);
+            var roleExists = _context.Roles.FirstOrDefault(r => r.Id == request.RoleId);
             if (roleExists == null)
                 throw new HttpStatusException(HttpStatusCode.BadRequest);
 
@@ -144,7 +146,7 @@ namespace Rodgort.Controllers
                 {
                     AddedByUserId = User.UserId(),
                     UserId = request.UserId,
-                    RoleName = request.RoleName,
+                    RoleId = request.RoleId,
                     Enabled = true,
                     DateAdded = _dateService.UtcNow
                 });
@@ -161,7 +163,7 @@ namespace Rodgort.Controllers
                 Added = true,
                 ChangedByUserId = User.UserId(),
                 DateChanged = _dateService.UtcNow,
-                RoleName = request.RoleName,
+                RoleId = request.RoleId,
                 UserId = request.UserId
             });
 
@@ -172,14 +174,14 @@ namespace Rodgort.Controllers
         [HttpPost("RemoveRole")]
         public void RemoveRole([FromBody] ChangeRoleRequest request)
         {
-            if (!User.HasClaim(DbRole.RODGORT_ADMIN))
+            if (!User.HasRole(DbRole.RODGORT_ADMIN))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
-            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleName == request.RoleName && sur.UserId == request.UserId);
+            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);
             if (existingRole == null || !existingRole.Enabled)
                 return;
 
-            var roleExists = _context.Roles.FirstOrDefault(r => r.Name == request.RoleName);
+            var roleExists = _context.Roles.FirstOrDefault(r => r.Id == request.RoleId);
             if (roleExists == null)
                 throw new HttpStatusException(HttpStatusCode.BadRequest);
 
@@ -194,7 +196,7 @@ namespace Rodgort.Controllers
                 Added = false,
                 ChangedByUserId = User.UserId(),
                 DateChanged = _dateService.UtcNow,
-                RoleName = request.RoleName,
+                RoleId = request.RoleId,
                 UserId = request.UserId
             });
             _context.SaveChanges();
@@ -203,7 +205,7 @@ namespace Rodgort.Controllers
         public class ChangeRoleRequest
         {
             public int UserId { get; set; }
-            public string RoleName { get; set; }
+            public int RoleId { get; set; }
         }
     }
 }

@@ -54,13 +54,13 @@ namespace Rodgort.Services
                     hasNewUser = true;
                 }
 
-                var roleAlreadyExists = _context.SiteUserRoles.Any(sur => sur.UserId == userId && sur.RoleName == DbRole.TROGDOR_ROOM_OWNER);
+                var roleAlreadyExists = _context.SiteUserRoles.Any(sur => sur.UserId == userId && sur.RoleId == DbRole.RODGORT_SUPER_USER);
                 if (!roleAlreadyExists)
                 {
                     _context.SiteUserRoles.Add(new DbSiteUserRole
                     {
                         UserId = userId,
-                        RoleName = DbRole.TROGDOR_ROOM_OWNER,
+                        RoleId = DbRole.RODGORT_SUPER_USER,
                         AddedByUserId = -1,
                         Enabled = true,
                         DateAdded = _dateService.UtcNow
@@ -71,7 +71,7 @@ namespace Rodgort.Services
                         Added = true,
                         ChangedByUserId = -1,
                         DateChanged = _dateService.UtcNow,
-                        RoleName = DbRole.TROGDOR_ROOM_OWNER,
+                        RoleId = DbRole.RODGORT_SUPER_USER,
                         UserId = userId
                     });
                 }

@@ -156,7 +156,7 @@ namespace Rodgort.Controllers
         [Authorize]
         public void SetTagTrackingStatus([FromBody] SetTagTrackingStatusRequest request)
         {
-            if (!User.HasClaim(DbRole.TROGDOR_ROOM_OWNER))
+            if (!User.HasRole(DbRole.RODGORT_SUPER_USER))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
             var matchingQuestionMetaTag = _context.MetaQuestionTags.FirstOrDefault(mqt => mqt.MetaQuestionId == request.MetaQuestionId && mqt.TagName == request.TagName);
@@ -197,7 +197,7 @@ namespace Rodgort.Controllers
         [Authorize]
         public void AddTag([FromBody] AddTagRequest request)
         {
-            if (!User.HasClaim(DbRole.TROGDOR_ROOM_OWNER))
+            if (!User.HasRole(DbRole.RODGORT_SUPER_USER))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
             
             var matchingQuestionMetaTag = _context.MetaQuestions

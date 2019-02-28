@@ -94,7 +94,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbSiteUserRoleAudit>().HasKey(a => a.Id);
             modelBuilder.Entity<DbSiteUserRoleAudit>().HasOne(a => a.User).WithMany(u => u.UserRolesChanged).HasForeignKey(a => a.UserId);
             modelBuilder.Entity<DbSiteUserRoleAudit>().HasOne(a => a.ChangedByUser).WithMany(u => u.ChangedOtherRoles).HasForeignKey(a => a.ChangedByUserId);
-            modelBuilder.Entity<DbSiteUserRoleAudit>().HasOne(a => a.Role).WithMany(u => u.Audits).HasForeignKey(a => new { a.UserId, a.RoleName });
+            modelBuilder.Entity<DbSiteUserRoleAudit>().HasOne(a => a.Role).WithMany(u => u.Audits).HasForeignKey(a => new { a.UserId, a.RoleId });
 
             modelBuilder.Entity<DbUserAction>().ToTable("user_actions");
             modelBuilder.Entity<DbUserAction>().HasKey(ua => ua.Id);
@@ -117,13 +117,13 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbSiteUserRole>().ToTable("site_user_roles");
             modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.User).WithMany(u => u.Roles).HasForeignKey(sur => sur.UserId);
             modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.AddedByUser).WithMany(u => u.AddedRoles).HasForeignKey(sur => sur.AddedByUserId);
-            modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.Role).WithMany(u => u.SiteUserRoles).HasForeignKey(sur => sur.RoleName);
+            modelBuilder.Entity<DbSiteUserRole>().HasOne(sur => sur.Role).WithMany(u => u.SiteUserRoles).HasForeignKey(sur => sur.RoleId);
             modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.AddedByUserId).IsRequired();
             modelBuilder.Entity<DbSiteUserRole>().Property(sur => sur.DateAdded).IsRequired();
-            modelBuilder.Entity<DbSiteUserRole>().HasKey(sur => new { sur.UserId, sur.RoleName });
+            modelBuilder.Entity<DbSiteUserRole>().HasKey(sur => new { sur.UserId, sur.RoleId });
 
             modelBuilder.Entity<DbRole>().ToTable("roles");
-            modelBuilder.Entity<DbRole>().HasKey(role => role.Name);
+            modelBuilder.Entity<DbRole>().HasKey(role => role.Id);
 
             modelBuilder.Entity<DbMetaQuestionMetaTag>().ToTable("meta_question_meta_tags");
             modelBuilder.Entity<DbMetaQuestionMetaTag>().HasKey(mqmt => new { mqmt.MetaQuestionId, mqmt.TagName });
@@ -171,9 +171,8 @@ namespace Rodgort.Data
 
             modelBuilder.Entity<DbRole>()
                 .HasData(
-                    new DbRole { Name = DbRole.TROGDOR_ROOM_OWNER },
-                    new DbRole { Name = DbRole.MODERATOR },
-                    new DbRole { Name = DbRole.RODGORT_ADMIN }
+                    new DbRole { Id = DbRole.RODGORT_SUPER_USER, Name = "Super user" },
+                    new DbRole { Id = DbRole.RODGORT_ADMIN, Name = "Admin" }
                 );
         }
 
