@@ -66,6 +66,7 @@ namespace Rodgort.Services
                     }
 
                     metaQuestionTag.MetaQuestion = question;
+                    metaQuestionTag.MetaQuestionId = question.Id;
                     metaQuestionTag.TagName = matchedTagName;
                     
                     // If there's only one tag, and that tag is found in the title in the form of [tag], we can just track it.
@@ -152,7 +153,7 @@ namespace Rodgort.Services
                 ChangedByUserId = -1,
                 Tag = questionTag.TagName,
                 MetaQuestionId = questionTag.MetaQuestionId,
-                PreviousTrackingStatusId = questionTag.TrackingStatusId,
+                PreviousTrackingStatusId = questionTag.TrackingStatusId == 0 ? null : (int?)questionTag.TrackingStatusId,
                 NewTrackingStatusId = newStatus,
                 TimeChanged = _dateService.UtcNow
             });
