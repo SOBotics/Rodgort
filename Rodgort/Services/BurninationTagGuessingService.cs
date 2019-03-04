@@ -144,6 +144,9 @@ namespace Rodgort.Services
 
         private void ChangeTrackingStatusId(DbMetaQuestionTag questionTag, int newStatus)
         {
+            if (questionTag.TrackingStatusId == newStatus)
+                return;
+
             _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
             {
                 ChangedByUserId = -1,
