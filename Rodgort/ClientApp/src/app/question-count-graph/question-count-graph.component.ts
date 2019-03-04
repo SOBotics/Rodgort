@@ -176,7 +176,7 @@ export class QuestionCountGraphComponent implements OnInit {
         type: 'datetime',
         labels: {
           format: '{value:%Y-%m-%d}',
-          rotation: 45,
+          rotation: -45,
         },
         plotLines: lines,
         plotBands: bands,
