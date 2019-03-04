@@ -3,6 +3,8 @@
     [(ngModel)]="filter.userId" #search="ngModel">
   <input type="number" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" placeholder="Meta question id"
     name="metaQuestionId" [(ngModel)]="filter.metaQuestionId" #search="ngModel">
+  <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" placeholder="Tag"
+    name="tag" [(ngModel)]="filter.tag" #search="ngModel">
   <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
 </form>
 

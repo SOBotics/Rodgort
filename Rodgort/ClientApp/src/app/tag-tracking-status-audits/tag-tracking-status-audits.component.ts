@@ -16,6 +16,7 @@ export class TagTrackingStatusAuditsComponent implements OnInit {
   public filter = {
     userId: String,
     metaQuestionId: String,
+    tag: String,
 
     pageNumber: 1,
   };
@@ -32,17 +33,18 @@ export class TagTrackingStatusAuditsComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.filter.userId = params['userId'] || '';
       this.filter.metaQuestionId = params['metaQuestionId'] || '';
+      this.filter.tag = params['tag'] || '';
       this.filter.pageNumber = +params['pageNumber'] || 1;
       this.reloadData();
     });
   }
-
 
   public reloadData() {
     const query =
       `/api/TagTrackingStatusAudits` +
       `?userId=${this.filter.userId}` +
       `&metaQuestionId=${this.filter.metaQuestionId}` +
+      `&tag=${this.filter.tag}` +
       `&page=${this.filter.pageNumber}`;
 
     this.httpClient.get(query).subscribe((response: any) => {

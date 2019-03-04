@@ -147,6 +147,7 @@
                                     <span *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED && tag.trackingStatusId !== tagTrackingStatus.IGNORED">|</span>
                                     <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.IGNORED" href="javascript:void(0)"
                                         (click)="setTagTrackingStatus(question.id, tag, false)">Ignore</a>
+                                    <a class="pull-right" routerLink="/tag-tracking-status-audits" [queryParams]="{tag: tag.tagName, metaQuestionId: question.id}">Audit</a>
                                 </td>
                             </tr>
                             <tr *ngIf="tag.showingMore && tag.questionCountOverTime">
