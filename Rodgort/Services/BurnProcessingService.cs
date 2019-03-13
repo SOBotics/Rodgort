@@ -7,6 +7,7 @@ using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
+using Newtonsoft.Json;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services.HostedServices;
@@ -90,6 +91,8 @@ namespace Rodgort.Services
                     if (revision.LastTags != null)
                     {
                         // There was a retag
+                        if (revision.Tags == null)
+                            throw new Exception($"Found a retag, but no current tags. {JsonConvert.SerializeObject(revision)}");
                         var newTags = revision.LastTags.Except(revision.Tags);
                         foreach (var newTag in newTags)
                         {
