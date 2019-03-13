@@ -109,7 +109,7 @@ namespace StackExchangeApi
                 var currentResult = await ApplyWithPaging<UserResponse>($"{BASE_URL}/users/{userIdsString}", new Dictionary<string, string>
                 {
                     {"site", siteName},
-                    {"filter", "!)iua4.KHF.lCcLoe3BLvS"}
+                    {"filter", "!JlNR05FuMA99pPFc(m7tLG4"}
                 });
                 if (finalResult == null)
                     finalResult = currentResult;
@@ -118,6 +118,16 @@ namespace StackExchangeApi
             }
 
             return finalResult;
+        }
+
+        public async Task<ApiItemsResponse<ModeratorResponse>> Moderators(string siteName)
+        {
+            return await ApplyWithPaging<ModeratorResponse>($"{BASE_URL}/users/moderators",
+                new Dictionary<string, string>
+                {
+                    {"site", siteName},
+                    {"filter", "!qH8bjUGDbuo.sdwpgswz"}
+                });
         }
 
         public Task<ApiItemsResponse<TagSynonymsResponse>> TagSynonyms(string siteName)

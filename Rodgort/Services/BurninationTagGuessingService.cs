@@ -12,11 +12,16 @@ namespace Rodgort.Services
     public class BurninationTagGuessingService
     {
         private readonly RodgortContext _context;
+        private readonly DateService _dateService;
         private readonly ILogger<BurninationTagGuessingService> _logger;
 
-        public BurninationTagGuessingService(RodgortContext context, ILogger<BurninationTagGuessingService> logger)
+        public BurninationTagGuessingService(
+            RodgortContext context, 
+            DateService dateService,
+            ILogger<BurninationTagGuessingService> logger)
         {
             _context = context;
+            _dateService = dateService;
             _logger = logger;
         }
 
@@ -61,11 +66,12 @@ namespace Rodgort.Services
                     }
 
                     metaQuestionTag.MetaQuestion = question;
+                    metaQuestionTag.MetaQuestionId = question.Id;
                     metaQuestionTag.TagName = matchedTagName;
                     
                     // If there's only one tag, and that tag is found in the title in the form of [tag], we can just track it.
                     if (matchedTagNames.Count == 1 && question.Title.Contains($"[{matchedTagName}]"))
-                        metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
+                        ChangeTrackingStatusId(metaQuestionTag, DbMetaQuestionTagTrackingStatus.TRACKED);
                     else
                     {
                         var trackedElsewhere = _context.MetaQuestionTags.Any(t => 
@@ -74,12 +80,12 @@ namespace Rodgort.Services
                         
                         // If we find a tag marked 'tracked elsewhere', but can't find any other tracked tags, put it back to requires approval
                         if (metaQuestionTag.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE && !trackedElsewhere)
-                            metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL;
+                            ChangeTrackingStatusId(metaQuestionTag, DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL);
                         // Otherwise, if it's tracked elsewhere, mark it as such
                         else if (trackedElsewhere)
-                            metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE;
+                            ChangeTrackingStatusId(metaQuestionTag, DbMetaQuestionTagTrackingStatus.TRACKED_ELSEWHERE);
                         else
-                            metaQuestionTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL;
+                            ChangeTrackingStatusId(metaQuestionTag, DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL);
                     }
                         
                     
@@ -123,10 +129,10 @@ namespace Rodgort.Services
             ).ToList();
 
             foreach (var masterSynonymTag in masterSynonymTags)
-                masterSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.IGNORED;
+                ChangeTrackingStatusId(masterSynonymTag, DbMetaQuestionTagTrackingStatus.IGNORED);
 
             foreach (var childSynonymTag in childSynonymTags)
-                childSynonymTag.TrackingStatusId = DbMetaQuestionTagTrackingStatus.TRACKED;
+                ChangeTrackingStatusId(childSynonymTag, DbMetaQuestionTagTrackingStatus.TRACKED);
 
             if (masterSynonymTags.Any() || childSynonymTags.Any())
             {
@@ -135,6 +141,23 @@ namespace Rodgort.Services
             }
 
             _logger.LogTrace("Guessing tags completed");
+        }
+
+        private void ChangeTrackingStatusId(DbMetaQuestionTag questionTag, int newStatus)
+        {
+            if (questionTag.TrackingStatusId == newStatus)
+                return;
+
+            _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
+            {
+                ChangedByUserId = -1,
+                Tag = questionTag.TagName,
+                MetaQuestionId = questionTag.MetaQuestionId,
+                PreviousTrackingStatusId = questionTag.TrackingStatusId == 0 ? null : (int?)questionTag.TrackingStatusId,
+                NewTrackingStatusId = newStatus,
+                TimeChanged = _dateService.UtcNow
+            });
+            questionTag.TrackingStatusId = newStatus;
         }
     }
 }

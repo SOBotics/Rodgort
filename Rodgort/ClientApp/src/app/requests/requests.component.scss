@@ -73,3 +73,11 @@ table {
     width: 20px;
     height: 20px;
 }
+@media (min-width: 574px) {
+    .audit-link {
+        float: right;
+    }
+    .audit-link-spacer {
+        display: none;
+    }
+}

@@ -24,6 +24,7 @@ namespace Rodgort.Controllers
         public object Get(
             int? userId = null, 
             int? metaQuestionId = null,
+            string tag = null,
             int page = 1, int pageSize = 30)
         {
             IQueryable<DbMetaQuestionTagTrackingStatusAudit> query = _context.MetaQuestionTagTrackingStatusAudits;
@@ -31,6 +32,8 @@ namespace Rodgort.Controllers
                 query = query.Where(q => q.ChangedByUserId == userId.Value);
             if (metaQuestionId.HasValue)
                 query = query.Where(q => q.MetaQuestionId == metaQuestionId.Value);
+            if (!string.IsNullOrWhiteSpace(tag))
+                query = query.Where(q => q.Tag == tag);
 
             return query
                 .Select(audit => new

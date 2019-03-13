@@ -48,7 +48,7 @@
             <tbody>
               <tr *ngFor="let row of tag.userGrandTotals | sortAscending: 'total'; let i=index">
                 <ng-container *ngIf="tag.userGrandTotalShowAll || i < 10">
-                  <td><a routerLink="/user/{{row.userId}}">{{row.userName}} {{row.isModerator ? '♦' : ''}}</a></td>
+                  <td><app-render-username [user]="row" [warnEditPrivileges]="isModerator"></app-render-username></td>
                   <td>{{row.total}}</td>
                 </ng-container>
               </tr>
@@ -58,7 +58,6 @@
 
         <ng-container *ngIf="tag.userTotals && tag.userTotals.length">
           <h2>User total breakdown</h2>
-
           <input type="checkbox" id="{{tag.tag}}-userBreakdownShowAll" [(ngModel)]="tag.userBreakdownShowAll"
             [ngModelOptions]="{standalone: true}">
           <label for="{{tag.tag}}-userBreakdownShowAll">Show all</label>
@@ -73,7 +72,7 @@
             <tbody>
               <tr *ngFor="let row of tag.userTotals | sortAscending: 'total'; let i=index">
                 <ng-container *ngIf="tag.userBreakdownShowAll || i < 10">
-                  <td><a routerLink="/user/{{row.userId}}">{{row.userName}} {{row.isModerator ? '♦' : ''}}</a></td>
+                  <td><app-render-username [user]="row" [warnEditPrivileges]="isModerator"></app-render-username></td>
                   <td>{{row.type}}</td>
                   <td>{{row.total}}</td>
                 </ng-container>

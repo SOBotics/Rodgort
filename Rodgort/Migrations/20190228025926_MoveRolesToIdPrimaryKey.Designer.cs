@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rodgort.Data;
@@ -9,9 +10,10 @@ using Rodgort.Data;
 namespace Rodgort.Migrations
 {
     [DbContext(typeof(RodgortContext))]
-    partial class RodgortContextModelSnapshot : ModelSnapshot
+    [Migration("20190228025926_MoveRolesToIdPrimaryKey")]
+    partial class MoveRolesToIdPrimaryKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -334,9 +336,8 @@ namespace Rodgort.Migrations
                     b.ToTable("roles");
 
                     b.HasData(
-                        new { Id = 1, Name = "Triager" },
-                        new { Id = 2, Name = "Admin" },
-                        new { Id = 3, Name = "Trusted" }
+                        new { Id = 1, Name = "Super user" },
+                        new { Id = 2, Name = "Admin" }
                     );
                 });
 
@@ -368,9 +369,6 @@ namespace Rodgort.Migrations
 
                     b.Property<bool>("IsModerator")
                         .HasColumnName("is_moderator");
-
-                    b.Property<int>("Reputation")
-                        .HasColumnName("reputation");
 
                     b.HasKey("Id")
                         .HasName("pk_site_users");

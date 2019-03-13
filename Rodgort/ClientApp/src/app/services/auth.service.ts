@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { Observable } from 'rxjs/Observable';
+import { isArray } from 'util';
 
 export const AccessTokenStorageKey = 'access_token';
 export interface Claim { key: string; value: any; }
@@ -9,12 +10,14 @@ export interface AuthDetails {
   TokenData: any;
   IsAuthenticated: boolean;
   Claims: Claim[];
-  GetClaim: (claim: string) => any;
+  HasRole: (role: number) => any;
 }
 
-export const TROGDOR_ROOM_OWNER = 'Trogdor Room Owner';
-export const RODGORT_ADMIN = 'Rodgort Admin';
-export const MODERATOR = 'Moderator';
+const ROLE_TYPE = 'role';
+
+export const TRIAGER = 1;
+export const ADMIN = 2;
+export const TRUSTED = 3;
 
 @Injectable()
 export class AuthService {
@@ -41,14 +44,19 @@ export class AuthService {
     if (payload) {
       const keys = Object.keys(payload);
       keys.forEach(key => {
-        claims.push({ key: key, value: payload[key] });
+        const value = payload[key];
+        if (isArray(value)) {
+          for (const arrValue of value) {
+            claims.push({ key: key, value: arrValue });
+          }
+        } else {
+          claims.push({ key: key, value: payload[key] });
+        }
       });
     }
-    const getClaim = (claim: string) => {
-      const matchingClaim = claims.find(a => a.key === claim);
-      if (matchingClaim) {
-        return matchingClaim.value;
-      }
+    const hasRole = (role: number) => {
+      const matchingClaim = claims.find(a => a.key === ROLE_TYPE && a.value === (role + ''));
+      return !!matchingClaim;
     };
 
     return {
@@ -56,7 +64,7 @@ export class AuthService {
       TokenData: payload,
       IsAuthenticated: !!payload,
       Claims: claims,
-      GetClaim: getClaim
+      HasRole: hasRole
     };
   }
 

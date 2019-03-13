@@ -10,6 +10,7 @@ import { UserComponent } from './user/user.component';
 import { ZombiesComponent } from './zombies/zombies.component';
 import { UsersComponent } from './users/users.component';
 import { TrackedBurnsComponent } from './tracked-burns/tracked-burns.component';
+import { UserActionsComponent } from './user-actions/user-actions.component';
 
 export const appRoutes: Routes = [
     { path: '', component: HomeComponent, pathMatch: 'full' },
@@ -21,6 +22,7 @@ export const appRoutes: Routes = [
     { path: 'unknown-deletion-resolution', component: UnknownDeletionResolutionComponent },
     { path: 'manual-question-processing', component: ManualQuestionProcessingComponent },
     { path: 'user/:id', component: UserComponent },
+    { path: 'user-actions/:id', component: UserActionsComponent },
     { path: 'profile', component: UserComponent },
     { path: 'zombies', component: ZombiesComponent },
     { path: 'users', component: UsersComponent },

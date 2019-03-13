@@ -62,14 +62,14 @@ namespace Rodgort.Controllers
                 var user = _dbContext.SiteUsers.Include(u => u.Roles).FirstOrDefault(u => u.Id == ChatUserIds.ROB);
                 if (user != null)
                 {
-                    var userScopes = user.Roles.Where(r => r.Enabled).Select(s => s.RoleName).ToList();
+                    var userRoles = user.Roles.Where(r => r.Enabled);
 
                     var claims = new[]
                     {
                         new Claim(ClaimTypes.Name, user.DisplayName),
                         new Claim("accountId", user.Id.ToString())
-                    }.Concat(userScopes.Select(c => new Claim(c, "true")));
-
+                    }.Concat(userRoles.Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
+                    
                     var signingKey = GetSigningKey();
                     var token = CreateJwtToken(claims, signingKey);
 
@@ -129,7 +129,7 @@ namespace Rodgort.Controllers
             apiRequest.AddParameter("key", _stackExchangeApiCredentials.AppKey);
             apiRequest.AddParameter("site", "stackoverflow");
             apiRequest.AddParameter("access_token", accessToken);
-            apiRequest.AddParameter("filter", "!)iua4.KHF.lCb61RIH7hp");
+            apiRequest.AddParameter("filter", "!JlNR05FuMA99pPENDZMz72S");
             var apiResponse = await stackExchangeApiClient.ExecuteTaskAsync(apiRequest);
             var apiContent = JsonConvert.DeserializeObject<dynamic>(apiResponse.Content);
 
@@ -137,6 +137,7 @@ namespace Rodgort.Controllers
             int userId = userDetails.user_id;
             string displayName = userDetails.display_name;
             string userType = userDetails.user_type;
+            int reputation = userDetails.reputation;
 
             var signingKey = GetSigningKey();
 
@@ -148,6 +149,7 @@ namespace Rodgort.Controllers
                     Id = userId,
                     DisplayName = displayName,
                     IsModerator = string.Equals("moderator", userType),
+                    Reputation = reputation,
                     Roles = new List<DbSiteUserRole>()
                 };
                 _dbContext.SiteUsers.Add(user);
@@ -161,7 +163,7 @@ namespace Rodgort.Controllers
             {
                 new Claim(ClaimTypes.Name, displayName),
                 new Claim("accountId", userId.ToString())
-            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(r.RoleName, "true")));
+            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
 
             var token = CreateJwtToken(claims, signingKey);
 

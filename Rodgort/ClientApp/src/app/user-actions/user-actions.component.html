@@ -1,0 +1,30 @@
+<div class="container loading-container">
+  <img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
+</div>
+
+<ng-container *ngIf="!loading">
+  <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
+  </app-pagination>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Revision</th>
+        <th>Tags</th>
+        <th>Type</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let action of actions">
+        <td><a href="https://stackoverflow.com/posts/{{action.postId}}/revisions">{{action.postId}}</a></td>
+        <td>{{action.tags}}</td>
+        <td>{{action.type}}</td>
+        <td title="{{action.time}}">{{action.localTime}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
+  </app-pagination>
+</ng-container>

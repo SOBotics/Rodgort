@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, RODGORT_ADMIN } from '../services/auth.service';
+import { AuthService, ADMIN, TRUSTED } from '../services/auth.service';
 import * as moment from 'moment';
 
 @Component({
@@ -11,8 +11,9 @@ import * as moment from 'moment';
 })
 export class UserComponent implements OnInit {
   public isAdmin = false;
+  public isTrusted = false;
 
-  public selectedRole: string;
+  public selectedRole: number;
 
   public userData: {
     userId: number;
@@ -53,7 +54,8 @@ export class UserComponent implements OnInit {
 
   ngOnInit() {
     this.authService.GetAuthDetails().subscribe(d => {
-      this.isAdmin = !!d.GetClaim(RODGORT_ADMIN);
+      this.isAdmin = d.HasRole(ADMIN);
+      this.isTrusted = d.HasRole(TRUSTED);
     });
 
     this.route.params.subscribe(params => {
@@ -90,23 +92,23 @@ export class UserComponent implements OnInit {
   }
 
   public addRole() {
-    if (this.selectedRole === '') {
+    if (!this.selectedRole) {
       return;
     }
 
-    this.httpClient.post(`api/users/addRole`, { userId: this.userData.userId, roleName: this.selectedRole }).subscribe((response) => {
+    this.httpClient.post(`api/users/addRole`, { userId: this.userData.userId, roleId: this.selectedRole }).subscribe((response) => {
       this.reloadData(this.userData.userId);
-      this.selectedRole = '';
+      this.selectedRole = null;
     });
   }
 
-  public removeRole(roleName: string) {
-    if (roleName === '') {
+  public removeRole(roleId?: number) {
+    if (!roleId) {
       return;
     }
-    this.httpClient.post(`api/users/removeRole`, { userId: this.userData.userId, roleName }).subscribe((response) => {
+    this.httpClient.post(`api/users/removeRole`, { userId: this.userData.userId, roleId }).subscribe((response) => {
       this.reloadData(this.userData.userId);
-      this.selectedRole = '';
+      this.selectedRole = null;
     });
   }
 }

@@ -4,9 +4,9 @@ namespace Rodgort.Utilities
 {
     public static class SecurityHelpers
     {
-        public static bool HasClaim(this ClaimsPrincipal claimsPrincipal, string type)
+        public static bool HasRole(this ClaimsPrincipal claimsPrincipal, int roleId)
         {
-            return claimsPrincipal.HasClaim(c => string.Equals(c.Type, type));
+            return claimsPrincipal.HasClaim(ClaimTypes.Role, roleId.ToString());
         }
 
         public static int UserId(this ClaimsPrincipal claimsPrincipal)

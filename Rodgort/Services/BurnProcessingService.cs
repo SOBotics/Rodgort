@@ -106,18 +106,36 @@ namespace Rodgort.Services
                                 TimeProcessed = _dateService.UtcNow
                             });
                         }
+
+                        var oldTags = revision.Tags.Except(revision.LastTags);
+                        foreach (var oldTag in oldTags)
+                        {
+                            AddIfNew(new DbUserAction
+                            {
+                                UserActionTypeId = DbUserActionType.ADDED_TAG,
+                                PostId = revision.PostId,
+                                Tag = oldTag,
+                                Time = Dates.UnixTimeStampToDateTime(revision.CreationDate),
+                                SiteUserId = revision.User.UserId,
+                                TimeProcessed = _dateService.UtcNow
+                            });
+                        }
                     }
                     else
                     {
                         if (!string.IsNullOrWhiteSpace(revision.LastBody) || !string.IsNullOrWhiteSpace(revision.LastTitle))
                             continue;
 
-                        // There was a change that didn't edit the title, body or tags. Might be a closure
-                        if (revision.Comment == null || !revision.Comment.StartsWith("<b>Post Closed</b>"))
+                        // There was a change that didn't edit the title, body or tags. Might be a post state change
+                        var isClosure = revision.Comment?.StartsWith("<b>Post Closed</b>") ?? false;
+                        var isReopen = revision.Comment?.StartsWith("<b>Post Reopened</b>") ?? false;
+                        var isDeletion = revision.Comment?.StartsWith("<b>Post Deleted</b>") ?? false;
+                        var isUndeletion = revision.Comment?.StartsWith("<b>Post Undeleted</b>") ?? false;
+                        if (!isClosure && !isReopen && !isDeletion && !isUndeletion)
                             continue;
 
-                        // A closure doesn't have a tags list.
-                        // So, check all previous revisions for this post and grab all the tags. A closure counts for all tags seen
+                        // A state change doesn't have a tags list.
+                        // So, check all previous revisions for this post and grab all the tags. A state change counts for all tags seen
                         var allSeenTags = revisions.Items
                             .Where(r => r.PostId == revision.PostId)
                             .Where(r => r.CreationDate < revision.CreationDate)
@@ -128,13 +146,21 @@ namespace Rodgort.Services
                             .Select(m => int.Parse(m.Groups[1].Value))
                             .ToList();
 
+                        var actionType = isClosure
+                            ? DbUserActionType.CLOSED
+                            : isReopen
+                                ? DbUserActionType.REOPENED
+                                : isDeletion
+                                    ? DbUserActionType.DELETED
+                                    : DbUserActionType.UNDELETED;
+
                         foreach (var userId in userIds)
                         {
                             foreach (var tag in allSeenTags)
                             {
                                 AddIfNew(new DbUserAction
                                 {
-                                    UserActionTypeId = DbUserActionType.CLOSED,
+                                    UserActionTypeId = actionType,
                                     Tag = tag,
                                     PostId = revision.PostId,
                                     Time = Dates.UnixTimeStampToDateTime(revision.CreationDate),

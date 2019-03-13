@@ -107,7 +107,7 @@
                             <td style="width: 35%;">Tag</td>
                             <td style="width: 15%;"># questions</td>
                             <td style="width: 25%;">Status</td>
-                            <td style="width: 25%;" *ngIf="isTrogdorRoomOwner">Admin</td>
+                            <td style="width: 25%;" *ngIf="isRodgortTriager">Admin</td>
                         </tr>
                     </thead>
                     <tbody>
@@ -141,16 +141,18 @@
                                     <app-tracking-status-bubble [trackingStatusName]="tag.trackingStatusName"
                                         [trackingStatusId]="tag.trackingStatusId"></app-tracking-status-bubble>
                                 </td>
-                                <td *ngIf="isTrogdorRoomOwner">
+                                <td *ngIf="isRodgortTriager">
                                     <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED" href="javascript:void(0)"
                                         (click)="setTagTrackingStatus(question.id, tag, true)">Track</a>
                                     <span *ngIf="tag.trackingStatusId !== tagTrackingStatus.TRACKED && tag.trackingStatusId !== tagTrackingStatus.IGNORED">|</span>
                                     <a *ngIf="tag.trackingStatusId !== tagTrackingStatus.IGNORED" href="javascript:void(0)"
                                         (click)="setTagTrackingStatus(question.id, tag, false)">Ignore</a>
+                                    <span class="audit-link-spacer">|</span>
+                                    <a *ngIf="tag.trackingStatusId === tagTrackingStatus.TRACKED || tag.trackingStatusId === tagTrackingStatus.IGNORED" class="audit-link" routerLink="/tag-tracking-status-audits" [queryParams]="{tag: tag.tagName, metaQuestionId: question.id}">Audit</a>
                                 </td>
                             </tr>
                             <tr *ngIf="tag.showingMore && tag.questionCountOverTime">
-                                <td [attr.colspan]="isTrogdorRoomOwner ? 4 : 3">
+                                <td [attr.colspan]="isRodgortTriager ? 4 : 3">
                                     <app-question-count-graph [data]="tag.questionCountOverTime" [featuredStarted]="question.featuredStarted"
                                         [featuredEnded]="question.featuredEnded" [burnStarted]="question.burnStarted"
                                         [burnEnded]="question.burnEnded">
@@ -160,7 +162,7 @@
                         </ng-container>
                     </tbody>
                 </table>
-                <input *ngIf="isTrogdorRoomOwner" type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
+                <input *ngIf="isRodgortTriager" type="text" class="form-control" placeholder="Add new tag" (keydown)="onNewTagAdded(question, $event)" />
             </div>
             <hr />
         </div>
