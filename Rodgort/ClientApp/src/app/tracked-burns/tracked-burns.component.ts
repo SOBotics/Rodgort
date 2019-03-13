@@ -24,7 +24,7 @@ export class TrackedBurnsComponent implements OnInit {
         let durationStr: string | undefined;
         if (momBurnEnded) {
           let duration = moment.duration(momBurnEnded.diff(momBurnStarted));
-          const days = duration.days();
+          const days = duration.asDays();
           duration = duration.subtract(days, 'days');
           const hours = duration.hours();
           duration = duration.subtract(hours, 'hours');
