@@ -91,9 +91,7 @@ namespace Rodgort.Services
                     if (revision.LastTags != null)
                     {
                         // There was a retag
-                        if (revision.Tags == null)
-                            throw new Exception($"Found a retag, but no current tags. {JsonConvert.SerializeObject(revision)}");
-                        var newTags = revision.LastTags.Except(revision.Tags);
+                        var newTags = revision.LastTags.Except(revision.Tags ?? Enumerable.Empty<string>());
                         foreach (var newTag in newTags)
                         {
                             AddIfNew(new DbUserAction
