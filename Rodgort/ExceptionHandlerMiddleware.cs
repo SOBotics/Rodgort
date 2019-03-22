@@ -37,10 +37,12 @@ namespace Rodgort
             if (exception is HttpStatusException requestException)
                 httpStatusCode = (int) requestException.StatusCode;
 
+            var wrappedException = new Exception($"{httpStatusCode} ({context.Connection.RemoteIpAddress}) - {context.Request?.Path.Value}");
+
             if (httpStatusCode >= 400 && httpStatusCode < 500)
-                _logger.LogWarning(exception, $"{httpStatusCode} ({context.Connection.RemoteIpAddress}) - {context.Request?.Path.Value}");
+                _logger.LogWarning(wrappedException, string.Empty);
             else
-                _logger.LogError(exception, $"{context.Request?.Path.Value} - {httpStatusCode}");
+                _logger.LogError(wrappedException, string.Empty);
 
             var result = JsonConvert.SerializeObject(new ErrorWrapper { Error = exception.Message });
             context.Response.ContentType = "application/json";
