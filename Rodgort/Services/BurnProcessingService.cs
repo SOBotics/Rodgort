@@ -7,6 +7,7 @@ using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MoreLinq;
+using Newtonsoft.Json;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services.HostedServices;
@@ -89,8 +90,10 @@ namespace Rodgort.Services
                 {
                     if (revision.LastTags != null)
                     {
+                        var tags = revision.Tags ?? Enumerable.Empty<string>();
+
                         // There was a retag
-                        var newTags = revision.LastTags.Except(revision.Tags);
+                        var newTags = revision.LastTags.Except(tags);
                         foreach (var newTag in newTags)
                         {
                             AddIfNew(new DbUserAction
@@ -104,7 +107,7 @@ namespace Rodgort.Services
                             });
                         }
 
-                        var oldTags = revision.Tags.Except(revision.LastTags);
+                        var oldTags = tags.Except(revision.LastTags);
                         foreach (var oldTag in oldTags)
                         {
                             AddIfNew(new DbUserAction
