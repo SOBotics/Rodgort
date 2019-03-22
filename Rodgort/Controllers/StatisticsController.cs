@@ -228,11 +228,11 @@ namespace Rodgort.Controllers
                             RetagsOverTime = LoadRetagsOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
                             RoombasOverTime = LoadRoombasOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
 
-                            Overtime = LoadOverTimeData(isRoomOwner ? b.StartTime : (b.BurnStarted?.AddHours(hoursAfterBurn) ?? b.BurnEnded?.AddHours(hoursAfterBurn) ?? inAnHour), b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
+                            Overtime = LoadOverTimeData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
 
-                            UserTotals = LoadUserTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted?.AddHours(hoursAfterBurn) ?? b.BurnEnded?.AddHours(hoursAfterBurn) ?? inAnHour), b.EndTime, bt.Tag),
+                            UserTotals = LoadUserTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag),
 
-                            UserGrandTotals = LoadUserGrandTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted?.AddHours(hoursAfterBurn) ?? b.BurnEnded?.AddHours(hoursAfterBurn) ?? inAnHour), b.EndTime, bt.Tag)
+                            UserGrandTotals = LoadUserGrandTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag)
                         };
                     }),
 
