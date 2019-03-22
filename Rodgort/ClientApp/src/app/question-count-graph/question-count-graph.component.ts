@@ -49,7 +49,7 @@ export class QuestionCountGraphComponent implements OnInit {
           text: l.lineName
         }
       }))
-     : [];
+      : [];
 
     if (this.featuredStarted && this.featuredEnded) {
       bands.push({
@@ -165,6 +165,13 @@ export class QuestionCountGraphComponent implements OnInit {
       });
     }
 
+    const minTime = toUtcDateTime(
+      this.featuredStarted
+      || this.featuredEnded
+      || this.burnStarted
+      || this.burnEnded
+    );
+
     this.chart = new Chart({
       chart: {
         type: 'line',
@@ -180,6 +187,7 @@ export class QuestionCountGraphComponent implements OnInit {
         },
         plotLines: lines,
         plotBands: bands,
+        min: minTime,
         tickInterval: 3600 * 24 * 1 * 1000,
       },
       plotOptions: {
