@@ -33,13 +33,6 @@ namespace Rodgort.Controllers
             _logger = logger;
         }
 
-        [HttpGet("ThrowError")]
-        public object ThrowError()
-        {
-            object a = null;
-            return a.ToString();
-        }
-
         [HttpGet("UnresolvedDeletions")]
         public object GetUnresolvedDeletions()
         {
