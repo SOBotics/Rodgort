@@ -161,7 +161,7 @@ namespace Rodgort.Controllers
             var now = _dateService.UtcNow;
             var monthAgo = now.AddMonths(-1);
             var inAnHour = now.AddHours(1);
-            const int hoursAfterBurn = 8;
+            var timeAfterBurn = TimeSpan.FromHours(1).Add(TimeSpan.FromMinutes(30));
 
             var burnsData = query
                 .Select(mq => new
@@ -172,9 +172,9 @@ namespace Rodgort.Controllers
                     mq.BurnEnded,
                     StartTime = mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded ?? monthAgo,
                     EndTime = mq.FeaturedEnded.HasValue && !mq.BurnStarted.HasValue
-                                ? mq.FeaturedEnded.Value.AddHours(hoursAfterBurn)
+                                ? mq.FeaturedEnded.Value.Add(timeAfterBurn)
                                 : mq.BurnStarted.HasValue && mq.BurnEnded.HasValue
-                                    ? mq.BurnEnded.Value.AddHours(hoursAfterBurn)
+                                    ? mq.BurnEnded.Value.Add(timeAfterBurn)
                                     : inAnHour,
                     mq.Title,
                     mq.Link,
