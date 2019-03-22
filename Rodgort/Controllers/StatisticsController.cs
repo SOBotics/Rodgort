@@ -161,6 +161,7 @@ namespace Rodgort.Controllers
             var now = _dateService.UtcNow;
             var monthAgo = now.AddMonths(-1);
             var inAnHour = now.AddHours(1);
+            const int hoursAfterBurn = 8;
 
             var burnsData = query
                 .Select(mq => new
@@ -171,9 +172,9 @@ namespace Rodgort.Controllers
                     mq.BurnEnded,
                     StartTime = mq.FeaturedStarted ?? mq.FeaturedEnded ?? mq.BurnStarted ?? mq.BurnEnded ?? monthAgo,
                     EndTime = mq.FeaturedEnded.HasValue && !mq.BurnStarted.HasValue
-                                ? mq.FeaturedEnded.Value
+                                ? mq.FeaturedEnded.Value.AddHours(hoursAfterBurn)
                                 : mq.BurnStarted.HasValue && mq.BurnEnded.HasValue
-                                    ? mq.BurnEnded.Value
+                                    ? mq.BurnEnded.Value.AddHours(hoursAfterBurn)
                                     : inAnHour,
                     mq.Title,
                     mq.Link,
@@ -227,11 +228,11 @@ namespace Rodgort.Controllers
                             RetagsOverTime = LoadRetagsOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
                             RoombasOverTime = LoadRoombasOverTimeData(b.StartTime, b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
 
-                            Overtime = LoadOverTimeData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
+                            Overtime = LoadOverTimeData(isRoomOwner ? b.StartTime : (b.BurnStarted?.AddHours(hoursAfterBurn) ?? b.BurnEnded?.AddHours(hoursAfterBurn) ?? inAnHour), b.EndTime, bt.Tag, breakdownSize, breakdownInterval),
 
-                            UserTotals = LoadUserTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag),
+                            UserTotals = LoadUserTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted?.AddHours(hoursAfterBurn) ?? b.BurnEnded?.AddHours(hoursAfterBurn) ?? inAnHour), b.EndTime, bt.Tag),
 
-                            UserGrandTotals = LoadUserGrandTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted ?? b.BurnEnded ?? inAnHour), b.EndTime, bt.Tag)
+                            UserGrandTotals = LoadUserGrandTotalsData(isRoomOwner ? b.StartTime : (b.BurnStarted?.AddHours(hoursAfterBurn) ?? b.BurnEnded?.AddHours(hoursAfterBurn) ?? inAnHour), b.EndTime, bt.Tag)
                         };
                     }),
 
