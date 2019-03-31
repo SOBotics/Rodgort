@@ -130,16 +130,15 @@ namespace Rodgort.Controllers
             if (hasQuestions == "no")
                 transformedQuery = transformedQuery.Where(tq => tq.NumQuestions <= 0);
 
-            IOrderedQueryable<object> orderedQuery;
-            if (sortBy == "score")
-                orderedQuery = transformedQuery.OrderByDescending(t => t.Score);
-            else if (sortBy == "numQuestions")
-                orderedQuery = transformedQuery.OrderByDescending(t => t.NumQuestions);
-            else if (sortBy == "age")
-                orderedQuery = transformedQuery.OrderByDescending(t => t.CreationDate);
-            else
-                orderedQuery = transformedQuery.OrderByDescending(t => t.Id);
-
+            var orderedQuery =
+                sortBy == "score"
+                    ? transformedQuery.OrderByDescending(t => t.Score)
+                    : sortBy == "numQuestions"
+                        ? transformedQuery.OrderByDescending(t => t.NumQuestions)
+                        : sortBy == "age"
+                            ? transformedQuery.OrderByDescending(t => t.CreationDate)
+                            : transformedQuery.OrderByDescending(t => t.Id);
+            
             var result = orderedQuery.Page(page, pageSize);
             return result;
         }
