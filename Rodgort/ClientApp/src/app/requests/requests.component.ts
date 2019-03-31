@@ -4,6 +4,7 @@ import { PagingInfo, GetPagingInfo } from '../../utils/PagingHelper';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, TRIAGER } from '../services/auth.service';
 import { tagTrackingStatus } from '../../constants/tag-tracking-status';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-requests',
@@ -25,7 +26,7 @@ export class RequestsComponent implements OnInit {
     requestType: '',
     pageNumber: 1,
     hasQuestions: 'true',
-    sortBy: 'score'
+    sortBy: 'age'
   };
 
   model = { options: '2' };
@@ -50,7 +51,7 @@ export class RequestsComponent implements OnInit {
       this.filter.requestType = params['requestType'] || '';
       this.filter.hasQuestions = params['hasQuestions'] || 'any';
       this.filter.pageNumber = +params['pageNumber'] || 1;
-      this.filter.sortBy = params['sortBy'] || 'score';
+      this.filter.sortBy = params['sortBy'] || 'age';
       this.reloadData();
     });
 
@@ -80,7 +81,11 @@ export class RequestsComponent implements OnInit {
           this.filter.pageNumber = 1;
           this.reloadData();
         } else {
-          this.questions = response.data;
+          this.questions = response.data.map(d => ({
+            ...d,
+            creationDateLocal: moment.utc(d.creationDate).local().format('YYYY-MM-DD hh:mm:ss A')
+          }));
+
           this.pagingInfo = GetPagingInfo(response);
         }
       });

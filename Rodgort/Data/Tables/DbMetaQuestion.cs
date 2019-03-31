@@ -19,6 +19,8 @@ namespace Rodgort.Data.Tables
 
         public string CloseReason { get; set; }
 
+        public DateTime CreationDate { get; set; }
+
         public DateTime? ClosedDate { get; set; }
 
         public DateTime? FeaturedStarted { get; set; }

@@ -51,6 +51,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaQuestion>().ToTable("meta_questions");
             modelBuilder.Entity<DbMetaQuestion>().HasKey(mqs => mqs.Id);
             modelBuilder.Entity<DbMetaQuestion>().Property(rt => rt.Id).ValueGeneratedNever();
+            modelBuilder.Entity<DbMetaQuestion>().Property(rt => rt.CreationDate);
 
             modelBuilder.Entity<DbMetaQuestionStatistics>().ToTable("meta_question_statistics");
             modelBuilder.Entity<DbMetaQuestionStatistics>().HasKey(mqs => mqs.Id);

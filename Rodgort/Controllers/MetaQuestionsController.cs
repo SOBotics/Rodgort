@@ -117,6 +117,7 @@ namespace Rodgort.Controllers
                         .OrderByDescending(mqt => mqt)
                         .FirstOrDefault(),
                     Closed = mq.ClosedDate.HasValue,
+                    mq.CreationDate,
 
                     mq.FeaturedStarted,
                     mq.FeaturedEnded,
@@ -134,6 +135,8 @@ namespace Rodgort.Controllers
                 orderedQuery = transformedQuery.OrderByDescending(t => t.Score);
             else if (sortBy == "numQuestions")
                 orderedQuery = transformedQuery.OrderByDescending(t => t.NumQuestions);
+            else if (sortBy == "age")
+                orderedQuery = transformedQuery.OrderByDescending(t => t.CreationDate);
             else
                 orderedQuery = transformedQuery.OrderByDescending(t => t.Id);
 

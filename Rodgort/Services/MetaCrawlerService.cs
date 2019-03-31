@@ -212,6 +212,7 @@ namespace Rodgort.Services
                 dbMetaQuestion.Title = WebUtility.HtmlDecode(metaQuestion.Title);
                 dbMetaQuestion.Body = WebUtility.HtmlDecode(metaQuestion.BodyMarkdown);
                 dbMetaQuestion.Link = metaQuestion.Link;
+                dbMetaQuestion.CreationDate = Dates.UnixTimeStampToDateTime(metaQuestion.CreationDate.Value);
                 dbMetaQuestion.LastSeen = utcNow;
                 dbMetaQuestion.Score = metaQuestion.Score.Value;
                 dbMetaQuestion.ViewCount = metaQuestion.ViewCount.Value;

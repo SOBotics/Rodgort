@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Rodgort.Data;
@@ -9,9 +10,10 @@ using Rodgort.Data;
 namespace Rodgort.Migrations
 {
     [DbContext(typeof(RodgortContext))]
-    partial class RodgortContextModelSnapshot : ModelSnapshot
+    [Migration("20190331232757_AddCreationDateWithDefault")]
+    partial class AddCreationDateWithDefault
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -146,7 +148,9 @@ namespace Rodgort.Migrations
                         .HasColumnName("closed_date");
 
                     b.Property<DateTime>("CreationDate")
-                        .HasColumnName("creation_date");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("creation_date")
+                        .HasDefaultValueSql("now() at time zone 'utc'");
 
                     b.Property<DateTime?>("FeaturedEnded")
                         .HasColumnName("featured_ended");

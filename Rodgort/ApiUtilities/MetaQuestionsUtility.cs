@@ -7,7 +7,7 @@ namespace Rodgort.ApiUtilities
 {
     public static class MetaQuestionsUtility
     {
-        private const string BaseQuestionFilter = "!1PVN1yfHP2mFv5xsYE3Iaa)w(-d*V(48A";
+        private const string BaseQuestionFilter = "!)IMK)oIrE3D-hjHRYBlyU7RH)*gfgSZAX(y6";
 
         public static Task<ApiItemsResponse<BaseQuestion>> MetaQuestionsByTag(this ApiClient apiClient, string siteName, string tag, PagingOptions pagingOptions = null)
         {

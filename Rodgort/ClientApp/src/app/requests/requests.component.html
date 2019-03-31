@@ -32,8 +32,9 @@
             <label class="input-group-text" for="sortBySelector">Sort By</label>
         </div>
         <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
-            <option value="score">Request score</option>
+            <option value="age">Age</option>
             <option value="numQuestions"># of Questions</option>
+            <option value="score">Request score</option>
         </select>
     </div>
     <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
@@ -98,6 +99,9 @@
                     <img src="../../assets/permalink.png">
                 </a>
             </h3>
+            <div>
+                <p [title]="question.creationDate">Asked {{question.creationDateLocal}}</p>
+            </div>
             <p *ngFor="let metaTag of question.metaStatusTags" class="post-statustag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
             <p *ngFor="let metaTag of question.metaRequestTags" class="post-metatag"><a href="https://meta.stackoverflow.com/questions/tagged/{{metaTag.tagName}}">{{metaTag.tagName}}</a></p>
             <div class="tags">
