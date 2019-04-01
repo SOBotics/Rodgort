@@ -239,16 +239,19 @@ namespace Rodgort.Services.HostedServices
             var tag = args[0];
 
             var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-            var trackedTags = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag);
-            if (trackedTags.Any())
+            var follows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag);
+            if (follows.Any())
             {
                 await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
-                foreach (var trackedTag in trackedTags)
+                foreach (var follow in follows)
                 {
-                    await chatClient.SendMessage(ChatSite.StackOverflow, trackedTag.RoomId, "@Gemmy stop");
+                    follow.FollowEnded = dateService.UtcNow;
+                    await chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
                 }
 
                 var trackingMessage = "Tags successfully untracked";
+                innerContext.SaveChanges();
+
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {trackingMessage}");
             }
             else
