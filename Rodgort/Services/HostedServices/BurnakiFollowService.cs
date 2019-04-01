@@ -222,7 +222,7 @@ namespace Rodgort.Services.HostedServices
         private async Task ProcessTracking(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
         {
             var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-            var allFollows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue);
+            var allFollows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue).ToList();
             if (allFollows.Any())
             {
                 var trackingMessage = $"The following tags are being tracked: {string.Join(", ", allFollows.Select(f => f.Tag).Distinct())}";
@@ -239,7 +239,7 @@ namespace Rodgort.Services.HostedServices
             var tag = args[0];
 
             var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-            var follows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag);
+            var follows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag).ToList();
             if (follows.Any())
             {
                 await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");

@@ -58,9 +58,7 @@ namespace StackExchangeChat
                                 {"text", message},
                                 {"fkey", fkey}
                             }));
-
-                    LogResponseError(response);
-
+                    
                     var responseString = await response.Content.ReadAsStringAsync();
                     var matchesBackoff = backoffRegex.Match(responseString);
                     if (matchesBackoff.Success)
@@ -74,6 +72,8 @@ namespace StackExchangeChat
 
                         return messageId;
                     }
+
+                    LogResponseError(response);
 
                     var responsePayload = JsonConvert.DeserializeObject<JObject>(responseString);
                     return int.Parse(responsePayload["id"].ToString());
