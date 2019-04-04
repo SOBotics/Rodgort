@@ -39,6 +39,7 @@ export class QuestionCountGraphComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    debugger;
     const bands = [];
     const lines = this.customLines ?
       this.customLines.map(l => ({
@@ -165,12 +166,10 @@ export class QuestionCountGraphComponent implements OnInit {
       });
     }
 
-    const minTime = toUtcDateTime(
-      this.featuredStarted
-      || this.featuredEnded
-      || this.burnStarted
-      || this.burnEnded
-    );
+    const boundaryStart = this.featuredStarted || this.featuredEnded || this.burnStarted || this.burnEnded;
+    const hasStartBoundary = !!boundaryStart;
+
+    const minTime = hasStartBoundary ? toUtcDateTime(boundaryStart) : undefined;
 
     this.chart = new Chart({
       chart: {
