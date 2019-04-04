@@ -28,7 +28,7 @@ namespace Utilities.Throttling
                     EXECUTING_TASK_GROUPS[throttleGroup] = Task.CompletedTask;
 
                 var executingTask = EXECUTING_TASK_GROUPS[throttleGroup];
-                if (executingTask.IsFaulted)
+                if (executingTask.IsFaulted || executingTask.IsCompleted || executingTask.IsCanceled)
                     executingTask = Task.CompletedTask;
 
                 nextTask = ProcessInternal(executingTask, action);
@@ -55,7 +55,7 @@ namespace Utilities.Throttling
                     EXECUTING_TASK_GROUPS[throttleGroup] = Task.CompletedTask;
 
                 var executingTask = EXECUTING_TASK_GROUPS[throttleGroup];
-                if (executingTask.IsFaulted)
+                if (executingTask.IsFaulted || executingTask.IsCompleted || executingTask.IsCanceled)
                     executingTask = Task.CompletedTask;
 
                 nextTask = ProcessInternal(executingTask, action);
@@ -67,13 +67,21 @@ namespace Utilities.Throttling
 
         private static async Task<T> ProcessInternal<T>(Task previousTask, Func<Task<T>> action)
         {
-            await previousTask;
+            try
+            {
+                await previousTask;
+            } catch (Exception) { }
+
             return await action();
         }
 
         private static async Task ProcessInternal(Task previousTask, Func<Task> action)
         {
-            await previousTask;
+            try
+            {
+                await previousTask;
+            }
+            catch (Exception) { }
             await action();
         }
 
