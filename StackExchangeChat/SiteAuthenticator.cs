@@ -16,12 +16,12 @@ namespace StackExchangeChat
         private readonly IServiceProvider _serviceProvider;
         private readonly IChatCredentials _chatCredentials;
 
-        private struct SiteRoomIdPair { public ChatSite ChatSite; public int RoomId; }
+        public struct SiteRoomIdPair { public ChatSite ChatSite; public int RoomId; }
         private readonly Dictionary<ChatSite, DateTime> _cookieExpires = new Dictionary<ChatSite, DateTime>();
         private readonly Dictionary<ChatSite, Task<Cookie>> _authenticateTasks = new Dictionary<ChatSite, Task<Cookie>>();
         private readonly object _locker = new object();
 
-        private readonly Dictionary<SiteRoomIdPair, Task<RoomDetails>> _cachedRoomDetails = new Dictionary<SiteRoomIdPair, Task<RoomDetails>>();
+        private static readonly Dictionary<SiteRoomIdPair, Task<RoomDetails>> _cachedRoomDetails = new Dictionary<SiteRoomIdPair, Task<RoomDetails>>();
 
         public SiteAuthenticator(IServiceProvider serviceProvider, IChatCredentials chatCredentials)
         {

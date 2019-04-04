@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -23,6 +22,8 @@ namespace StackExchangeChat
         private readonly IServiceProvider _serviceProvider;
         private readonly HttpClientWithHandler _httpClient;
         private readonly ILogger<ChatClient> _logger;
+
+        private static Dictionary<SiteAuthenticator.SiteRoomIdPair, IObservable<ChatEvent>> _roomSubscriptions = new Dictionary<SiteAuthenticator.SiteRoomIdPair, IObservable<ChatEvent>>();
 
         public ChatClient(SiteAuthenticator siteAuthenticator,
             IServiceProvider serviceProvider,
@@ -193,68 +194,80 @@ namespace StackExchangeChat
 
         public IObservable<ChatEvent> SubscribeToEvents(ChatSite chatSite, int roomId)
         {
-            return Observable.Create<ChatEvent>(async observer =>
+            var pair = new SiteAuthenticator.SiteRoomIdPair {ChatSite = chatSite, RoomId = roomId};
+            lock (_roomSubscriptions)
             {
-                var roomDetails = await _siteAuthenticator.GetRoomDetails(chatSite, roomId);
-                
-                await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
-                var wsAuthRequest = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/ws-auth",
-                    new FormUrlEncodedContent(
-                        new Dictionary<string, string>
-                        {
-                            {"fkey", roomDetails.FKey},
-                            {"roomid", roomId.ToString()}
-                        }));
-
-                var wsAuthUrl = JsonConvert.DeserializeObject<JObject>(await wsAuthRequest.Content.ReadAsStringAsync())["url"].Value<string>();
-
-                var eventsRequest = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/chats/{roomId}/events",
-                    new FormUrlEncodedContent(
-                        new Dictionary<string, string>
-                        {
-                            {"mode", "events"},
-                            {"msgCount", "0"},
-                            {"fkey", roomDetails.FKey}
-                        }));
-
-                var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
-
-                var webSocket = new PlainWebSocket($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}"} }, _serviceProvider.GetRequiredService<ILogger<PlainWebSocket>>());
-                webSocket.OnTextMessage += (message) =>
+                if (!_roomSubscriptions.ContainsKey(pair))
                 {
-                    var dataObject = JsonConvert.DeserializeObject<JObject>(message);
-                    var eventsObject = dataObject.First.First["e"];
-                    if (eventsObject == null)
-                        return;
-
-                    var events = eventsObject.ToObject<List<ChatEventDetails>>();
-                    foreach (var @event in events)
+                    _roomSubscriptions[pair] = Observable.Create<ChatEvent>(async observer =>
                     {
-                        var chatEvent = new ChatEvent
+                        var roomDetails = await _siteAuthenticator.GetRoomDetails(chatSite, roomId);
+
+                        await _siteAuthenticator.AuthenticateClient(_httpClient, chatSite);
+                        var wsAuthRequest = await _httpClient.PostAsync($"https://{chatSite.ChatDomain}/ws-auth",
+                            new FormUrlEncodedContent(
+                                new Dictionary<string, string>
+                                {
+                                    {"fkey", roomDetails.FKey},
+                                    {"roomid", roomId.ToString()}
+                                }));
+
+                        var wsAuthUrl =
+                            JsonConvert.DeserializeObject<JObject>(await wsAuthRequest.Content.ReadAsStringAsync())
+                                ["url"].Value<string>();
+
+                        var eventsRequest = await _httpClient.PostAsync(
+                            $"https://{chatSite.ChatDomain}/chats/{roomId}/events",
+                            new FormUrlEncodedContent(
+                                new Dictionary<string, string>
+                                {
+                                    {"mode", "events"},
+                                    {"msgCount", "0"},
+                                    {"fkey", roomDetails.FKey}
+                                }));
+
+                        var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
+
+                        var webSocket = new PlainWebSocket($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> {{"Origin", $"https://{chatSite.ChatDomain}"}}, _serviceProvider.GetRequiredService<ILogger<PlainWebSocket>>());
+                        webSocket.OnTextMessage += (message) =>
                         {
-                            RoomDetails = roomDetails,
-                            ChatEventDetails = @event,
-                            ChatClient = this
+                            var dataObject = JsonConvert.DeserializeObject<JObject>(message);
+                            var eventsObject = dataObject.First.First["e"];
+                            if (eventsObject == null)
+                                return;
+
+                            var events = eventsObject.ToObject<List<ChatEventDetails>>();
+                            foreach (var @event in events)
+                            {
+                                var chatEvent = new ChatEvent
+                                {
+                                    RoomDetails = roomDetails,
+                                    ChatEventDetails = @event,
+                                    ChatClient = this
+                                };
+                                observer.OnNext(chatEvent);
+                            }
                         };
-                        observer.OnNext(chatEvent);
-                    }
-                };
 
-                await webSocket.ConnectAsync();
-                
-                observer.OnNext(new ChatEvent
-                {
-                    ChatEventDetails = new ChatEventDetails
-                    {
-                        ChatEventType = ChatEventType.ChatJoined,
-                        RoomId = roomId
-                    },
-                    RoomDetails = roomDetails,
-                    ChatClient = this
-                });
+                        await webSocket.ConnectAsync();
 
-                return webSocket;
-            }).Publish().RefCount();
+                        observer.OnNext(new ChatEvent
+                        {
+                            ChatEventDetails = new ChatEventDetails
+                            {
+                                ChatEventType = ChatEventType.ChatJoined,
+                                RoomId = roomId
+                            },
+                            RoomDetails = roomDetails,
+                            ChatClient = this
+                        });
+
+                        return webSocket;
+                    }).Publish().RefCount();
+                }
+
+                return _roomSubscriptions[pair];
+            }
         }
 
         private void LogResponseError(HttpResponseMessage responseMessage)
