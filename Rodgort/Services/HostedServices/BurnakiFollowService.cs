@@ -139,8 +139,8 @@ namespace Rodgort.Services.HostedServices
 
             var helpList = new[]
             {
-                "tracking		- List of burninations Rodgort has instructed Gemmy to watch. Only includes current burns",
-                "untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags"
+                "    tracking	- List of burninations Rodgort has instructed Gemmy to watch. Only includes current burns",
+                "    untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags"
             };
 
             var commandList = new Dictionary<string, ProcessCommand>
