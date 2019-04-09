@@ -66,7 +66,12 @@ namespace Rodgort.Services.HostedServices
                     .ReplyAlive()
                     .Pinged()
                     .SameRoomOnly()
-                    .Where(r => r.ChatEventDetails.UserId == ChatUserIds.ROB)
+                    .Where(e =>
+                    {
+                        var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
+                        var isTrusted = innerContext.SiteUsers.Any(su => su.Id == e.ChatEventDetails.UserId && su.Roles.Any(r => r.RoleId == DbRole.TRUSTED));
+                        return isTrusted;
+                    })
                     .Subscribe(
                         async chatEvent =>
                         {
@@ -132,13 +137,28 @@ namespace Rodgort.Services.HostedServices
             if (!string.Equals(splitContent[0], $"@{chatEvent.RoomDetails.MyUserName}"))
                 return;
 
+            var helpList = new[]
+            {
+                "follow {burnakiUserId} {roomId} {tag} - Join the specified room, and watch for messages from Burnaki. Actions will be logged against the specified tag",
+                "unfollow {burnakiUserId} {roomId} - Stop following burnaki in the specified room",
+                "follows - List of rooms and burnaki user ids Rodgort is following",
+
+                "tracking - List of burninations Rodgort has instructed Gemmy to watch. Only includes current burns",
+                "untrack {tag} - Instructs Rodgort to stop following the tag, and to instruct Gemmy to stop watching the tag",
+            };
+
             var commandList = new Dictionary<string, ProcessCommand>
             {
                 { "follow", ProcessFollow },
                 { "unfollow", ProcessUnfollow },
                 { "follows", ProcessFollows },
                 { "tracking", ProcessTracking },
-                { "untrack", ProcessUntrack }
+                { "untrack", ProcessUntrack },
+                { "help", async (client, ce, service, token, args) =>
+                    {
+                        await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, string.Join(Environment.NewLine, helpList));
+                    }
+                },
             };
             
             var command = splitContent[1];
