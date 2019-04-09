@@ -139,8 +139,8 @@ namespace Rodgort.Services.HostedServices
 
             var helpList = new[]
             {
-                "    tracking	- List of burninations Rodgort has instructed Gemmy to watch and haven't yet been untracked",
-                "    untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags"
+                "tracking	- List of burninations Rodgort has instructed Gemmy to watch and haven't yet been untracked",
+                "untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags"
             };
 
             var commandList = new Dictionary<string, ProcessCommand>
@@ -149,7 +149,7 @@ namespace Rodgort.Services.HostedServices
                 { "untrack", ProcessUntrack },
                 { "help", async (client, ce, service, token, args) =>
                     {
-                        await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, string.Join(Environment.NewLine, helpList));
+                        await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, string.Join(Environment.NewLine, helpList.Select(s => "    " + s)));
                     }
                 },
             };
