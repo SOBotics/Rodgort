@@ -51,8 +51,6 @@ namespace StackExchangeChat
             if (_socket?.State == WebSocketState.Open)
                 _socketTokenSource.Cancel();
 
-            _logger.LogWarning("Disposing socket");
-            
             _socket?.Dispose();
         }
 
@@ -126,9 +124,6 @@ namespace StackExchangeChat
                 when (ex.InnerException?.GetType() == typeof(TaskCanceledException))
                 {
                     InvokeAsync(OnClose);
-
-                    _logger.LogError(ex, "Websocket crashed");
-                    
                     return;
                 }
                 catch (Exception e1)
