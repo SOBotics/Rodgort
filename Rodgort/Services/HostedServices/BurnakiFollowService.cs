@@ -139,7 +139,7 @@ namespace Rodgort.Services.HostedServices
 
             var helpList = new[]
             {
-                "    tracking	- List of burninations Rodgort has instructed Gemmy to watch. Only includes current burns",
+                "    tracking	- List of burninations Rodgort has instructed Gemmy to watch and haven't yet been untracked",
                 "    untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags"
             };
 
