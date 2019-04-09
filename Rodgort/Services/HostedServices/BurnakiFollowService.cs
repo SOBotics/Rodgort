@@ -139,19 +139,12 @@ namespace Rodgort.Services.HostedServices
 
             var helpList = new[]
             {
-                "follow {burnakiUserId} {roomId} {tag} - Join the specified room, and watch for messages from Burnaki. Actions will be logged against the specified tag",
-                "unfollow {burnakiUserId} {roomId} - Stop following burnaki in the specified room",
-                "follows - List of rooms and burnaki user ids Rodgort is following",
-
-                "tracking - List of burninations Rodgort has instructed Gemmy to watch. Only includes current burns",
-                "untrack {tag} - Instructs Rodgort to stop following the tag, and to instruct Gemmy to stop watching the tag",
+                "tracking		- List of burninations Rodgort has instructed Gemmy to watch. Only includes current burns",
+                "untrack {tag}	- Instructs Rodgort to stop following the tag, and to instruct Gemmy to stop watching the tag",
             };
 
             var commandList = new Dictionary<string, ProcessCommand>
             {
-                { "follow", ProcessFollow },
-                { "unfollow", ProcessUnfollow },
-                { "follows", ProcessFollows },
                 { "tracking", ProcessTracking },
                 { "untrack", ProcessUntrack },
                 { "help", async (client, ce, service, token, args) =>
@@ -167,78 +160,7 @@ namespace Rodgort.Services.HostedServices
         }
 
         private delegate Task ProcessCommand(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args);
-
-        private async Task ProcessFollow(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
-        {
-            if (args.Count != 3)
-                return;
-            if (!int.TryParse(args[0], out var burnakiUserId))
-                return;
-            if (!int.TryParse(args[1], out var roomId))
-                return;
-
-            var followingTag = args[2];
-            if (string.IsNullOrWhiteSpace(followingTag))
-                return;
-            
-            var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-            if (innerContext.BurnakiFollows.Any(bf => bf.BurnakiId == burnakiUserId && bf.RoomId == roomId && !bf.FollowEnded.HasValue))
-            {
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} That follow is already registered!");
-            }
-            else
-            {
-                innerContext.BurnakiFollows.Add(new DbBurnakiFollow
-                {
-                    BurnakiId = burnakiUserId,
-                    RoomId = roomId,
-                    Tag = followingTag,
-                    FollowStarted = dateService.UtcNow
-                });
-                innerContext.SaveChanges();
-
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $"Okay, following {burnakiUserId} in {roomId}");
-
-                FollowInRoom(roomId, burnakiUserId, DateTime.UtcNow, followingTag, dateService, cancellationToken);
-            }
-        }
-
-        private async Task ProcessUnfollow(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
-        {
-            if (!int.TryParse(args[0], out var burnakiUserId))
-                return;
-            if (!int.TryParse(args[1], out var roomId))
-                return;
-
-            var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-            var existingFollow = innerContext.BurnakiFollows.FirstOrDefault(bf => bf.BurnakiId == burnakiUserId && bf.RoomId == roomId && !bf.FollowEnded.HasValue);
-            if (existingFollow != null)
-            {
-                existingFollow.FollowEnded = dateService.UtcNow;
-                innerContext.SaveChanges();
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $"Okay, unfollowing {burnakiUserId} in {roomId}");
-            }
-            else
-            {
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} That follow doesn't exist");
-            }
-        }
-
-        private async Task ProcessFollows(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
-        {
-            var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-            var allFollows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue);
-            if (allFollows.Any())
-            {
-                var followMessage = $"I'm following: {string.Join(", ", allFollows.Select(f => $"{f.BurnakiId} in {f.RoomId} for tag {f.Tag}"))}";
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {followMessage}");
-            }
-            else
-            {
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} I'm not following anyone");
-            }
-        }
-
+        
         private async Task ProcessTracking(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
         {
             var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
