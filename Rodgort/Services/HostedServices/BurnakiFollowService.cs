@@ -140,7 +140,7 @@ namespace Rodgort.Services.HostedServices
             var helpList = new[]
             {
                 "tracking		- List of burninations Rodgort has instructed Gemmy to watch. Only includes current burns",
-                "untrack {tag}	- Instructs Rodgort to stop following the tag, and to instruct Gemmy to stop watching the tag",
+                "untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags"
             };
 
             var commandList = new Dictionary<string, ProcessCommand>
@@ -178,27 +178,32 @@ namespace Rodgort.Services.HostedServices
 
         private async Task ProcessUntrack(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
         {
-            var tag = args[0];
-
             var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-            var follows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag).ToList();
-            if (follows.Any())
+            var untrackedTags = new List<string>();
+            foreach (var tag in args)
             {
-                await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
-                foreach (var follow in follows)
+                var follows = innerContext.BurnakiFollows.Where(bf => !bf.FollowEnded.HasValue && bf.Tag == tag).ToList();
+                if (follows.Any())
                 {
-                    follow.FollowEnded = dateService.UtcNow;
-                    await chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
+                    await chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, $"@Gemmy stop tag {tag}");
+                    foreach (var follow in follows)
+                    {
+                        follow.FollowEnded = dateService.UtcNow;
+                        await chatClient.SendMessage(ChatSite.StackOverflow, follow.RoomId, "@Gemmy stop");
+                        untrackedTags.Add(tag);
+                    }
                 }
-
-                var trackingMessage = "Tags successfully untracked";
-                innerContext.SaveChanges();
-
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {trackingMessage}");
+                else
+                {
+                    await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {tag} is not being tracked");
+                }
             }
-            else
+
+            innerContext.SaveChanges();
+            if (untrackedTags.Any())
             {
-                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {tag} is not being tracked");
+                var trackingMessage = $"Tag(s) {string.Join(", ", untrackedTags)} successfully untracked";
+                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {trackingMessage}");
             }
         }
     }
