@@ -147,7 +147,7 @@ namespace Rodgort.Services.HostedServices
             {
                 { "tracking", ProcessTracking },
                 { "untrack", ProcessUntrack },
-                { "help", async (client, ce, service, token, args) =>
+                { "help", async (_, __, ___, ____, _____) =>
                     {
                         await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, string.Join(Environment.NewLine, helpList.Select(s => "    " + s)));
                     }
