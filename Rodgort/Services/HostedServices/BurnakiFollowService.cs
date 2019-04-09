@@ -58,7 +58,7 @@ namespace Rodgort.Services.HostedServices
                 _logger.LogInformation("Successfully joined headquarters");
 
                 var trogdorEvents = chatClient.SubscribeToEvents(ChatSite.StackOverflow, ChatRooms.TROGDOR);
-                await headquarterEvents.FirstAsync();
+                await trogdorEvents.FirstAsync();
                 _logger.LogInformation("Successfully joined trogdor");
 
                 headquarterEvents
