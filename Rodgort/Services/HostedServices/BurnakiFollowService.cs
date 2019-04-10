@@ -69,8 +69,8 @@ namespace Rodgort.Services.HostedServices
                     .Where(e =>
                     {
                         var innerContext = _serviceProvider.GetRequiredService<RodgortContext>();
-                        var isTrusted = innerContext.SiteUsers.Any(su => su.Id == e.ChatEventDetails.UserId && su.Roles.Any(r => r.RoleId == DbRole.TRUSTED));
-                        return isTrusted;
+                        var isTriager = innerContext.SiteUsers.Any(su => su.Id == e.ChatEventDetails.UserId && su.Roles.Any(r => r.RoleId == DbRole.TRIAGER));
+                        return isTriager;
                     })
                     .Subscribe(
                         async chatEvent =>
