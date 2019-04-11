@@ -32,8 +32,7 @@ export class AppComponent implements OnInit {
       const accessToken = params['access_token'];
       if (accessToken) {
         this.authService.Login(accessToken);
-        const fixedUrl = this.router.url.substr(0, this.router.url.indexOf('?'));
-        this.router.navigateByUrl(fixedUrl);
+        this.router.navigate([], {queryParams: {access_token: null}, queryParamsHandling: 'merge'});
       }
     });
 
