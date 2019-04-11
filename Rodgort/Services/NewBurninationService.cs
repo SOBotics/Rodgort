@@ -79,8 +79,10 @@ namespace Rodgort.Services
             if (!_enabled)
                 return;
 
+            var tagsList = tags.ToList();
             metaQuestionName = metaQuestionName.Replace("[", "\\[").Replace("]", "\\]");
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [{metaQuestionName}](https://meta.stackoverflow.com/q/{metaQuestionId}) {string.Join(", ", tags.Select(t => $"[tag:{t}]"))} has finished!");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The burnination of [{metaQuestionName}](https://meta.stackoverflow.com/q/{metaQuestionId}) {string.Join(", ", tagsList.Select(t => $"[tag:{t}]"))} has finished!");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Room owners: you'll need to manually cleanup the burn rooms and gemmy by running `@Rodgort untrack {string.Join(" ", tagsList)}`");
         }
 
         public async Task AnnounceBurnDeclined(string metaQuestionName, int metaQuestionId, IEnumerable<string> tags)
@@ -88,8 +90,10 @@ namespace Rodgort.Services
             if (!_enabled)
                 return;
 
+            var tagsList = tags.ToList();
             metaQuestionName = metaQuestionName.Replace("[", "\\[").Replace("]", "\\]");
-            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The request for the burnination [{metaQuestionName}](https://meta.stackoverflow.com/q/{metaQuestionId}) {string.Join(", ", tags.Select(t => $"[tag:{t}]"))} has been declined");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"The request for the burnination [{metaQuestionName}](https://meta.stackoverflow.com/q/{metaQuestionId}) {string.Join(", ", tagsList.Select(t => $"[tag:{t}]"))} has been declined");
+            await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.TROGDOR, $"Room owners: you'll need to manually cleanup the burn rooms and gemmy by running `@Rodgort untrack {string.Join(" ", tagsList)}`");
         }
 
         public async Task NewBurnStarted(string metaPostUrl, List<string> tags)
