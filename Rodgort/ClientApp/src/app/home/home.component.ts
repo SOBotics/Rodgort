@@ -56,4 +56,10 @@ export class HomeComponent implements OnInit {
       this.isAdmin = d.HasRole(ADMIN);
     });
   }
+
+  public shutdown() {
+    this.httpClient.post('/api/admin/shutdown', {}).subscribe(d => {
+      window.location.reload();
+    });
+  }
 }

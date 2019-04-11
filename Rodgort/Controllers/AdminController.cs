@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Hangfire;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,14 +24,16 @@ namespace Rodgort.Controllers
         private readonly DateService _dateService;
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AdminController> _logger;
+        private readonly IApplicationLifetime _appLifetime;
 
-        public AdminController(RodgortContext context, BurnProcessingService burnProcessingService, DateService dateService, IServiceProvider serviceProvider, ILogger<AdminController> logger)
+        public AdminController(RodgortContext context, BurnProcessingService burnProcessingService, DateService dateService, IServiceProvider serviceProvider, ILogger<AdminController> logger, IApplicationLifetime appLifetime)
         {
             _context = context;
             _burnProcessingService = burnProcessingService;
             _dateService = dateService;
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _appLifetime = appLifetime;
         }
 
         [HttpGet("UnresolvedDeletions")]
@@ -48,6 +51,16 @@ namespace Rodgort.Controllers
                     ua.PostId
                 })
                 .ToList();
+        }
+
+        [HttpPost("Shutdown")]
+        public void Shutdown()
+        {
+            var isAdmin = User.HasRole(DbRole.ADMIN);
+            if (!isAdmin)
+                throw new HttpStatusException(HttpStatusCode.Unauthorized);
+
+            _appLifetime.StopApplication();
         }
 
         [HttpPost("ResolveUnresolvedDeletion")]
