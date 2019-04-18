@@ -6,24 +6,26 @@
   <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
   </app-pagination>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Burn actions</th>
-        <th>Triaged tags</th>
-        <th>Triaged questions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td><a routerLink="/user/{{user.id}}">{{user.displayName}} {{user.isModerator ? '♦' : ''}}</a></td>
-        <td>{{user.numBurnActions}}</td>
-        <td>{{user.triageTags}}</td>
-        <td>{{user.triageQuestions}}</td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Burn actions</th>
+          <th>Triaged tags</th>
+          <th>Triaged questions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td><a routerLink="/user/{{user.id}}">{{user.displayName}} {{user.isModerator ? '♦' : ''}}</a></td>
+          <td>{{user.numBurnActions}}</td>
+          <td>{{user.triageTags}}</td>
+          <td>{{user.triageQuestions}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
 
   <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">

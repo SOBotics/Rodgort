@@ -1,22 +1,26 @@
 <div *ngIf="!getRevision">
   Please install the userscript <a href="../../assets/unknown-deletion-resolver.user.js">here</a>.
-  <b>Warning, this userscript gives rodgort access to access https://stackoverflow.com/posts/id/revisions VIA YOUR STACK OVERFLOW ACCOUNT.</b>
+  <b>Warning, this userscript gives rodgort access to access https://stackoverflow.com/posts/id/revisions VIA YOUR STACK
+    OVERFLOW ACCOUNT.</b>
 </div>
 
 <div *ngIf="getRevision">
-  <a href="javascript:void(0);" (click)="startProcessing()">Start Processing (This will make a request every 5 seconds to a posts revision page using your account)</a>
-  <table *ngIf="postsToVisit" class="table">
-    <thead>
-      <tr>
-        <th style="width: 50%;">Post Id</th>
-        <th style="width: 50%;">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let postToVisit of postsToVisit">
-        <td><a href="https://stackoverflow.com/posts/{{postToVisit.postId}}/revisions">{{postToVisit.postId}}</a></td>
-        <td>{{postToVisit.status}}</td>
-      </tr>
-    </tbody>
-  </table>
+  <a href="javascript:void(0);" (click)="startProcessing()">Start Processing (This will make a request every 5 seconds
+    to a posts revision page using your account)</a>
+  <div *ngIf="postsToVisit" class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width: 50%;">Post Id</th>
+          <th style="width: 50%;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let postToVisit of postsToVisit">
+          <td><a href="https://stackoverflow.com/posts/{{postToVisit.postId}}/revisions">{{postToVisit.postId}}</a></td>
+          <td>{{postToVisit.status}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

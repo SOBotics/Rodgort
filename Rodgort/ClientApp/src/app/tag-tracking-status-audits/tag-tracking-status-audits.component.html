@@ -3,49 +3,51 @@
     [(ngModel)]="filter.userId" #search="ngModel">
   <input type="number" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" placeholder="Meta question id"
     name="metaQuestionId" [(ngModel)]="filter.metaQuestionId" #search="ngModel">
-  <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" placeholder="Tag"
-    name="tag" [(ngModel)]="filter.tag" #search="ngModel">
+  <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" placeholder="Tag" name="tag"
+    [(ngModel)]="filter.tag" #search="ngModel">
   <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
 </form>
 
 <app-pagination style="display: block" class="mt-3" [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
 </app-pagination>
 
-<table *ngIf="audits" class="table log-table mt-3 mb-3">
-  <thead>
-    <tr>
-      <th>Time</th>
-      <th>User</th>
-      <th>Question</th>
-      <th>Tag</th>
-      <th>Previous</th>
-      <th>New</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let audit of audits">
-      <td title="{{audit.timeChanged}}">{{audit.localTime}}</td>
-      <td>
-        <app-render-username [user]="audit"></app-render-username>
-      </td>
-      <td><a href="https://meta.stackoverflow.com/q/{{audit.metaQuestionId}}">{{audit.metaQuestionTitle}}</a><a
-          class="perma-link" routerLink="/requests" [queryParams]="{query: audit.metaQuestionId, searchBy: 'id'}">
-          <img src="../../assets/permalink.png">
-        </a></td>
-      <td>
-        <app-tag-bubble [tag]="audit.tag"></app-tag-bubble>
-      </td>
-      <td>
-        <app-tracking-status-bubble [trackingStatusName]="audit.previousStatus"
-          [trackingStatusId]="audit.previousStatusId"></app-tracking-status-bubble>
-      </td>
-      <td>
-        <app-tracking-status-bubble [trackingStatusName]="audit.newStatus" [trackingStatusId]="audit.newStatusId">
-        </app-tracking-status-bubble>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div *ngIf="audits" class="table-responsive">
+  <table class="table log-table mt-3 mb-3">
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>User</th>
+        <th>Question</th>
+        <th>Tag</th>
+        <th>Previous</th>
+        <th>New</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let audit of audits">
+        <td title="{{audit.timeChanged}}">{{audit.localTime}}</td>
+        <td>
+          <app-render-username [user]="audit"></app-render-username>
+        </td>
+        <td><a href="https://meta.stackoverflow.com/q/{{audit.metaQuestionId}}">{{audit.metaQuestionTitle}}</a><a
+            class="perma-link" routerLink="/requests" [queryParams]="{query: audit.metaQuestionId, searchBy: 'id'}">
+            <img src="../../assets/permalink.png">
+          </a></td>
+        <td>
+          <app-tag-bubble [tag]="audit.tag"></app-tag-bubble>
+        </td>
+        <td>
+          <app-tracking-status-bubble [trackingStatusName]="audit.previousStatus"
+            [trackingStatusId]="audit.previousStatusId"></app-tracking-status-bubble>
+        </td>
+        <td>
+          <app-tracking-status-bubble [trackingStatusName]="audit.newStatus" [trackingStatusId]="audit.newStatusId">
+          </app-tracking-status-bubble>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
 </app-pagination>

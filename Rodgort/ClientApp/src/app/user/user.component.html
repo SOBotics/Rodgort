@@ -1,72 +1,87 @@
 <div *ngIf="userData" class="container">
 
-  <p class="h1"><app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username></p>
+  <p class="h1">
+    <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username>
+  </p>
   <p class="lead"><a href="https://stackoverflow.com/users/{{userData.userId}}">View on site</a></p>
 
   <hr />
 
   <p class="h2">Burninations</p>
-  <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has contributed towards {{userData.numBurninations}} burninations
+  <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has contributed towards
+  {{userData.numBurninations}} burninations
 
-  <table *ngIf="userData.numBurninations > 0" class="table mt-3">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Burnination</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let burn of userData.burns">
-        <td title="{{burn.startDate}}">{{burn.startDateLocal}}</td>
-        <td><a routerLink="/progress" [queryParams]="{metaQuestionId: burn.metaQuestionId}">{{burn.metaQuestionTitle}}</a></td>
-        <td>{{burn.numActions | number}} actions</td>
-      </tr>
-      <tr>
+  <div *ngIf="userData.numBurninations > 0" class="table-responsive">
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Burnination</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let burn of userData.burns">
+          <td title="{{burn.startDate}}">{{burn.startDateLocal}}</td>
+          <td><a routerLink="/progress"
+              [queryParams]="{metaQuestionId: burn.metaQuestionId}">{{burn.metaQuestionTitle}}</a></td>
+          <td>{{burn.numActions | number}} actions</td>
+        </tr>
+        <tr>
           <td></td>
           <td></td>
           <td *ngIf="!isTrusted"><b>{{userData.totalActions | number}} total actions</b></td>
-          <td *ngIf="isTrusted"><a [routerLink]="['/user-actions', userData.userId]">{{userData.totalActions | number}} total actions</a></td>
+          <td *ngIf="isTrusted"><a [routerLink]="['/user-actions', userData.userId]">{{userData.totalActions | number}}
+              total actions</a></td>
         </tr>
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+  </div>
 
   <hr />
   <p class="h2">Rodgort triage</p>
-  <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has triaged <a routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags | number}} tags, across {{userData.triageQuestions | number}} requests</a>
+  <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has triaged <a
+    routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags | number}}
+    tags, across {{userData.triageQuestions | number}} requests</a>
 
   <hr />
   <p class="h2">User access</p>
-  <table class="table mt-3">
-    <thead>
-      <tr>
-        <th>Role</th>
-        <th>Added by</th>
-        <th>Date added</th>
-        <th *ngIf="isAdmin">Remove</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let role of userData.roles">
-        <td>{{role.name}}</td>
-        <td><app-render-username [user]="role.addedBy"></app-render-username></td>
-        <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
-        <td *ngIf="isAdmin"><a href="javascript:void(0);" (click)="removeRole(role.name)">Remove</a></td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Added by</th>
+          <th>Date added</th>
+          <th *ngIf="isAdmin">Remove</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of userData.roles">
+          <td>{{role.name}}</td>
+          <td>
+            <app-render-username [user]="role.addedBy"></app-render-username>
+          </td>
+          <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
+          <td *ngIf="isAdmin"><a href="javascript:void(0);" (click)="removeRole(role.name)">Remove</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <form *ngIf="isAdmin" class="form-inline mt-2 mb-2 mt-sm-2 mr-sm-2" #filterForm="ngForm">
-      <div class="input-group">
-        <div class="input-group-prepend">
-          <label class="input-group-text" for="roleSelector">Add Role</label>
-        </div>
-        <select class="custom-select" id="roleSelector" [(ngModel)]="selectedRole" [ngModelOptions]="{standalone: true}">
-          <option value=""></option>
-          <option *ngFor="let availableRole of userData.availableRoles" value="{{availableRole.id}}">{{availableRole.name}}</option>
-        </select>
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <label class="input-group-text" for="roleSelector">Add Role</label>
       </div>
-      <button type="submit" [attr.disabled]="!selectedRole ? '' : null" class="btn btn-primary mt-2 ml-sm-2 mt-sm-0" (click)="addRole()">Add</button>
-    </form>
-    
+      <select class="custom-select" id="roleSelector" [(ngModel)]="selectedRole" [ngModelOptions]="{standalone: true}">
+        <option value=""></option>
+        <option *ngFor="let availableRole of userData.availableRoles" value="{{availableRole.id}}">
+          {{availableRole.name}}</option>
+      </select>
+    </div>
+    <button type="submit" [attr.disabled]="!selectedRole ? '' : null" class="btn btn-primary mt-2 ml-sm-2 mt-sm-0"
+      (click)="addRole()">Add</button>
+  </form>
+
 </div>

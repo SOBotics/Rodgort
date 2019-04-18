@@ -2,13 +2,14 @@
 </app-pagination>
 
 <form class="form-inline" #filterForm="ngForm">
-  <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Search" name="search" [(ngModel)]="filter.search"
-    #search="ngModel">
+  <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Search"
+    name="search" [(ngModel)]="filter.search" #search="ngModel">
   <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
     <div class="input-group-prepend">
       <label class="input-group-text" for="logLevelSelector">Log Level</label>
     </div>
-    <select class="custom-select" id="logLevelSelector" [(ngModel)]="filter.level" [ngModelOptions]="{standalone: true}">
+    <select class="custom-select" id="logLevelSelector" [(ngModel)]="filter.level"
+      [ngModelOptions]="{standalone: true}">
       <option value="">Any</option>
       <option value="Trace">Trace</option>
       <option value="Debug">Debug</option>
@@ -20,25 +21,26 @@
   </div>
   <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
 </form>
-
-<table *ngIf="logs" class="table log-table mt-3 mb-3">
-  <thead>
-    <tr>
-      <th>TimeLogged</th>
-      <th>Level</th>
-      <th>Message</th>
-      <th>Exception</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let log of logs">
-      <td style="width: 15%" title="{{log.timeLogged}}">{{log.localTime}}</td>
-      <td>{{log.level}}</td>
-      <td style="width: 43%"><code>{{log.message}}</code></td>
-      <td style="width: 42%"><code>{{log.exception}}</code></td>
-    </tr>
-  </tbody>
-</table>
+<div *ngIf="logs" class="table-responsive">
+  <table class="table log-table mt-3 mb-3">
+    <thead>
+      <tr>
+        <th>TimeLogged</th>
+        <th>Level</th>
+        <th>Message</th>
+        <th>Exception</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let log of logs">
+        <td style="width: 15%" title="{{log.timeLogged}}">{{log.localTime}}</td>
+        <td>{{log.level}}</td>
+        <td style="width: 43%"><code>{{log.message}}</code></td>
+        <td style="width: 42%"><code>{{log.exception}}</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
 </app-pagination>

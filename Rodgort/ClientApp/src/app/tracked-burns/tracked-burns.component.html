@@ -5,34 +5,36 @@
 <ng-container *ngIf="!loading && burns">
   <h1>Rodgort has tracked {{burns.length}} burns so far</h1>
   <a href="/progress/all">Dashboard of all burns</a>
-  <table class="table mt-3">
-    <thead>
-      <tr>
-        <th>Meta Question</th>
-        <th></th>
-        <th>Tag(s)</th>
-        <th>Burn started</th>
-        <th>Burn ended</th>
-        <th>Duration</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let burn of burns">
-        <td><a href="https://meta.stackoverflow.com/q/{{burn.id}}">{{burn.title}}</a></td>
-        <td><a routerLink="/progress" [queryParams]="{metaQuestionId: burn.id}">Dashboard</a></td>
-        <td>
-          <app-tag-bubble *ngFor="let tag of burn.tags" [tag]="tag"></app-tag-bubble>
-        </td>
-        <td title="{{burn.burnStarted}}">
-          {{burn.burnStartedLocal}}
-        </td>
-        <td title={{burn.burnEnded}}>
-          {{burn.burnEndedLocal}}
-        </td>
-        <td>
-          {{burn.duration}}
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <div class="table-responsive">
+    <table class="table mt-3">
+      <thead>
+        <tr>
+          <th>Meta Question</th>
+          <th></th>
+          <th>Tag(s)</th>
+          <th>Burn started</th>
+          <th>Burn ended</th>
+          <th>Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let burn of burns">
+          <td><a href="https://meta.stackoverflow.com/q/{{burn.id}}">{{burn.title}}</a></td>
+          <td><a routerLink="/progress" [queryParams]="{metaQuestionId: burn.id}">Dashboard</a></td>
+          <td>
+            <app-tag-bubble *ngFor="let tag of burn.tags" [tag]="tag"></app-tag-bubble>
+          </td>
+          <td title="{{burn.burnStarted}}">
+            {{burn.burnStartedLocal}}
+          </td>
+          <td title={{burn.burnEnded}}>
+            {{burn.burnEndedLocal}}
+          </td>
+          <td>
+            {{burn.duration}}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </ng-container>
