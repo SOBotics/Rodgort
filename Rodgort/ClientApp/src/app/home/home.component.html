@@ -6,48 +6,48 @@
 
     <ul>
         <li>
-            <a routerLink="/requests">{{statistics.requests.total}} burnination requests</a>
+            <a routerLink="/requests">{{statistics.requests.total | number}} burnination requests</a>
         </li>
         of which
         <ul>
-            <li><a routerLink="/progress">{{statistics.requests.currentBurns}} {{statistics.requests.currentBurns
+            <li><a routerLink="/progress">{{statistics.requests.currentBurns | number}} {{statistics.requests.currentBurns
                     == 1 ? 'is' : 'are'}} currently being burned</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'featured'}">{{statistics.requests.proposedBurns}}
+            <li><a routerLink="/requests" [queryParams]="{status:'featured'}">{{statistics.requests.proposedBurns | number}}
                     {{statistics.requests.proposedBurns == 1 ? 'is' : 'are'}} featured</a></li>
-            <li><a routerLink="/requests" [queryParams]="{trackingStatusId:2}">{{statistics.requests.withTrackedTags}}
+            <li><a routerLink="/requests" [queryParams]="{trackingStatusId:2}">{{statistics.requests.withTrackedTags | number}}
                     have a tracked tag</a></li>
             <li><a routerLink="/requests"
-                    [queryParams]="{trackingStatusId:1}">{{statistics.requests.requireTrackingApproval}}
+                    [queryParams]="{trackingStatusId:1}">{{statistics.requests.requireTrackingApproval | number}}
                     require tag tracking approval</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined}}
+            <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined | number}}
                     were declined</a></li>
-            <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed}}
-                    were completed</a> (<a href="/tracked-burns">{{statistics.requests.trackedCompleted}} tracked</a>)</li>
+            <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed | number}}
+                    were completed</a> (<a href="/tracked-burns">{{statistics.requests.trackedCompleted | number}} tracked</a>)</li>
             <li><a routerLink="/requests"
-                    [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft}}
+                    [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft | number}}
                     are completed but still have tracked tags with questions</a></li>
             <li><a routerLink="/requests"
-                    [queryParams]="{status:'none', hasQuestions: 'no'}">{{statistics.requests.noStatusButCompleted}}
+                    [queryParams]="{status:'none', hasQuestions: 'no'}">{{statistics.requests.noStatusButCompleted | number}}
                     have no status but none of the tracked tags have questions</a></li>
         </ul>
     </ul>
     <ul>
         <li>
-            {{statistics.tags.total}} tags related to a burnination
+            {{statistics.tags.total | number}} tags related to a burnination
         </li>
         of which
         <ul>
-            <li>{{statistics.tags.noQuestions}} have no questions attached to them</li>
-            <li>{{statistics.tags.synonymised}} were synonomised</li>
-            <li>{{statistics.tags.hasQuestionsAndAttachedToCompletedRequest}} have questions despite being found on
+            <li>{{statistics.tags.noQuestions | number}} have no questions attached to them</li>
+            <li>{{statistics.tags.synonymised | number}} were synonomised</li>
+            <li>{{statistics.tags.hasQuestionsAndAttachedToCompletedRequest | number}} have questions despite being found on
                 a
                 status-completed request</li>
-            <li><a routerLink="/zombies">{{statistics.tags.zombieCount}} currently alive tags have re-appeared after removal</a></li>
+            <li><a routerLink="/zombies">{{statistics.tags.zombieCount | number}} currently alive tags have re-appeared after removal</a></li>
         </ul>
     </ul>
     <ul>
         <li>
-            <a routerLink="users">{{statistics.users.totalUsers}} total users</a>
+            <a routerLink="users">{{statistics.users.totalUsers | number}} total users</a>
         </li>
     </ul>
     <ng-container *ngIf="isAdmin">
@@ -59,7 +59,7 @@
             <li><a href="/Hangfire">Hangfire</a></li>
             <li><a href="/manual-question-processing">Manual Question Processing</a></li>
             <li><a href="/unknown-deletion-resolution">Unknown deletion resolution
-                    ({{statistics.admin.unknownDeletions}})</a></li>
+                    ({{statistics.admin.unknownDeletions | number}})</a></li>
             <li><a href="javascript:void(0)" (click)="shutdown()">Shutdown</a></li>
         </ul>
     </ng-container>

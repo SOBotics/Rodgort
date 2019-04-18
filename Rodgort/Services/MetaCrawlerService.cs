@@ -175,11 +175,7 @@ namespace Rodgort.Services
                 var missingQuestions = context.MetaQuestions.Where(q => !questionIds.Contains(q.Id)).Include(mq => mq.MetaQuestionMetaTags).ToList();
 
                 foreach (var missingQuestion in missingQuestions)
-                {
-                    var metaQuestionMetaTags = missingQuestion.MetaQuestionMetaTags.Where(mqmt => DbMetaTag.RequestTypes.Contains(mqmt.TagName)).ToList();
-                    foreach (var metaQuestionMetaTag in metaQuestionMetaTags)
-                        context.MetaQuestionMetaTags.Remove(metaQuestionMetaTag);
-                }
+                    context.MetaQuestions.Remove(missingQuestion);
             }
 
             var answerIds = questions.Where(q => q.Answers != null).SelectMany(q => q.Answers.Select(a => a.AnswerId)).Distinct().ToList();
@@ -192,8 +188,13 @@ namespace Rodgort.Services
                 if (!metaQuestion.QuestionId.HasValue)
                     throw new InvalidOperationException($"Question object does not contain {nameof(metaQuestion.QuestionId)}");
 
+                var isRequestType = metaQuestion.Tags.Any(t => DbMetaTag.RequestTypes.Contains(t));
+
                 if (!questionLookup.ContainsKey(metaQuestion.QuestionId.Value))
                 {
+                    if (!isRequestType)
+                        continue;
+
                     dbMetaQuestion = new DbMetaQuestion { Id = metaQuestion.QuestionId.Value, MetaQuestionTags = new List<DbMetaQuestionTag>() };
                     context.MetaQuestions.Add(dbMetaQuestion);
 
@@ -202,6 +203,11 @@ namespace Rodgort.Services
                 else
                 {
                     dbMetaQuestion = questionLookup[metaQuestion.QuestionId.Value];
+                    if (!isRequestType)
+                    {
+                        context.MetaQuestions.Remove(dbMetaQuestion);
+                        continue;
+                    }
                 }
 
                 if (!metaQuestion.Score.HasValue)

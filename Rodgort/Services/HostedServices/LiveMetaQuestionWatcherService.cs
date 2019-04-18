@@ -50,6 +50,7 @@ namespace Rodgort.Services.HostedServices
                                     var metaCrawlerService = scope.ServiceProvider.GetRequiredService<MetaCrawlerService>();
                                     var apiClient = scope.ServiceProvider.GetRequiredService<ApiClient>();
                                     var questions = await apiClient.MetaQuestionsByIds("meta.stackoverflow.com", batchList.ToList());
+
                                     var result = metaCrawlerService.ProcessQuestions(questions.Items, false);
                                     await metaCrawlerService.PostProcessQuestions(questions.Items, result);
                                 }
