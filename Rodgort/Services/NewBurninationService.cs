@@ -159,7 +159,7 @@ namespace Rodgort.Services
             var burninationMessage = $"[Close Queue]({closeQueueLink}) - [Open questions]({openQuestionsLink}) - [Meta post]({metaPostUrl}) - [Burn room](https://chat.stackoverflow.com/rooms/{roomId}).";
             await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, roomId, burninationMessage);
 
-            var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} https://chat.stackoverflow.com/rooms/{roomId}";
+            var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} {metaPostUrl}";
 
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, gemmyMessage);
             return roomId;
