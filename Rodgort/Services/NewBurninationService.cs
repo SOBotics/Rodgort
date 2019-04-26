@@ -203,7 +203,7 @@ namespace Rodgort.Services
             await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, roomId,
                 $"[Rodgort tag progress](https://rodgort.sobotics.org/progress?metaQuestionId={metaQuestionId}) - [Close Queue]({closeQueueLink}) - [Open questions]({openQuestionsLink}) - [Meta post]({metaPostUrl})");
             
-            var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} https://chat.stackoverflow.com/rooms/{roomId}";
+            var gemmyMessage = $"@Gemmy start tag [{tag}] {roomId} {metaPostUrl}";
             await _chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.SO_BOTICS_WORKSHOP, gemmyMessage);
 
             var burninationMessage = $"The burnination of [tag:{tag}] is now being discussed. [Meta post]({metaPostUrl}). [Observation room](https://chat.stackoverflow.com/rooms/{roomId}).";
