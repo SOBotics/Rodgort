@@ -138,7 +138,9 @@ namespace Rodgort.Services
             var openQuestionsLink = QueryHelpers.AddQueryString("https://stackoverflow.com/search", new Dictionary<string, string> { { "q", $"[{tag}] is:q closed:no" } });
 
             var burninationMessage = $"The burnination of [tag:{tag}] has STARTED! [Close Queue]({closeQueueLink}) - [Open questions]({openQuestionsLink}) - [Meta post]({metaPostUrl}) - [Burn room](https://chat.stackoverflow.com/rooms/{roomId}).";
-            await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
+            var messageId = await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
+            await UnpinMine(ChatSite.StackOverflow, ChatRooms.TROGDOR);
+            SavePinned(ChatSite.StackOverflow, ChatRooms.TROGDOR, messageId);
         }
 
         private async Task RenameObservationRoom(int roomId, string metaPostUrl, string tag)
@@ -208,8 +210,10 @@ namespace Rodgort.Services
 
             var burninationMessage = $"The burnination of [tag:{tag}] is now being discussed. [Meta post]({metaPostUrl}). [Observation room](https://chat.stackoverflow.com/rooms/{roomId}).";
 
-            await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
-            
+            var messageId = await _chatClient.SendMessageAndPin(ChatSite.StackOverflow, ChatRooms.TROGDOR, burninationMessage);
+            await UnpinMine(ChatSite.StackOverflow, ChatRooms.TROGDOR);
+            SavePinned(ChatSite.StackOverflow, ChatRooms.TROGDOR, messageId);
+
             var burnakiFollow = new DbBurnakiFollow
             {
                 BurnakiId = ChatUserIds.GEMMY,
@@ -229,6 +233,22 @@ namespace Rodgort.Services
                 _dateService, 
                 CancellationToken.None
             );
+        }
+
+        private void SavePinned(ChatSite chatSite, int roomId, int messageId)
+        {
+            _rodgortContext.PinnedMessages.Add(new DbPinnedMessages { MessageId = messageId, ChatDomain = chatSite.ChatDomain, RoomId = roomId });
+            _rodgortContext.SaveChanges();
+        }
+
+        private async Task UnpinMine(ChatSite chatSite, int roomId)
+        {
+            var pinnedMessages = _rodgortContext.PinnedMessages.Where(pm => pm.ChatDomain == chatSite.ChatDomain && pm.RoomId == roomId).ToList();
+            await _chatClient.UnpinMessages(chatSite, roomId, pinnedMessages.Select(pm => pm.MessageId).ToArray());
+            foreach (var pinnedMessage in pinnedMessages)
+                _rodgortContext.PinnedMessages.Remove(pinnedMessage);
+            
+            _rodgortContext.SaveChanges();
         }
     }
 }

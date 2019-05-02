@@ -43,7 +43,7 @@ namespace StackExchangeChat
         public async Task<int> SendMessageAndPin(ChatSite chatSite, int roomId, string message)
         {
             var messageId = await SendMessage(chatSite, roomId, message);
-            await PinMessage(chatSite, roomId, messageId);
+            await PinMessages(chatSite, roomId, messageId);
             return messageId;
         }
 
@@ -136,19 +136,23 @@ namespace StackExchangeChat
             });
         }
 
-        public async Task PinMessage(ChatSite chatSite, int currentRoomId, int messageId)
+        public async Task PinMessages(ChatSite chatSite, int currentRoomId, params int[] messageIds)
         {
-            if (!await IsPinned(chatSite, currentRoomId, messageId))
-                await TogglePin(chatSite, currentRoomId, messageId);
+            var pinnedMessages = await PinnedMessages(chatSite, currentRoomId);
+            var messagesToPin = messageIds.Except(pinnedMessages);
+            foreach(var messageToPin in messagesToPin)
+                await TogglePin(chatSite, currentRoomId, messageToPin);
         }
 
-        public async Task UnpinMessage(ChatSite chatSite, int currentRoomId, int messageId)
+        public async Task UnpinMessages(ChatSite chatSite, int currentRoomId, params int[] messageIds)
         {
-            if (await IsPinned(chatSite, currentRoomId, messageId))
-                await TogglePin(chatSite, currentRoomId, messageId);
+            var pinnedMessages = await PinnedMessages(chatSite, currentRoomId);
+            var messagesToUnpin = messageIds.Intersect(pinnedMessages);
+            foreach (var messageToUnpin in messagesToUnpin)
+                await TogglePin(chatSite, currentRoomId, messageToUnpin);
         }
 
-        public async Task<bool> IsPinned(ChatSite chatSite, int currentRoomId, int messageId)
+        public async Task<List<int>> PinnedMessages(ChatSite chatSite, int currentRoomId)
         {
             using (var httpClient = _serviceProvider.GetService<HttpClientWithHandler>())
             {
@@ -180,8 +184,13 @@ namespace StackExchangeChat
                         .Select(n => n.Value)
                         .ToList();
 
-                return pinnedMessageIds.Contains(messageId);
+                return pinnedMessageIds;
             }
+        }
+
+        public async Task<bool> IsPinned(ChatSite chatSite, int currentRoomId, int messageId)
+        {
+            return (await PinnedMessages(chatSite, currentRoomId)).Contains(messageId);
         }
 
         public async Task TogglePin(ChatSite chatSite, int currentRoomId, int messageId)

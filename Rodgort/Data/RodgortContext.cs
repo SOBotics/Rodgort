@@ -29,6 +29,7 @@ namespace Rodgort.Data
         public DbSet<DbRole> Roles { get; set; }
         public DbSet<DbUnknownDeletion> UnknownDeletions { get; set; }
         public DbSet<DbSeenQuestion> SeenQuestions { get; set; }
+        public DbSet<DbPinnedMessages> PinnedMessages { get; set; }
         public DbSet<DbMetaQuestionTagTrackingStatusAudit> MetaQuestionTagTrackingStatusAudits { get; set; }
 
         public DbQuery<DbZombieTagsView> ZombieTagsView { get; set; }
@@ -140,6 +141,9 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbSeenQuestion>().HasKey(sq => new { sq.Id, sq.Tag });
             modelBuilder.Entity<DbSeenQuestion>().HasIndex(sq => sq.Tag);
 
+            modelBuilder.Entity<DbPinnedMessages>().ToTable("pinned_messages");
+            modelBuilder.Entity<DbPinnedMessages>().HasKey(pm => pm.Id);
+            
             modelBuilder.Query<DbZombieTagsView>().ToView("zombie_tags");
             modelBuilder.Query<DbZombieTagsView>().HasOne(z => z.Tag).WithMany().HasForeignKey(z => z.TagName);
             modelBuilder.Query<DbZombieTagsView>().Property(z => z.TagName).HasColumnName("tag_name");
