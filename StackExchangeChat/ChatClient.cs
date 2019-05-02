@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -23,7 +25,10 @@ namespace StackExchangeChat
         private readonly HttpClientWithHandler _httpClient;
         private readonly ILogger<ChatClient> _logger;
 
-        private static Dictionary<SiteAuthenticator.SiteRoomIdPair, IObservable<ChatEvent>> _roomSubscriptions = new Dictionary<SiteAuthenticator.SiteRoomIdPair, IObservable<ChatEvent>>();
+        private static readonly Dictionary<SiteAuthenticator.SiteRoomIdPair, IObservable<ChatEvent>> _roomSubscriptions = new Dictionary<SiteAuthenticator.SiteRoomIdPair, IObservable<ChatEvent>>();
+
+        private static readonly TimeSpan _delayAfterMessage = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan _delayAfterThrottle = TimeSpan.FromSeconds(15);
 
         public ChatClient(SiteAuthenticator siteAuthenticator,
             IServiceProvider serviceProvider,
@@ -65,11 +70,11 @@ namespace StackExchangeChat
                     if (matchesBackoff.Success)
                     {
                         var backoffSeconds = int.Parse(matchesBackoff.Groups[1].Value);
-                        await Task.Delay(TimeSpan.FromSeconds(backoffSeconds + 5));
+                        await Task.Delay(TimeSpan.FromSeconds(backoffSeconds).Add(_delayAfterMessage));
 
                         var messageId = await SendMessage();
 
-                        await Task.Delay(TimeSpan.FromSeconds(15));
+                        await Task.Delay(_delayAfterThrottle);
 
                         return messageId;
                     }
@@ -81,7 +86,7 @@ namespace StackExchangeChat
                 }
 
                 return await SendMessage();
-            }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
+            }, _ => Task.Delay(_delayAfterMessage));
         }
 
         private readonly Regex _roomRegex = new Regex(@"\/rooms\/info\/(\d+)\/");
@@ -107,7 +112,7 @@ namespace StackExchangeChat
                 var requestUri = response.RequestMessage.RequestUri;
                 var roomId = int.Parse(_roomRegex.Match(requestUri.AbsolutePath).Groups[1].Value);
                 return roomId;
-            }, _ => Task.Delay(TimeSpan.FromSeconds(5)));
+            }, _ => Task.Delay(_delayAfterMessage));
         }
 
         public async Task EditRoom(ChatSite chatSite, int roomId, string roomName, string roomDescription, IEnumerable<string> tags)
@@ -133,6 +138,54 @@ namespace StackExchangeChat
 
         public async Task PinMessage(ChatSite chatSite, int currentRoomId, int messageId)
         {
+            if (!await IsPinned(chatSite, currentRoomId, messageId))
+                await TogglePin(chatSite, currentRoomId, messageId);
+        }
+
+        public async Task UnpinMessage(ChatSite chatSite, int currentRoomId, int messageId)
+        {
+            if (await IsPinned(chatSite, currentRoomId, messageId))
+                await TogglePin(chatSite, currentRoomId, messageId);
+        }
+
+        public async Task<bool> IsPinned(ChatSite chatSite, int currentRoomId, int messageId)
+        {
+            using (var httpClient = _serviceProvider.GetService<HttpClientWithHandler>())
+            {
+                var result = await httpClient.GetAsync($"https://{chatSite.ChatDomain}/chats/stars/{currentRoomId}");
+                var resultStr = await result.Content.ReadAsStringAsync();
+
+                var doc = new HtmlDocument();
+                doc.LoadHtml(resultStr);
+
+                const string searchFor = "owner-star";
+                const string idPrefix = "summary_";
+                var pinnedMessageIds =
+                    doc.DocumentNode.Descendants()
+                        .Where(
+                            x => x.Attributes.Contains("class")
+                                 && x.Attributes["class"].Value.Split(' ').Any(v => v.Contains(searchFor))
+                        )
+                        .Select(n => n.ParentNode)
+                        .Select(n => n.GetAttributeValue("id", string.Empty))
+                        .Where(n => !string.IsNullOrWhiteSpace(n))
+                        .Where(n => n.Length > idPrefix.Length)
+                        .Select(n => n.Substring(idPrefix.Length))
+                        .Select(n => {
+                            if (int.TryParse(n, out var res))
+                                return (int?)res;
+                            return null;
+                        })
+                        .Where(n => n != null)
+                        .Select(n => n.Value)
+                        .ToList();
+
+                return pinnedMessageIds.Contains(messageId);
+            }
+        }
+
+        public async Task TogglePin(ChatSite chatSite, int currentRoomId, int messageId)
+        {
             await ThrottlingUtils.Throttle(ChatThrottleGroups.WebRequestThrottle, async () =>
             {
                 var fkey = (await _siteAuthenticator.GetRoomDetails(chatSite, currentRoomId)).FKey;
@@ -144,7 +197,7 @@ namespace StackExchangeChat
                             {"fkey", fkey},
                         }));
                 LogResponseError(response);
-            }, Task.Delay(TimeSpan.FromSeconds(5)));
+            }, Task.Delay(_delayAfterMessage));
         }
 
         public async Task AddRoomOwner(ChatSite chatSite, int roomId, int userId)
