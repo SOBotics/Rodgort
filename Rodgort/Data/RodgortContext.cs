@@ -87,8 +87,8 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasKey(audit => audit.Id);
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().Property(audit => audit.TimeChanged).IsRequired();
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.ChangedByUser).WithMany(u => u.TagTrackingStatusAudits).HasForeignKey(audit => audit.ChangedByUserId);
-            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.MetaQuestion).WithMany(mqt => mqt.TagTrackingStatusAudits).HasForeignKey(audit => audit.MetaQuestionId);
-            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.MetaQuestionTag).WithMany(mqt => mqt.TagTrackingStatusAudits).HasForeignKey(audit => new { audit.MetaQuestionId, audit.Tag });
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.MetaQuestion).WithMany(mqt => mqt.TagTrackingStatusAudits).HasForeignKey(audit => audit.MetaQuestionId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.MetaQuestionTag).WithMany(mqt => mqt.TagTrackingStatusAudits).HasForeignKey(audit => new { audit.MetaQuestionId, audit.Tag }).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.PreviousTrackingStatus).WithMany(ts => ts.PreviousTagTrackingStatusAudits).HasForeignKey(audit => audit.PreviousTrackingStatusId).IsRequired(false);
             modelBuilder.Entity<DbMetaQuestionTagTrackingStatusAudit>().HasOne(audit => audit.NewTrackingStatus).WithMany(ts => ts.NewTagTrackingStatusAudits).HasForeignKey(audit => audit.NewTrackingStatusId);
 
