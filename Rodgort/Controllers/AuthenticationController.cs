@@ -18,6 +18,7 @@ using RestSharp;
 using Rodgort.Data;
 using Rodgort.Data.Constants;
 using Rodgort.Data.Tables;
+using Rodgort.Utilities;
 using StackExchangeApi;
 
 namespace Rodgort.Controllers
@@ -139,8 +140,6 @@ namespace Rodgort.Controllers
             string userType = userDetails.user_type;
             int reputation = userDetails.reputation;
 
-            var signingKey = GetSigningKey();
-
             var user = _dbContext.SiteUsers.Include(su => su.Roles).FirstOrDefault(su => su.Id == userId);
             if (user == null)
             {
@@ -155,17 +154,11 @@ namespace Rodgort.Controllers
                 _dbContext.SiteUsers.Add(user);
                 _dbContext.SaveChanges();
             }
-            
+
+            var token = CreateJwtTokenForUser(userId);
+
             var decodedState = DecodeBase64(state);
             var loginState = JsonConvert.DeserializeObject<LoginState>(decodedState);
-            
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Name, displayName),
-                new Claim("accountId", userId.ToString())
-            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
-
-            var token = CreateJwtToken(claims, signingKey);
 
             var uriBuilder = new UriBuilder(loginState.RedirectUri);
             var query = HttpUtility.ParseQueryString(uriBuilder.Query);
@@ -190,9 +183,24 @@ namespace Rodgort.Controllers
             if (User == null)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
-            var signingKey = GetSigningKey();
-            var newToken = CreateJwtToken(User.Claims, signingKey);
+            return CreateJwtTokenForUser(User.UserId());
+        }
 
+        private string CreateJwtTokenForUser(int userId)
+        {
+            var signingKey = GetSigningKey();
+
+            var user = _dbContext.SiteUsers.Include(su => su.Roles).FirstOrDefault(su => su.Id == userId);
+            if (user == null)
+                throw new HttpStatusException(HttpStatusCode.Unauthorized);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, user.DisplayName),
+                new Claim("accountId", user.Id.ToString())
+            }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
+
+            var newToken = CreateJwtToken(claims, signingKey);
             return newToken;
         }
 

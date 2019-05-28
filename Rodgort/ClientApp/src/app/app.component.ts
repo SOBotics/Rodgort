@@ -28,19 +28,41 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.httpClient.get('/assets/revision.txt', { responseType: 'text' }).subscribe(a => this.revision = a);
 
+    let requiresImmediateRefresh = true;
     this.activatedRoute.queryParams.subscribe((params: Params) => {
       const accessToken = params['access_token'];
       if (accessToken) {
+        requiresImmediateRefresh = false;
         this.authService.Login(accessToken);
-        this.router.navigate([], {queryParams: {access_token: null}, queryParamsHandling: 'merge'});
+        this.router.navigate([], { queryParams: { access_token: null }, queryParamsHandling: 'merge' });
       }
     });
 
+    let autoRefreshSetup = false;
+    let refreshTimer: NodeJS.Timer;
     this.authService.GetAuthDetails().subscribe(details => {
       this.authService.RawToken = details.RawToken;
       this.isLoggedIn = details.IsAuthenticated;
+
       if (this.isLoggedIn) {
         this.userName = details.TokenData.unique_name;
+
+        if (!autoRefreshSetup) {
+          autoRefreshSetup = true;
+          if (requiresImmediateRefresh) {
+            this.refreshToken();
+          }
+
+          if (refreshTimer === undefined) {
+            refreshTimer = setInterval(this.refreshToken, 1000 * 60 * 60);
+          }
+        }
+      } else {
+        if (refreshTimer !== undefined) {
+          clearInterval(refreshTimer);
+        }
+        autoRefreshSetup = false;
+        requiresImmediateRefresh = true;
       }
     });
 
@@ -66,6 +88,13 @@ export class AppComponent implements OnInit {
         });
       }
     });
+  }
+
+  private refreshToken() {
+    this.httpClient.post(`/api/Authentication/RefreshToken`, {}, { responseType: 'text' })
+      .subscribe(token => {
+        this.authService.Login(token);
+      });
   }
 
   public onLogoutClicked() {
