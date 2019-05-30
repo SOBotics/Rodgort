@@ -46,9 +46,13 @@ ua.time as Time
 from 
 user_actions ua
 inner join user_action_types uat ON ua.user_action_type_id = uat.id
+inner join meta_question_tags on meta_question_tags.tag_name = ua.tag
+inner join meta_questions ON meta_questions.id = meta_question_tags.meta_question_id
 where @userId = ua.site_user_id
 and (@tag is null or @tag = ua.tag)
 and (@actionTypeId is null or @actionTypeId = ua.user_action_type_id)
+and meta_questions.burn_started is not null
+and ua.time > meta_questions.burn_started
 group by
 ua.post_id, ua.user_action_type_id, uat.name, ua.time
 order by ua.time desc
@@ -70,9 +74,13 @@ from
 (
 	select 1 from 
 	user_actions ua
+    inner join meta_question_tags on meta_question_tags.tag_name = ua.tag
+    inner join meta_questions ON meta_questions.id = meta_question_tags.meta_question_id
 	where @userId = ua.site_user_id
 	and (@tag is null or @tag = ua.tag)
 	and (@actionTypeId is null or @actionTypeId = ua.user_action_type_id)
+    and meta_questions.burn_started is not null
+    and ua.time > meta_questions.burn_started
 	group by
 	ua.post_id, ua.user_action_type_id, ua.time
 ) innerQuery", new
@@ -141,13 +149,13 @@ from
                             mq => mq.BurnStarted.HasValue
                                   && mq.MetaQuestionTags
                                       .Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
-                                      .Any(t => u.UserActions.Select(ua => ua.Tag).Contains(t.TagName))
+                                      .Any(t => u.UserActions.Where(ua => ua.Time > mq.BurnStarted.Value).Select(ua => ua.Tag).Contains(t.TagName))
                         ),
                     Burns = _context.MetaQuestions.Where(
                         mq => mq.BurnStarted.HasValue
                               && mq.MetaQuestionTags
                                   .Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
-                                  .Any(t => u.UserActions.Select(ua => ua.Tag).Contains(t.TagName))
+                                  .Any(t => u.UserActions.Where(ua => ua.Time > mq.BurnStarted.Value).Select(ua => ua.Tag).Contains(t.TagName))
                         )
                         .Select(mq => new
                         {
