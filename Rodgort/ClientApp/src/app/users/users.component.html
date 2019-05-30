@@ -36,7 +36,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let user of users">
-          <td><a routerLink="/user/{{user.id}}">{{user.displayName}} {{user.isModerator ? '♦' : ''}}</a></td>
+          <td><a routerLink="/user/{{user.userId}}">{{user.displayName}} {{user.isModerator ? '♦' : ''}}</a></td>
           <td>{{user.numBurnActions}}</td>
           <td>{{user.triagedTags}}</td>
           <td>{{user.triagedQuestions}}</td>
