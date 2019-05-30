@@ -105,7 +105,17 @@ from
             if (!string.IsNullOrWhiteSpace(userName))
                 query = query.Where(u => u.DisplayName.Contains(userName));
 
-            return query.OrderByDescending(su => su.NumBurnActions).Page(pageNumber, pageSize);
+            return query
+                .Select(q => new
+                {
+                    q.UserId,
+                    q.DisplayName,
+                    q.IsModerator,
+                    q.NumBurnActions,
+                    q.TriagedTags,
+                    q.TriagedQuestions
+                })
+                .OrderByDescending(su => su.NumBurnActions).Page(pageNumber, pageSize);
         }
         
 
