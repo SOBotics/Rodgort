@@ -115,6 +115,7 @@ from
                                 mqt => mqt.TagName, 
                                 (userAction, metaQuestionTag) => new { metaQuestionTag, userAction}
                             )
+                            .Where(j => j.userAction.Time > j.metaQuestionTag.MetaQuestion.BurnStarted.Value)
                             .Select(a => a.userAction.PostId).Distinct().Count(),
 
                     TriageTags = su.TagTrackingStatusAudits.Count,

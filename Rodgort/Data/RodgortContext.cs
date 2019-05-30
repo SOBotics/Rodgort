@@ -104,6 +104,7 @@ namespace Rodgort.Data
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.SiteUser).WithMany(uat => uat.UserActions).HasForeignKey(ua => ua.SiteUserId);
             modelBuilder.Entity<DbUserAction>().HasOne(ua => ua.UnknownDeletion).WithMany(ud => ud.UserActions).HasForeignKey(ua => ua.UnknownDeletionId).IsRequired(false);
             modelBuilder.Entity<DbUserAction>().Property(ua => ua.TimeProcessed).IsRequired();
+            modelBuilder.Entity<DbUserAction>().HasIndex(u => u.Tag);
 
             modelBuilder.Entity<DbUserActionType>().ToTable("user_action_types");
             modelBuilder.Entity<DbUserActionType>().HasKey(uat => uat.Id);
