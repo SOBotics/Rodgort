@@ -3,17 +3,18 @@
 </div>
 
 <ng-container *ngIf="!loading">
-  <button *ngIf="filter.onlyAlive" routerLink="/zombies" [queryParams]="{onlyAlive: 'false'}"
+  <button *ngIf="filter.onlyAlive" routerLink="/zombies" [queryParams]="{ onlyAlive: 'false'}"
     class="btn btn-primary pull-right">Show all zombies</button>
   <button *ngIf="!filter.onlyAlive" routerLink="/zombies" class="btn btn-primary pull-right">Show only living
     zombies</button>
   <ng-container *ngFor="let zombie of zombies; let i = index;">
     <hr *ngIf="i > 0" />
-    <h3><a href="https://stackoverflow.com/questions/tagged/{{zombie.tag}}">{{zombie.tag}}</a> ({{zombie.revivals.length}} revival{{zombie.revivals.length == 1 ? '' : 's'}}) <a
-        class="perma-link" routerLink="/zombies" [queryParams]="{tag: zombie.tag}">
+    <h2><a href="https://stackoverflow.com/questions/tagged/{{zombie.tag}}">{{zombie.tag}}</a> ({{zombie.revivals.length}} revival{{zombie.revivals.length == 1 ? '' : 's'}}) <a
+        class="perma-link" routerLink="/zombies" [queryParams]="{tag: zombie.tag }">
         <img src="../../assets/permalink.png">
       </a>
-    </h3>
+    </h2>
+    <h3><a routerLink="/requests" [queryParams]="{ query: zombie.tag, searchBy: 'tag' }">Related requests</a></h3>
     <app-question-count-graph [data]="zombie.questionCountOverTime" [customLines]="zombie.lines">
     </app-question-count-graph>
   </ng-container>
