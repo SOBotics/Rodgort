@@ -20,8 +20,8 @@
         <tr *ngFor="let user of users">
           <td><a routerLink="/user/{{user.id}}">{{user.displayName}} {{user.isModerator ? '♦' : ''}}</a></td>
           <td>{{user.numBurnActions}}</td>
-          <td>{{user.triageTags}}</td>
-          <td>{{user.triageQuestions}}</td>
+          <td>{{user.triagedTags}}</td>
+          <td>{{user.triagedQuestions}}</td>
         </tr>
       </tbody>
     </table>

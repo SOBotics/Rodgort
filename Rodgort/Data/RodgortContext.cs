@@ -33,6 +33,7 @@ namespace Rodgort.Data
         public DbSet<DbMetaQuestionTagTrackingStatusAudit> MetaQuestionTagTrackingStatusAudits { get; set; }
 
         public DbQuery<DbZombieTagsView> ZombieTagsView { get; set; }
+        public DbQuery<DbUserStatisticsView> UserStatisticsView { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -149,7 +150,16 @@ namespace Rodgort.Data
             modelBuilder.Query<DbZombieTagsView>().HasOne(z => z.Tag).WithMany().HasForeignKey(z => z.TagName);
             modelBuilder.Query<DbZombieTagsView>().Property(z => z.TagName).HasColumnName("tag_name");
             modelBuilder.Query<DbZombieTagsView>().Property(z => z.TimeRevived).HasColumnName("time_revived");
-            
+
+            modelBuilder.Query<DbUserStatisticsView>().ToView("user_statistics");
+            modelBuilder.Query<DbUserStatisticsView>().HasOne(us => us.SiteUser).WithOne().HasForeignKey<DbUserStatisticsView>(us => us.UserId);
+            modelBuilder.Query<DbUserStatisticsView>().Property(z => z.UserId).HasColumnName("user_id");
+            modelBuilder.Query<DbUserStatisticsView>().Property(z => z.DisplayName).HasColumnName("display_name");
+            modelBuilder.Query<DbUserStatisticsView>().Property(z => z.IsModerator).HasColumnName("is_moderator");
+            modelBuilder.Query<DbUserStatisticsView>().Property(z => z.NumBurnActions).HasColumnName("num_burn_actions");
+            modelBuilder.Query<DbUserStatisticsView>().Property(z => z.TriagedTags).HasColumnName("triaged_tags");
+            modelBuilder.Query<DbUserStatisticsView>().Property(z => z.TriagedQuestions).HasColumnName("triaged_questions");
+
             modelBuilder.Entity<DbMetaTag>()
                 .HasData(
                     new DbMetaTag {Name = DbMetaTag.STATUS_COMPLETED},

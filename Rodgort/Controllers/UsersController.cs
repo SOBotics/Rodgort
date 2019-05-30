@@ -100,29 +100,7 @@ from
         [HttpGet("all")]
         public object GetAll(int pageNumber, int pageSize)
         {
-            var query = _context.SiteUsers
-                .Select(su => new
-                {
-                    su.Id,
-                    su.DisplayName,
-                    su.IsModerator,
-                    NumBurnActions = 
-                            su.UserActions.Join(
-                                _context.MetaQuestionTags
-                                    .Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED)
-                                    .Where(mqt => mqt.MetaQuestion.BurnStarted.HasValue),
-                                ua => ua.Tag, 
-                                mqt => mqt.TagName, 
-                                (userAction, metaQuestionTag) => new { metaQuestionTag, userAction}
-                            )
-                            .Where(j => j.userAction.Time > j.metaQuestionTag.MetaQuestion.BurnStarted.Value)
-                            .Select(a => a.userAction.PostId).Distinct().Count(),
-
-                    TriageTags = su.TagTrackingStatusAudits.Count,
-                    TriageQuestions = su.TagTrackingStatusAudits.Select(audit => audit.MetaQuestionId).Distinct().Count(),
-                })
-                .OrderByDescending(su => su.NumBurnActions);
-
+            var query = _context.UserStatisticsView.OrderByDescending(su => su.NumBurnActions);
             return query.Page(pageNumber, pageSize);
         }
         

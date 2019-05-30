@@ -55,6 +55,8 @@
     <Compile Remove="Migrations\20190215025206_TrackRolesDateAddedAndByWho.Designer.cs" />
     <Compile Remove="Migrations\20190215045931_RemoveDatabaseDefaults.cs" />
     <Compile Remove="Migrations\20190215045931_RemoveDatabaseDefaults.Designer.cs" />
+    <Compile Remove="Migrations\20190530055114_Bla.cs" />
+    <Compile Remove="Migrations\20190530055114_Bla.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>

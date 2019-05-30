@@ -72,7 +72,7 @@ namespace Rodgort.Controllers
             );
 
             var numZombies = _context.ZombieTagsView.Where(z => z.Tag.NumberOfQuestions > 0 & z.Tag.SynonymOf == null).Select(z => z.TagName).Distinct().Count();
-            var numUsers = _context.SiteUsers.Count();
+            var numUsers = _context.UserStatisticsView.Count();
 
             return new
             {
