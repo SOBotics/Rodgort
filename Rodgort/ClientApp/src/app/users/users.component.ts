@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { GetPagingInfo } from '../../utils/PagingHelper';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-users',
@@ -16,10 +17,16 @@ export class UsersComponent implements OnInit {
   };
   public pagingInfo: any;
 
-  constructor(private httpClient: HttpClient) { }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private httpClient: HttpClient) { }
 
   ngOnInit() {
-    this.reloadData();
+    this.route.queryParams.subscribe(params => {
+      this.filter.pageNumber = +params['pageNumber'] || 1;
+      this.reloadData();
+    });
   }
 
   private reloadData() {
@@ -40,6 +47,10 @@ export class UsersComponent implements OnInit {
 
   public loadPage(pageNumber: number) {
     this.filter.pageNumber = pageNumber;
-    this.reloadData();
+    this.applyFilter();
+  }
+
+  public applyFilter() {
+    this.router.navigate(['/users'], { queryParams: this.filter });
   }
 }
