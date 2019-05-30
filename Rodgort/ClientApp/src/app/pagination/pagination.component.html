@@ -1,10 +1,23 @@
-<nav>
+<nav *ngIf="pagingInfo">
     <ul class="pagination">
-        <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active" *ngFor="let page of pagingInfo">
-            <a class="page-link" 
-                [class.minified-shown]="page.MinifiedShown" 
-                [class.minified-hidden]="page.MinifiedHidden" 
+        <li class="page-item" [class.disabled]="page.Disabled" [class.active]="page.Active"
+            *ngFor="let page of pagingInfo">
+            <a class="page-link" [class.minified-shown]="page.MinifiedShown"
+                [class.minified-hidden]="page.MinifiedHidden"
                 (click)="page.Active ? false : pageWasClicked(page.Number)" href="javascript:void(0);">{{page.Name}}</a>
         </li>
+
+        <ng-container *ngIf="!pagingInfo.length">
+            <li class="page-item" [class.disabled]="true" [class.active]="false">
+                <a class="page-link">Previous</a>
+            </li>
+            <li class="page-item" [class.disabled]="false" [class.active]="true">
+                <a class="page-link">1</a>
+            </li>
+            <li class="page-item" [class.disabled]="true" [class.active]="false">
+                <a class="page-link">Next</a>
+            </li>
+        </ng-container>
+
     </ul>
 </nav>

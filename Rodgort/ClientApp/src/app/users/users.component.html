@@ -1,12 +1,18 @@
+<app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
+</app-pagination>
+
+<form class="form-inline" #filterForm="ngForm">
+  <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Search"
+    name="userName" [(ngModel)]="filter.userName" #search="ngModel">
+  <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
+</form>
+
 <div class="container loading-container">
   <img *ngIf="loading" class="spinner" src="../../assets/spinner.png">
 </div>
 
 <ng-container *ngIf="!loading">
-  <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
-  </app-pagination>
-
-  <div class="table-responsive">
+  <div *ngIf="users.length" class="table-responsive mt-3 mb-3">
     <table class="table">
       <thead>
         <tr>
@@ -26,8 +32,8 @@
       </tbody>
     </table>
   </div>
-
-
-  <app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
-  </app-pagination>
+  <p class="mt-3 mb-3" *ngIf="!users.length">No users found</p>
 </ng-container>
+
+<app-pagination [pagingInfo]="pagingInfo" (pageClicked)="loadPage($event)">
+</app-pagination>

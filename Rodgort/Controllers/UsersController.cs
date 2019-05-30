@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
+using Rodgort.Data.Views;
 using Rodgort.Services;
 using Rodgort.Utilities;
 using Rodgort.Utilities.Paging;
@@ -98,10 +99,13 @@ from
         }
 
         [HttpGet("all")]
-        public object GetAll(int pageNumber, int pageSize)
-        {
-            var query = _context.UserStatisticsView.OrderByDescending(su => su.NumBurnActions);
-            return query.Page(pageNumber, pageSize);
+        public object GetAll(string userName, int pageNumber, int pageSize)
+        { 
+            IQueryable<DbUserStatisticsView> query = _context.UserStatisticsView;
+            if (!string.IsNullOrWhiteSpace(userName))
+                query = query.Where(u => u.DisplayName.Contains(userName));
+
+            return query.OrderByDescending(su => su.NumBurnActions).Page(pageNumber, pageSize);
         }
         
 

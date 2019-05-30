@@ -13,6 +13,7 @@ export class UsersComponent implements OnInit {
   public users: any;
   public loading = true;
   public filter = {
+    userName: '',
     pageNumber: 1
   };
   public pagingInfo: any;
@@ -25,13 +26,19 @@ export class UsersComponent implements OnInit {
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       this.filter.pageNumber = +params['pageNumber'] || 1;
+      this.filter.userName = params['userName'] || '';
       this.reloadData();
     });
   }
 
   private reloadData() {
     this.loading = true;
-    this.httpClient.get(`/api/users/all?pageNumber=${this.filter.pageNumber}`).subscribe((response: any) => {
+    const query =
+      `/api/users/all` +
+      `?userName=${this.filter.userName}` +
+      `&page=${this.filter.pageNumber}`;
+
+    this.httpClient.get(query).subscribe((response: any) => {
       this.loading = false;
       if (response.totalPages > 0 && response.pageNumber > response.totalPages) {
         this.filter.pageNumber = 1;
