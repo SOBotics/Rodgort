@@ -4,6 +4,18 @@
 <form class="form-inline" #filterForm="ngForm">
   <input type="text" class="form-control mt-2 mt-sm-2 mr-sm-2 mb-sm-0" id="contentInput" placeholder="Search"
     name="userName" [(ngModel)]="filter.userName" #search="ngModel">
+
+  <div class="input-group mt-2 mt-sm-2 mr-sm-2 mb-sm-0">
+    <div class="input-group-prepend">
+      <label class="input-group-text" for="sortBySelector">Sort By</label>
+    </div>
+    <select class="custom-select" id="sortBySelector" [(ngModel)]="filter.sortBy" [ngModelOptions]="{standalone: true}">
+      <option value="name">Name</option>
+      <option value="burnActions">Burn Actions</option>
+      <option value="triagedTags">Triaged Tags</option>
+      <option value="triagedQuestions">Triaged Questions</option>
+    </select>
+  </div>
   <button type="submit" class="btn btn-primary mt-2 mt-sm-2 mr-sm-2 mb-sm-0" (click)="applyFilter()">Search</button>
 </form>
 

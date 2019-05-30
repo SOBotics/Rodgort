@@ -99,26 +99,31 @@ from
         }
 
         [HttpGet("all")]
-        public object GetAll(string userName, int pageNumber, int pageSize)
+        public object GetAll(string userName, string sortBy, int pageNumber, int pageSize)
         { 
             IQueryable<DbUserStatisticsView> query = _context.UserStatisticsView;
             if (!string.IsNullOrWhiteSpace(userName))
                 query = query.Where(u => u.DisplayName.Contains(userName));
 
-            return query
-                .Select(q => new
-                {
-                    q.UserId,
-                    q.DisplayName,
-                    q.IsModerator,
-                    q.NumBurnActions,
-                    q.TriagedTags,
-                    q.TriagedQuestions
-                })
-                .OrderByDescending(su => su.NumBurnActions).Page(pageNumber, pageSize);
+            var constructedQuery = query.Select(q => new
+            {
+                q.UserId,
+                q.DisplayName,
+                q.IsModerator,
+                q.NumBurnActions,
+                q.TriagedTags,
+                q.TriagedQuestions
+            });
+
+            var orderedQuery =
+                sortBy == "name" ? constructedQuery.OrderBy(q => q.DisplayName)
+                : sortBy == "triagedTags" ? constructedQuery.OrderByDescending(q => q.TriagedTags)
+                : sortBy == "triagedQuestions" ? constructedQuery.OrderByDescending(q => q.TriagedQuestions)
+                : constructedQuery.OrderByDescending(q => q.NumBurnActions);
+
+            return orderedQuery.Page(pageNumber, pageSize);
         }
         
-
         [HttpGet]
         public object Get(int userId)
         {

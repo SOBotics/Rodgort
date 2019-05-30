@@ -14,7 +14,8 @@ export class UsersComponent implements OnInit {
   public loading = true;
   public filter = {
     userName: '',
-    pageNumber: 1
+    pageNumber: 1,
+    sortBy: 'burnActions'
   };
   public pagingInfo: any;
 
@@ -27,6 +28,7 @@ export class UsersComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.filter.pageNumber = +params['pageNumber'] || 1;
       this.filter.userName = params['userName'] || '';
+      this.filter.sortBy = params['sortBy'] || 'burnActions';
       this.reloadData();
     });
   }
@@ -36,6 +38,7 @@ export class UsersComponent implements OnInit {
     const query =
       `/api/users/all` +
       `?userName=${this.filter.userName}` +
+      `&sortBy=${this.filter.sortBy}` +
       `&page=${this.filter.pageNumber}`;
 
     this.httpClient.get(query).subscribe((response: any) => {
