@@ -39,7 +39,7 @@ export class UsersComponent implements OnInit {
       `/api/users/all` +
       `?userName=${this.filter.userName}` +
       `&sortBy=${this.filter.sortBy}` +
-      `&page=${this.filter.pageNumber}`;
+      `&pageNumber=${this.filter.pageNumber}`;
 
     this.httpClient.get(query).subscribe((response: any) => {
       this.loading = false;
