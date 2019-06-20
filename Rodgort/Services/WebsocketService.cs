@@ -15,50 +15,41 @@ namespace Rodgort.Services
 {
     public static class WebsocketService
     {
-        private static readonly Dictionary<string, Action<BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>>>> _endPoints = new Dictionary<string, Action<BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>>>>
+        private static readonly Dictionary<string, IObservable<Func<WebSocket, CancellationTokenSource, Task>>> _readWriteEndpoint = new Dictionary<string, IObservable<Func<WebSocket, CancellationTokenSource, Task>>>
+            {
+            };
+
+        private static readonly Dictionary<string, IObservable<object>> _readonlyEndpoint = new Dictionary<string, IObservable<object>>
         {
-            { "/ws/quotaRemaining", ProcessQuotaRemaining},
-            { "/ws/pipelines", ProcessPipelinesStatus }
+            { "/ws/quotaRemaining", ApiClient.QuotaRemaining.Select(quotaRemaining => new { quotaRemaining }) },
+            { "/ws/pipelines", GitlabWebhookController.PipelineStatus.Select(status => new { status }) }
         };
 
         public static void ConfigureWebsockets(this IApplicationBuilder app)
         {
             app.Use(async (context, next) =>
             {
-                if (_endPoints.ContainsKey(context.Request.Path))
+                if (_readonlyEndpoint.ContainsKey(context.Request.Path) || _readWriteEndpoint.ContainsKey(context.Request.Path))
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         try
                         {
-                            var taskSubscription = new BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>>((_, __) => Task.CompletedTask);
-                            Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(i =>
-                            {
-                                taskSubscription.OnNext(async (ws, cts) =>
-                                {
-                                    try
-                                    {
-                                        if (!ws.CloseStatus.HasValue)
-                                        {
-                                            await SendData(ws, cts, "ping");
-                                            if (!ws.CloseStatus.HasValue)
-                                                await ws.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cts.Token);
-                                            else
-                                                cts.Cancel();
-                                        }
-                                        else
-                                            cts.Cancel();
-                                    } catch (WebSocketException) { }
-                                });
-                            });
-
-                            _endPoints[context.Request.Path](taskSubscription);
-
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                             var cancellationTokenSource = new CancellationTokenSource();
 
-                            await taskSubscription.ForEachAsync(async task => { await task(webSocket, cancellationTokenSource); }, cancellationTokenSource.Token);
-                        } catch (TaskCanceledException) {  }
+                            IObservable<Func<Task>> data;
+                            if (_readonlyEndpoint.ContainsKey(context.Request.Path))
+                                data = ProcessReadOnly(_readonlyEndpoint[context.Request.Path], webSocket, cancellationTokenSource);
+                            else if (_readWriteEndpoint.ContainsKey(context.Request.Path))
+                                data = ProcessReadWrite(_readWriteEndpoint[context.Request.Path], webSocket, cancellationTokenSource);
+                            else
+                                return;
+
+                            var pinger = ProcessReadWrite(CreatePinger(), webSocket, cancellationTokenSource);
+                            await pinger.Merge(data).ForEachAsync(async task => { await task(); }, cancellationTokenSource.Token);
+                        }
+                        catch (TaskCanceledException) { }
                     }
                     else
                     {
@@ -72,20 +63,42 @@ namespace Rodgort.Services
             });
         }
 
-        private static void ProcessQuotaRemaining(BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>> taskSubject)
+        private static IObservable<Func<WebSocket, CancellationTokenSource, Task>> CreatePinger()
         {
-            ApiClient.QuotaRemaining.Subscribe(quotaRemaining =>
-            {
-                taskSubject.OnNext(async (websocket, cancellationTokenSource) => { await SendData(websocket, cancellationTokenSource, new {quotaRemaining}); });
-            });
+            var interval = Observable.Interval(TimeSpan.FromMinutes(1))
+                .Select<long, Func<WebSocket, CancellationTokenSource, Task>>(i =>
+                {
+                    return async (ws, cts) =>
+                    {
+                        try
+                        {
+                            if (!ws.CloseStatus.HasValue)
+                            {
+                                await SendData(ws, cts, "ping");
+                                if (!ws.CloseStatus.HasValue)
+                                    await ws.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cts.Token);
+                                else
+                                    cts.Cancel();
+                            }
+                            else
+                                cts.Cancel();
+                        }
+                        catch (WebSocketException)
+                        {
+                        }
+                    };
+                });
+            return interval;
         }
 
-        public static void ProcessPipelinesStatus(BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>> taskSubject)
+        private static IObservable<Func<Task>> ProcessReadWrite(IObservable<Func<WebSocket, CancellationTokenSource, Task>> observable, WebSocket webSocket, CancellationTokenSource cancellationTokenSource)
         {
-            GitlabWebhookController.PipelineStatus.Subscribe(status =>
-            {
-                taskSubject.OnNext(async (websocket, cancellationTokenSource) => { await SendData(websocket, cancellationTokenSource, new {status}); });
-            });
+            return observable.Select<Func<WebSocket, CancellationTokenSource, Task>, Func<Task>>(func => async () => { await func(webSocket, cancellationTokenSource); });
+        }
+
+        private static IObservable<Func<Task>> ProcessReadOnly(IObservable<object> observable, WebSocket webSocket, CancellationTokenSource cancellationTokenSource)
+        {
+            return observable.Select<object, Func<Task>>(data => async () => { await SendData(webSocket, cancellationTokenSource, data); });
         }
 
         private static async Task SendData(WebSocket websocket, CancellationTokenSource cancellationTokenSource, object payload)
