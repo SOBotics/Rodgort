@@ -47,7 +47,21 @@ namespace Rodgort.Services
                                 return;
 
                             var pinger = ProcessReadWrite(CreatePinger(), webSocket, cancellationTokenSource);
-                            await pinger.Merge(data).ForEachAsync(async task => { await task(); }, cancellationTokenSource.Token);
+                            await pinger.Merge(data).ForEachAsync(async task => {
+                                try
+                                {
+                                    await task();
+                                }
+                                catch (WebSocketException)
+                                {
+                                    cancellationTokenSource.Cancel();
+                                }
+                                catch (Exception)
+                                {
+                                    cancellationTokenSource.Cancel();
+                                    throw;
+                                }
+                            }, cancellationTokenSource.Token);
                         }
                         catch (TaskCanceledException) { }
                     }
@@ -70,22 +84,16 @@ namespace Rodgort.Services
                 {
                     return async (ws, cts) =>
                     {
-                        try
+                        if (!ws.CloseStatus.HasValue)
                         {
+                            await SendData(ws, cts, "ping");
                             if (!ws.CloseStatus.HasValue)
-                            {
-                                await SendData(ws, cts, "ping");
-                                if (!ws.CloseStatus.HasValue)
-                                    await ws.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cts.Token);
-                                else
-                                    cts.Cancel();
-                            }
+                                await ws.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cts.Token);
                             else
                                 cts.Cancel();
                         }
-                        catch (WebSocketException)
-                        {
-                        }
+                        else
+                            cts.Cancel();
                     };
                 });
             return interval;
