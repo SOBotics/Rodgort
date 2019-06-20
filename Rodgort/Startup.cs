@@ -117,7 +117,7 @@ namespace Rodgort
 
 
             app.UseWebSockets();
-            app.ConfigureQuotaRemainingWebsocket();
+            app.ConfigureWebsockets();
             
             app.UseHttpsRedirection();
             app.UseStaticFiles();

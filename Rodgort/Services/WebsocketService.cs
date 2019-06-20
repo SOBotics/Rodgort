@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,13 +15,13 @@ namespace Rodgort.Services
 {
     public static class WebsocketService
     {
-        private static readonly Dictionary<string, Func<WebSocket, CancellationTokenSource, Task>> _endPoints = new Dictionary<string, Func<WebSocket, CancellationTokenSource, Task>>
+        private static readonly Dictionary<string, Action<BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>>>> _endPoints = new Dictionary<string, Action<BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>>>>
         {
             { "/ws/quotaRemaining", ProcessQuotaRemaining},
             { "/ws/pipelines", ProcessPipelinesStatus }
         };
 
-        public static void ConfigureQuotaRemainingWebsocket(this IApplicationBuilder app)
+        public static void ConfigureWebsockets(this IApplicationBuilder app)
         {
             app.Use(async (context, next) =>
             {
@@ -28,29 +29,35 @@ namespace Rodgort.Services
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
-                        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        var cancellationTokenSource = new CancellationTokenSource();
-
                         try
                         {
-                            Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async i =>
+                            var taskSubscription = new BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>>((_, __) => Task.CompletedTask);
+                            Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(i =>
                             {
-                                try
+                                taskSubscription.OnNext(async (ws, cts) =>
                                 {
-                                    if (!webSocket.CloseStatus.HasValue)
+                                    try
                                     {
-                                        await SendData(webSocket, cancellationTokenSource, "ping");
-                                        if (!webSocket.CloseStatus.HasValue)
-                                            await webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cancellationTokenSource.Token);
+                                        if (!ws.CloseStatus.HasValue)
+                                        {
+                                            await SendData(ws, cts, "ping");
+                                            if (!ws.CloseStatus.HasValue)
+                                                await ws.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cts.Token);
+                                            else
+                                                cts.Cancel();
+                                        }
                                         else
-                                            cancellationTokenSource.Cancel();
-                                    }
-                                    else
-                                        cancellationTokenSource.Cancel();
-                                } catch (WebSocketException) { }
-                            }, cancellationTokenSource.Token);
+                                            cts.Cancel();
+                                    } catch (WebSocketException) { }
+                                });
+                            });
 
-                            await _endPoints[context.Request.Path](webSocket, cancellationTokenSource);
+                            _endPoints[context.Request.Path](taskSubscription);
+
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var cancellationTokenSource = new CancellationTokenSource();
+
+                            await taskSubscription.ForEachAsync(async task => { await task(webSocket, cancellationTokenSource); }, cancellationTokenSource.Token);
                         } catch (TaskCanceledException) {  }
                     }
                     else
@@ -65,22 +72,19 @@ namespace Rodgort.Services
             });
         }
 
-        private static async Task ProcessQuotaRemaining(WebSocket websocket, CancellationTokenSource cancellationTokenSource)
+        private static void ProcessQuotaRemaining(BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>> taskSubject)
         {
-            // We're using ForEachAsync rather than Subscribe because I was unable to get reactivex to execute the observer code
-            // On a context in which the websocket hadn't been closed. 
-            await ApiClient.QuotaRemaining.ForEachAsync(async quotaRemaining =>
+            ApiClient.QuotaRemaining.Subscribe(quotaRemaining =>
             {
-                await SendData(websocket, cancellationTokenSource, new { quotaRemaining });
-            }, cancellationTokenSource.Token);
+                taskSubject.OnNext(async (websocket, cancellationTokenSource) => { await SendData(websocket, cancellationTokenSource, new {quotaRemaining}); });
+            });
         }
 
-        public static async Task ProcessPipelinesStatus(WebSocket websocket,
-            CancellationTokenSource cancellationTokenSource)
+        public static void ProcessPipelinesStatus(BehaviorSubject<Func<WebSocket, CancellationTokenSource, Task>> taskSubject)
         {
-            await GitlabWebhookController.PipelineStatus.ForEachAsync(async status =>
+            GitlabWebhookController.PipelineStatus.Subscribe(status =>
             {
-                await SendData(websocket, cancellationTokenSource, new { status });
+                taskSubject.OnNext(async (websocket, cancellationTokenSource) => { await SendData(websocket, cancellationTokenSource, new {status}); });
             });
         }
 
