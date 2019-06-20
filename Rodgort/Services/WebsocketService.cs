@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Rodgort.Controllers;
 using StackExchangeApi;
@@ -40,14 +41,17 @@ namespace Rodgort.Services
 
                             IObservable<Func<Task>> data;
                             if (_readonlyEndpoint.ContainsKey(context.Request.Path))
-                                data = ProcessReadOnly(_readonlyEndpoint[context.Request.Path], webSocket, cancellationTokenSource);
+                                data = ProcessReadOnly(_readonlyEndpoint[context.Request.Path], webSocket,
+                                    cancellationTokenSource);
                             else if (_readWriteEndpoint.ContainsKey(context.Request.Path))
-                                data = ProcessReadWrite(_readWriteEndpoint[context.Request.Path], webSocket, cancellationTokenSource);
+                                data = ProcessReadWrite(_readWriteEndpoint[context.Request.Path], webSocket,
+                                    cancellationTokenSource);
                             else
                                 return;
 
                             var pinger = ProcessReadWrite(CreatePinger(), webSocket, cancellationTokenSource);
-                            await pinger.Merge(data).ForEachAsync(async task => {
+                            await pinger.Merge(data).ForEachAsync(async task =>
+                            {
                                 try
                                 {
                                     await task();
@@ -63,7 +67,15 @@ namespace Rodgort.Services
                                 }
                             }, cancellationTokenSource.Token);
                         }
-                        catch (TaskCanceledException) { }
+                        catch (TaskCanceledException)
+                        {
+                        }
+                        catch (Exception ex)
+                        {
+                            var logger = context.RequestServices.GetService<ILogger>();
+                            logger.LogError("Failed websocket.", ex);
+                            throw;
+                        }
                     }
                     else
                     {
