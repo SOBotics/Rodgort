@@ -98,8 +98,8 @@ namespace StackExchangeChat
                     if (msgInfo.MessageType == WebSocketMessageType.Text)
                     {
                         var text = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
-                        _subject.OnNext(text);
                         _logger.LogTrace($"Received message from websocket: {text}");
+                        _subject.OnNext(text);
                     }
                 }
             }
