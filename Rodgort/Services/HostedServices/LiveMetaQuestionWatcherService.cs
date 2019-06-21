@@ -76,24 +76,25 @@ namespace Rodgort.Services.HostedServices
 
             var websocket = Observable.Create<int>(async observer =>
             {
-                using (var scope = _serviceProvider.CreateScope())
+                var scope = _serviceProvider.CreateScope();
+                var connection = await scope.ServiceProvider.GetService<ObservableClientWebSocket>().Connect(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}});
+
+                await connection.Send("552-home-active");
+
+                var messages = connection.Messages().Select(data =>
                 {
-                    var connection = await scope.ServiceProvider.GetService<ObservableClientWebSocket>().Connect(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}});
-                    var messages = connection.Messages().Select(data =>
+                    var messageObject = JsonConvert.DeserializeObject<JObject>(data);
+                    return messageObject["data"].Value<string>();
+                });
+
+                messages.Where(dataStr => string.Equals(dataStr, "pong")).Subscribe(async _ => await connection.Send("pong"));
+                messages.Where(dataStr => !string.Equals(dataStr, "pong")).Select(dataStr =>
                     {
-                        var messageObject = JsonConvert.DeserializeObject<JObject>(data);
-                        return messageObject["data"].Value<string>();
-                    });
+                        var payload = JsonConvert.DeserializeObject<JObject>(dataStr);
 
-                    messages.Where(dataStr => string.Equals(dataStr, "pong")).Subscribe(async _ => await connection.Send("pong"));
-                    messages.Where(dataStr => !string.Equals(dataStr, "pong")).Select(dataStr =>
-                        {
-                            var payload = JsonConvert.DeserializeObject<JObject>(dataStr);
-
-                            return payload.First.First.Value<int>();
-                        })
-                        .Subscribe(observer);
-                }
+                        return payload.First.First.Value<int>();
+                    })
+                    .Subscribe(observer);
             });
             return websocket.Publish().RefCount();
         }
