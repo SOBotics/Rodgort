@@ -21,11 +21,15 @@ namespace Rodgort.Services.HostedServices
     public class LiveMetaQuestionWatcherService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ObservableClientWebSocket _webSocket;
         private readonly ILogger<BurnakiFollowService> _logger;
 
-        public LiveMetaQuestionWatcherService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
+        public LiveMetaQuestionWatcherService(IServiceProvider serviceProvider,
+            ObservableClientWebSocket webSocket,
+            ILogger<BurnakiFollowService> logger)
         {
             _serviceProvider = serviceProvider;
+            _webSocket = webSocket;
             _logger = logger;
         }
 
@@ -76,48 +80,22 @@ namespace Rodgort.Services.HostedServices
 
             var websocket = Observable.Create<int>(async observer =>
             {
-                var webSocket = new PlainWebSocket(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}}, _serviceProvider.GetRequiredService<ILogger<PlainWebSocket>>());
-                webSocket.OnTextMessage += async message =>
+                var connection = await _webSocket.Connect(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}});
+                var messages = connection.Messages().Select(data =>
                 {
-                    try
-                    {
-                        var messageObject = JsonConvert.DeserializeObject<JObject>(message);
-                        var dataStr = messageObject["data"].Value<string>();
-                        if (string.Equals(dataStr, "pong"))
-                        {
-                            await webSocket.SendAsync("pong");
-                            return;
-                        }
-
-                        var payload = JsonConvert.DeserializeObject<JObject>(dataStr);
-                        
-                        var questionId = payload.First.First.Value<int>();
-
-                        observer.OnNext(questionId);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to process 552-home-active for 'https://stackoverflow.com'. Message received: " + message);
-                    }
-                };
-
-                try
-                {
-                    await webSocket.ConnectAsync();
-                    await webSocket.SendAsync("552-home-active");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to start websocket");
-                }
-
-                _logger.LogTrace("Connected to 552-home-active on meta.stackoverflow.com");
-
-                return Disposable.Create(() =>
-                {
-                    _logger.LogWarning("Disposing meta live websocket");
-                    webSocket?.Dispose();
+                    var messageObject = JsonConvert.DeserializeObject<JObject>(data);
+                    return messageObject["data"].Value<string>();
                 });
+
+                messages.Where(dataStr => string.Equals(dataStr, "pong")).Subscribe(async _ => await connection.Send("pong"));
+                messages.Where(dataStr => !string.Equals(dataStr, "pong"))
+                    .Select(dataStr =>
+                    {
+                        var payload = JsonConvert.DeserializeObject<JObject>(dataStr);
+
+                        return payload.First.First.Value<int>();
+                    })
+                    .Subscribe(observer);
             });
             return websocket.Publish().RefCount();
         }

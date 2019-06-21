@@ -21,6 +21,7 @@ namespace StackExchangeChat
         public const int MAX_MESSAGE_LENGTH = 500;
 
         private readonly SiteAuthenticator _siteAuthenticator;
+        private readonly ObservableClientWebSocket _clientWebSocket;
         private readonly IServiceProvider _serviceProvider;
         private readonly HttpClientWithHandler _httpClient;
         private readonly ILogger<ChatClient> _logger;
@@ -31,10 +32,12 @@ namespace StackExchangeChat
         private static readonly TimeSpan _delayAfterThrottle = TimeSpan.FromSeconds(15);
 
         public ChatClient(SiteAuthenticator siteAuthenticator,
+            ObservableClientWebSocket clientWebSocket,
             IServiceProvider serviceProvider,
             HttpClientWithHandler httpClient, ILogger<ChatClient> logger)
         {
             _siteAuthenticator = siteAuthenticator;
+            _clientWebSocket = clientWebSocket;
             _serviceProvider = serviceProvider;
             _httpClient = httpClient;
             _logger = logger;
@@ -290,28 +293,27 @@ namespace StackExchangeChat
 
                         var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
 
-                        var webSocket = new PlainWebSocket($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> {{"Origin", $"https://{chatSite.ChatDomain}"}}, _serviceProvider.GetRequiredService<ILogger<PlainWebSocket>>());
-                        webSocket.OnTextMessage += (message) =>
-                        {
-                            var dataObject = JsonConvert.DeserializeObject<JObject>(message);
-                            var eventsObject = dataObject.First.First["e"];
-                            if (eventsObject == null)
-                                return;
+                        var websocketConnection = await _clientWebSocket.Connect($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}" } });
 
-                            var events = eventsObject.ToObject<List<ChatEventDetails>>();
-                            foreach (var @event in events)
+                        websocketConnection
+                            .Messages()
+                            .Select(message =>
                             {
-                                var chatEvent = new ChatEvent
-                                {
-                                    RoomDetails = roomDetails,
-                                    ChatEventDetails = @event,
-                                    ChatClient = this
-                                };
-                                observer.OnNext(chatEvent);
-                            }
-                        };
-
-                        await webSocket.ConnectAsync();
+                                var dataObject = JsonConvert.DeserializeObject<JObject>(message);
+                                return dataObject.First.First["e"];
+                            })
+                            .Where(eventsObject => eventsObject != null)
+                            .SelectMany(eventsObject =>
+                            {
+                                return eventsObject.ToObject<List<ChatEventDetails>>()
+                                    .Select(@event => new ChatEvent
+                                    {
+                                        RoomDetails = roomDetails,
+                                        ChatEventDetails = @event,
+                                        ChatClient = this
+                                    });
+                            })
+                            .Subscribe(observer);
 
                         observer.OnNext(new ChatEvent
                         {
@@ -323,8 +325,6 @@ namespace StackExchangeChat
                             RoomDetails = roomDetails,
                             ChatClient = this
                         });
-
-                        return webSocket;
                     }).Publish().RefCount();
                 }
 

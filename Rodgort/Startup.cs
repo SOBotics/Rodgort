@@ -97,6 +97,7 @@ namespace Rodgort
             services.AddScoped<ChatClient>();
             services.AddScoped<NewBurninationService>();
 
+            services.AddSingleton<ObservableClientWebSocket>();
             services.AddSingleton<IHostedService, BurnakiFollowService>();
             services.AddSingleton<IHostedService, LiveMetaQuestionWatcherService>();
         }
