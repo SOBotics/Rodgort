@@ -96,7 +96,7 @@ namespace Rodgort.Services
                 {
                     return async (ws, cts) =>
                     {
-                        if (!ws.CloseStatus.HasValue)
+                        if (!ws.CloseStatus.HasValue && !cts.IsCancellationRequested)
                         {
                             await SendData(ws, cts, "ping");
                             if (!ws.CloseStatus.HasValue)
