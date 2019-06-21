@@ -27,7 +27,7 @@ namespace Rodgort.Services.HostedServices
 
         public BurnakiFollowService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
-            _serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider.CreateScope().ServiceProvider;
             _logger = logger;
         }
 

@@ -21,15 +21,11 @@ namespace Rodgort.Services.HostedServices
     public class LiveMetaQuestionWatcherService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        private readonly ObservableClientWebSocket _webSocket;
         private readonly ILogger<BurnakiFollowService> _logger;
 
-        public LiveMetaQuestionWatcherService(IServiceProvider serviceProvider,
-            ObservableClientWebSocket webSocket,
-            ILogger<BurnakiFollowService> logger)
+        public LiveMetaQuestionWatcherService(IServiceProvider serviceProvider, ILogger<BurnakiFollowService> logger)
         {
             _serviceProvider = serviceProvider;
-            _webSocket = webSocket;
             _logger = logger;
         }
 
@@ -80,22 +76,24 @@ namespace Rodgort.Services.HostedServices
 
             var websocket = Observable.Create<int>(async observer =>
             {
-                var connection = await _webSocket.Connect(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}});
-                var messages = connection.Messages().Select(data =>
+                using (var scope = _serviceProvider.CreateScope())
                 {
-                    var messageObject = JsonConvert.DeserializeObject<JObject>(data);
-                    return messageObject["data"].Value<string>();
-                });
-
-                messages.Where(dataStr => string.Equals(dataStr, "pong")).Subscribe(async _ => await connection.Send("pong"));
-                messages.Where(dataStr => !string.Equals(dataStr, "pong"))
-                    .Select(dataStr =>
+                    var connection = await scope.ServiceProvider.GetService<ObservableClientWebSocket>().Connect(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}});
+                    var messages = connection.Messages().Select(data =>
                     {
-                        var payload = JsonConvert.DeserializeObject<JObject>(dataStr);
+                        var messageObject = JsonConvert.DeserializeObject<JObject>(data);
+                        return messageObject["data"].Value<string>();
+                    });
 
-                        return payload.First.First.Value<int>();
-                    })
-                    .Subscribe(observer);
+                    messages.Where(dataStr => string.Equals(dataStr, "pong")).Subscribe(async _ => await connection.Send("pong"));
+                    messages.Where(dataStr => !string.Equals(dataStr, "pong")).Select(dataStr =>
+                        {
+                            var payload = JsonConvert.DeserializeObject<JObject>(dataStr);
+
+                            return payload.First.First.Value<int>();
+                        })
+                        .Subscribe(observer);
+                }
             });
             return websocket.Publish().RefCount();
         }

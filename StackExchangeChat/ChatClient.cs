@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -305,15 +306,18 @@ namespace StackExchangeChat
                             .Where(eventsObject => eventsObject != null)
                             .SelectMany(eventsObject =>
                             {
-                                return eventsObject.ToObject<List<ChatEventDetails>>()
+                                var list = eventsObject.ToObject<List<ChatEventDetails>>();
+                                var res = list
                                     .Select(@event => new ChatEvent
                                     {
                                         RoomDetails = roomDetails,
                                         ChatEventDetails = @event,
                                         ChatClient = this
                                     });
+
+                                return res;
                             })
-                            .Subscribe(observer);
+                            .Subscribe(observer.OnNext);
 
                         observer.OnNext(new ChatEvent
                         {
@@ -325,6 +329,8 @@ namespace StackExchangeChat
                             RoomDetails = roomDetails,
                             ChatClient = this
                         });
+
+                        return Disposable.Empty;
                     }).Publish().RefCount();
                 }
 
