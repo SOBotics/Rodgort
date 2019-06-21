@@ -95,6 +95,8 @@ namespace Rodgort.Services.HostedServices
                         return payload.First.First.Value<int>();
                     })
                     .Subscribe(observer);
+
+                return Disposable.Empty;
             });
             return websocket.Publish().RefCount();
         }
