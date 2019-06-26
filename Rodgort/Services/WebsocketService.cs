@@ -91,16 +91,27 @@ namespace Rodgort.Services
 
         private static IObservable<Func<WebSocket, CancellationTokenSource, Task>> CreatePinger()
         {
+            var answered = true;
             var interval = Observable.Interval(TimeSpan.FromMinutes(1))
                 .Select<long, Func<WebSocket, CancellationTokenSource, Task>>(i =>
                 {
                     return async (ws, cts) =>
                     {
+                        if (!answered)
+                        {
+                            cts.Cancel();
+                            return;
+                        }
+
                         if (!ws.CloseStatus.HasValue && !cts.IsCancellationRequested)
                         {
                             await SendData(ws, cts, "ping");
+                            answered = false;
                             if (!ws.CloseStatus.HasValue)
-                                await ws.ReceiveAsync(new ArraySegment<byte>(new byte[16]), cts.Token);
+                            {
+                                await ws.ReceiveAsync(new ArraySegment<byte>(new byte[2048]), cts.Token);
+                                answered = true;
+                            }
                             else
                                 cts.Cancel();
                         }
