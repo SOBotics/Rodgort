@@ -80,6 +80,7 @@ namespace Rodgort
             services.AddTransient<MetaCrawlerService>();
             services.AddTransient<TagCountService>();
             services.AddTransient<BurninationTagGuessingService>();
+            services.AddTransient<ChatClient>();
 
             services.AddTransient(_ => new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
             services.AddTransient(_ => new HttpClientWithHandler(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate }));
@@ -94,10 +95,9 @@ namespace Rodgort
             services.AddSingleton<IStackExchangeApiCredentials>(_ => stackExchangeApiCredentials);
 
             services.AddScoped<SiteAuthenticator>();
-            services.AddScoped<ChatClient>();
             services.AddScoped<NewBurninationService>();
 
-            services.AddSingleton<ObservableClientWebSocket>();
+            services.AddSingleton<ObservableClientWebSocketFactory>();
             services.AddSingleton<IHostedService, BurnakiFollowService>();
             services.AddSingleton<IHostedService, LiveMetaQuestionWatcherService>();
         }

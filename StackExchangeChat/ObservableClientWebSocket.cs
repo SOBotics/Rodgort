@@ -14,38 +14,29 @@ namespace StackExchangeChat
 {
     public class ObservableClientWebSocket
     {
-        private readonly ILogger<ObservableClientWebSocket> _logger;
+        private readonly ILogger<ObservableClientWebSocketFactory> _logger;
 
         private ClientWebSocket _webSocket;
         private CancellationTokenSource _cancellationTokenSource;
 
-        private string _endpoint;
-        private IDictionary<string, string> _headers;
+        private readonly string _endpoint;
+        private readonly IDictionary<string, string> _headers;
 
         private readonly Subject<string> _subject;
         private readonly IObservable<string> _observable;
-        
-        public ObservableClientWebSocket(ILogger<ObservableClientWebSocket> logger)
+
+        public ObservableClientWebSocket(ILogger<ObservableClientWebSocketFactory> logger,
+            string endpoint, IDictionary<string, string> headers)
         {
             _logger = logger;
-
+            _endpoint = endpoint;
+            _headers = headers;
+            
             _subject = new Subject<string>();
             _observable = _subject.AsObservable().Publish().RefCount();
         }
 
-        public async Task Configure(string endpoint, IDictionary<string, string> headers)
-        {
-            _endpoint = endpoint;
-            _headers = headers;
-
-            await Connect();
-
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Task.Run(ProcessReads, _cancellationTokenSource.Token);
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        }
-
-        private async Task Connect()
+        public async Task Connect()
         {
             _webSocket = new ClientWebSocket();
 
@@ -60,6 +51,8 @@ namespace StackExchangeChat
             await _webSocket.ConnectAsync(new Uri(_endpoint), _cancellationTokenSource.Token);
 
             _logger.LogInformation($"Successfully connected to {_endpoint}: {JsonConvert.SerializeObject(_headers)}");
+
+            new Thread(async () => { await ProcessReads(); }).Start();
         }
 
         public IObservable<string> Messages()
@@ -93,18 +86,19 @@ namespace StackExchangeChat
         private async Task ProcessReads()
         {
             const int bufferSize = 8192;
-            try
+
+            while (true)
             {
-                while (true)
+                try
                 {
                     WebSocketReceiveResult msgInfo;
                     var buffers = new List<byte[]>();
                     do
                     {
                         var b = new ArraySegment<byte>(new byte[bufferSize]);
-                        _logger.LogDebug($"Starting receive async on {Thread.CurrentThread.Name}");
+                        _logger.LogDebug($"Starting receive async on {_endpoint}: {JsonConvert.SerializeObject(_headers)}");
                         msgInfo = await _webSocket.ReceiveAsync(b, _cancellationTokenSource.Token);
-                        _logger.LogDebug($"Finished receive async on {Thread.CurrentThread.Name}");
+                        _logger.LogDebug($"Finished receive async on {_endpoint}: {JsonConvert.SerializeObject(_headers)}");
 
                         var bArray = b.Array;
                         if (msgInfo.Count < bufferSize)
@@ -121,19 +115,12 @@ namespace StackExchangeChat
                         _subject.OnNext(text);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed reading message");
-
-                if (_webSocket.State == WebSocketState.CloseReceived || _webSocket.State == WebSocketState.Closed)
+                catch (Exception ex)
                 {
-                    _logger.LogWarning("Creating a new websocket, as previous was closed");
-
+                    _logger.LogError(ex, "Failed reading message");
                     await Connect();
                 }
             }
         }
-
     }
 }

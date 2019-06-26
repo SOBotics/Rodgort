@@ -77,17 +77,18 @@ namespace Rodgort.Services.HostedServices
             var websocket = Observable.Create<int>(async observer =>
             {
                 var scope = _serviceProvider.CreateScope();
-                var websocketClient = scope.ServiceProvider.GetService<ObservableClientWebSocket>();
-                    
-                await websocketClient.Configure(wsEndpoint, new Dictionary<string, string> {{"Origin", homePage}});
-
+                var websocketClient = await scope.ServiceProvider.GetService<ObservableClientWebSocketFactory>().Create(wsEndpoint, new Dictionary<string, string> { { "Origin", homePage } });
+                
                 await websocketClient.Send("552-home-active");
 
-                var messages = websocketClient.Messages().Select(data =>
-                {
-                    var messageObject = JsonConvert.DeserializeObject<JObject>(data);
-                    return messageObject["data"].Value<string>();
-                });
+                var messages = websocketClient.Messages()
+                    .Select(data =>
+                    {
+                        var messageObject = JsonConvert.DeserializeObject<JObject>(data);
+                        return messageObject["data"];
+                    })
+                    .Where(d => d != null)
+                    .Select(data => data.Value<string>());
 
                 messages.Where(dataStr => string.Equals(dataStr, "pong")).Subscribe(async _ => await websocketClient.Send("pong"));
                 messages.Where(dataStr => !string.Equals(dataStr, "pong")).Select(dataStr =>

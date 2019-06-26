@@ -22,7 +22,7 @@ namespace StackExchangeChat
         public const int MAX_MESSAGE_LENGTH = 500;
 
         private readonly SiteAuthenticator _siteAuthenticator;
-        private readonly ObservableClientWebSocket _clientWebSocket;
+        private readonly ObservableClientWebSocketFactory _clientWebSocketFactory;
         private readonly IServiceProvider _serviceProvider;
         private readonly HttpClientWithHandler _httpClient;
         private readonly ILogger<ChatClient> _logger;
@@ -33,12 +33,12 @@ namespace StackExchangeChat
         private static readonly TimeSpan _delayAfterThrottle = TimeSpan.FromSeconds(15);
 
         public ChatClient(SiteAuthenticator siteAuthenticator,
-            ObservableClientWebSocket clientWebSocket,
+            ObservableClientWebSocketFactory clientWebSocketFactory,
             IServiceProvider serviceProvider,
             HttpClientWithHandler httpClient, ILogger<ChatClient> logger)
         {
             _siteAuthenticator = siteAuthenticator;
-            _clientWebSocket = clientWebSocket;
+            _clientWebSocketFactory = clientWebSocketFactory;
             _serviceProvider = serviceProvider;
             _httpClient = httpClient;
             _logger = logger;
@@ -294,9 +294,9 @@ namespace StackExchangeChat
 
                         var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
 
-                        await _clientWebSocket.Configure($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}" } });
+                        var websocket = await _clientWebSocketFactory.Create($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}" } });
 
-                        _clientWebSocket
+                        websocket
                             .Messages()
                             .Select(message =>
                             {
