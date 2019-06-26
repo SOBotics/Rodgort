@@ -294,9 +294,9 @@ namespace StackExchangeChat
 
                         var lastEventTime = JsonConvert.DeserializeObject<JObject>(await eventsRequest.Content.ReadAsStringAsync())["time"].Value<string>();
 
-                        var websocketConnection = await _clientWebSocket.Connect($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}" } });
+                        await _clientWebSocket.Configure($"{wsAuthUrl}?l={lastEventTime}", new Dictionary<string, string> { { "Origin", $"https://{chatSite.ChatDomain}" } });
 
-                        websocketConnection
+                        _clientWebSocket
                             .Messages()
                             .Select(message =>
                             {
