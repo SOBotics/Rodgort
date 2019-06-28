@@ -67,14 +67,12 @@ namespace Rodgort.Services
                                 }
                             }, cancellationTokenSource.Token);
                         }
-                        catch (TaskCanceledException)
-                        {
-                        }
+                        catch (TaskCanceledException) { }
+                        catch (InvalidOperationException ex) when (ex.Message == "Reading is not allowed after reader was completed.") { }
                         catch (Exception ex)
                         {
                             var logger = context.RequestServices.GetService<ILogger>();
-                            logger.LogError("Failed websocket.", ex);
-                            throw;
+                            logger.LogError(ex,"Failed websocket.");
                         }
                     }
                     else
