@@ -70,11 +70,12 @@ namespace Rodgort.Controllers
                         new Claim(ClaimTypes.Name, user.DisplayName),
                         new Claim("accountId", user.Id.ToString())
                     }.Concat(userRoles.Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
-                    
-                    var signingKey = GetSigningKey();
-                    var token = CreateJwtToken(claims, signingKey);
 
-                    Response.Cookies.Append("access_token", token, new CookieOptions { Path = "/Hangfire" });
+                    var expires = DateTime.UtcNow.AddDays(7);
+                    var signingKey = GetSigningKey();
+                    var token = CreateJwtToken(claims, signingKey, expires);
+
+                    Response.Cookies.Append("access_token", token, new CookieOptions { Path = "/Hangfire", Expires = expires });
 
                     var uriBuilder = new UriBuilder(redirectUri);
                     var query = HttpUtility.ParseQueryString(uriBuilder.Query);
@@ -204,14 +205,17 @@ namespace Rodgort.Controllers
             return newToken;
         }
 
-        public static string CreateJwtToken(IEnumerable<Claim> claims, byte[] symmetricKey)
+        public static string CreateJwtToken(IEnumerable<Claim> claims, byte[] symmetricKey, DateTime? expires = null)
         {
+            if (expires == null)
+                expires = DateTime.UtcNow.AddDays(7);
+
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
 
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = expires,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(symmetricKey), SecurityAlgorithms.HmacSha256Signature)
             };
 
