@@ -236,7 +236,7 @@ namespace Rodgort.Services.HostedServices
         
         private static async Task ProcessQuota(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
         {
-            await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {ApiClient.CurrentQuotaRemaining} remaining.");
+            await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {ApiClient.CurrentQuotaRemaining:n0}/10,000 remaining.");
         }
     }
 }
