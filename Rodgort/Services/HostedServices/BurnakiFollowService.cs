@@ -145,7 +145,7 @@ namespace Rodgort.Services.HostedServices
                 "untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags",
                 "lastupdated	- Gets the last updated time",
                 "update  	- Instructs Rodgort to update the statistics of the current burn",
-                "quota  	- API quota remaining",
+                "quota  		- API quota remaining",
             };
 
             var commandList = new Dictionary<string, ProcessCommand>
@@ -236,7 +236,11 @@ namespace Rodgort.Services.HostedServices
         
         private static async Task ProcessQuota(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
         {
-            await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {ApiClient.CurrentQuotaRemaining:n0}/10,000 remaining.");
+            var quotaRemaining = ApiClient.CurrentQuotaRemaining;
+            if (quotaRemaining == int.MaxValue)
+                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} Unknown, Rodgort must have recently rebooted. Try again in a few minutes.");
+            else
+                await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {quotaRemaining:n0}/10,000 remaining.");
         }
     }
 }
