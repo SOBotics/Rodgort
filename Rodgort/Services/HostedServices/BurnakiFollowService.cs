@@ -220,7 +220,7 @@ namespace Rodgort.Services.HostedServices
                 if (!job.LastExecution.HasValue)
                     await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} No last update time found");
                 else
-                    await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} Last updated: {job.LastExecution.Value:yyyy-MM-dd hh:mm:ss}");
+                    await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} Last updated: {job.LastExecution.Value:yyyy-MM-dd hh:mm:ss} ({Math.Round((DateTime.UtcNow - job.LastExecution.Value).TotalHours, 1)} hours ago)");
             }
         }
 
