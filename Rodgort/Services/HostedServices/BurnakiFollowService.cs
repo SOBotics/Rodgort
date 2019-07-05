@@ -14,6 +14,7 @@ using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Utilities;
 using Rodgort.Utilities.ReactiveX;
+using StackExchangeApi;
 using StackExchangeChat;
 using StackExchangeChat.Utilities;
 
@@ -143,7 +144,8 @@ namespace Rodgort.Services.HostedServices
                 "tracking	- List of burninations Rodgort has instructed Gemmy to watch and haven't yet been untracked",
                 "untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags",
                 "lastupdated	- Gets the last updated time",
-                "update  	- Instructs Rodgort to update the statistics of the current burn"
+                "update  	- Instructs Rodgort to update the statistics of the current burn",
+                "quota  	- API quota remaining",
             };
 
             var commandList = new Dictionary<string, ProcessCommand>
@@ -152,6 +154,7 @@ namespace Rodgort.Services.HostedServices
                 { "untrack", ProcessUntrack },
                 { "lastupdated", ProcessLastUpdated },
                 { "update", ProcessUpdate },
+                { "quota", ProcessQuota },
                 { "help", async (_, __, ___, ____, _____) =>
                     {
                         await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, string.Join(Environment.NewLine, helpList.Select(s => "    " + s)));
@@ -229,6 +232,11 @@ namespace Rodgort.Services.HostedServices
             RecurringJob.Trigger(BurnCatchupService.SERVICE_NAME);
 
             await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} triggered");
+        }
+        
+        private static async Task ProcessQuota(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
+        {
+            await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {ApiClient.CurrentQuotaRemaining} remaining.");
         }
     }
 }
