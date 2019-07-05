@@ -5,11 +5,12 @@ using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Hangfire;
+using Hangfire.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rodgort.Data;
-using Rodgort.Data.Constants;
 using Rodgort.Data.Tables;
 using Rodgort.Utilities;
 using Rodgort.Utilities.ReactiveX;
@@ -140,13 +141,17 @@ namespace Rodgort.Services.HostedServices
             var helpList = new[]
             {
                 "tracking	- List of burninations Rodgort has instructed Gemmy to watch and haven't yet been untracked",
-                "untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags"
+                "untrack {tags}	- Instructs Rodgort to stop following the tags (space separated), and to instruct Gemmy to stop watching the tags",
+                "lastupdated	- Gets the last updated time",
+                "update  	- Instructs Rodgort to update the statistics of the current burn"
             };
 
             var commandList = new Dictionary<string, ProcessCommand>
             {
                 { "tracking", ProcessTracking },
                 { "untrack", ProcessUntrack },
+                { "lastupdated", ProcessLastUpdated },
+                { "update", ProcessUpdate },
                 { "help", async (_, __, ___, ____, _____) =>
                     {
                         await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, string.Join(Environment.NewLine, helpList.Select(s => "    " + s)));
@@ -205,6 +210,25 @@ namespace Rodgort.Services.HostedServices
                 var trackingMessage = $"Tag(s) {string.Join(", ", untrackedTags)} successfully untracked";
                 await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} {trackingMessage}");
             }
+        }
+
+        private async Task ProcessLastUpdated(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
+        {
+            using (var connection = JobStorage.Current.GetConnection())
+            {
+                var job = connection.GetRecurringJobs().First(r => r.Id == BurnCatchupService.SERVICE_NAME);
+                if (!job.LastExecution.HasValue)
+                    await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} No last update time found");
+                else
+                    await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} Last updated: {job.LastExecution.Value:yyyy-MM-dd hh:mm:ss}");
+            }
+        }
+
+        private static async Task ProcessUpdate(ChatClient chatClient, ChatEvent chatEvent, DateService dateService, CancellationToken cancellationToken, List<string> args)
+        {
+            RecurringJob.Trigger(BurnCatchupService.SERVICE_NAME);
+
+            await chatClient.SendMessage(ChatSite.StackOverflow, chatEvent.RoomDetails.RoomId, $":{chatEvent.ChatEventDetails.MessageId} triggered");
         }
     }
 }

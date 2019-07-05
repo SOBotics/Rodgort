@@ -154,7 +154,7 @@ namespace Rodgort
 
             RecurringJob.AddOrUpdate<RoleSyncService>(RoleSyncService.SERVICE_NAME, service => service.SyncRolesSync(), "15 0 * * *");
 
-            RecurringJob.AddOrUpdate<BurnCatchupService>(BurnCatchupService.SERVICE_NAME, service => service.CatchupSync(), "20 0 * * *");
+            RecurringJob.AddOrUpdate<BurnCatchupService>(BurnCatchupService.SERVICE_NAME, service => service.CatchupSync(), "20 0/6 * * *");
 
             RecurringJob.AddOrUpdate<InitialTagQueryService>(InitialTagQueryService.SERVICE_NAME, service => service.QuerySync(), "25 0 * * *");
 
