@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using Hangfire;
@@ -8,6 +9,7 @@ using Hangfire.Dashboard;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,17 +33,27 @@ namespace Rodgort
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IHostingEnvironment Environment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddResponseCompression();
+
+            if (Environment.IsProduction())
+            {
+                services
+                    .AddDataProtection()
+                    .SetApplicationName("Rodgort")
+                    .PersistKeysToFileSystem(new DirectoryInfo(@"../Configuration/dpkeys"));
+            }
 
             var connectionString = Configuration.GetConnectionString("RodgortDB");
             GlobalDiagnosticsContext.Set("connectionString", connectionString);
