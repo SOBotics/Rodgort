@@ -209,7 +209,7 @@ namespace Rodgort.Services
 
                 var userActionTagLookup = innerContext.UserActions.Local.Select(mqmt => new {mqmt.PostId, mqmt.Tag})
                     .GroupBy(ua => ua.PostId)
-                    .ToDictionary(g => g.Key, g => g.GroupBy(gg => new { gg.PostId, gg.Tag}).Select(gg => gg.Key).ToList());
+                    .ToDictionary(g => g.Key, g => g.Select(gg => gg.Tag).ToList());
 
                 var currentPostIds = userActionTagLookup.Keys.ToList();
                 var dbSeenQuestionsLookup = innerContext.SeenQuestions.Where(t => currentPostIds.Contains(t.Id))
@@ -217,18 +217,22 @@ namespace Rodgort.Services
                     .GroupBy(t => t.Id)
                     .ToDictionary(g => g.Key, g => g.ToList());
 
-                foreach (var currentPostId in currentPostIds)
+                foreach (var currentPostId in questionIdList)
                 {
                     var dbSeenQuestions =
                         dbSeenQuestionsLookup.ContainsKey(currentPostId)
                             ? dbSeenQuestionsLookup[currentPostId]
                             : new List<DbSeenQuestion>();
 
-                    foreach (var userActionTag in userActionTagLookup[currentPostId])
+                    var tags = userActionTagLookup.ContainsKey(currentPostId)
+                        ? userActionTagLookup[currentPostId]
+                        : new List<string> {followingTag};
+
+                    foreach (var userActionTag in tags)
                     {
-                        var matched = dbSeenQuestions.FirstOrDefault(dsq => dsq.Id == userActionTag.PostId && dsq.Tag == userActionTag.Tag);
+                        var matched = dbSeenQuestions.FirstOrDefault(dsq => dsq.Id == currentPostId && dsq.Tag == userActionTag);
                         if (matched == null)
-                            innerContext.SeenQuestions.Add(new DbSeenQuestion { Id = currentPostId, LastSeen = _dateService.UtcNow, Tag = userActionTag.Tag });
+                            innerContext.SeenQuestions.Add(new DbSeenQuestion { Id = currentPostId, LastSeen = _dateService.UtcNow, Tag = userActionTag });
                         else
                             matched.LastSeen = _dateService.UtcNow;
                     }
