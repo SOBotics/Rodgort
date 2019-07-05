@@ -13,7 +13,7 @@ build:
     - dotnet publish Rodgort -c Release
   artifacts:
     paths:
-      - Rodgort/bin/Release/netcoreapp2.1/publish
+      - Rodgort/bin/Release/netcoreapp2.2/publish
 
 deploy production:
   environment: production
@@ -35,7 +35,7 @@ deploy production:
     - ls -la
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - "ssh deploy@$PRODUCTION_IP 'mkdir -p /var/www/Rodgort/Server'"
-    - rsync -az --force --delete --progress -e "ssh -p22" Rodgort/bin/Release/netcoreapp2.1/publish/* deploy@$PRODUCTION_IP:/var/www/Rodgort/Server
+    - rsync -az --force --delete --progress -e "ssh -p22" Rodgort/bin/Release/netcoreapp2.2/publish/* deploy@$PRODUCTION_IP:/var/www/Rodgort/Server
     - "ssh deploy@$PRODUCTION_IP 'cp /var/www/Rodgort/Configuration/appsettings.Production.json /var/www/Rodgort/Server/.'"
     - "ssh deploy@$PRODUCTION_IP 'cp /var/www/Rodgort/Configuration/nlog.config /var/www/Rodgort/Server/.'"
     - "ssh deploy@$PRODUCTION_IP 'sudo systemctl restart rodgort.service'"
