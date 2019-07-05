@@ -211,8 +211,7 @@ namespace Rodgort.Services
                     .GroupBy(ua => ua.PostId)
                     .ToDictionary(g => g.Key, g => g.Select(gg => gg.Tag).ToList());
 
-                var currentPostIds = userActionTagLookup.Keys.ToList();
-                var dbSeenQuestionsLookup = innerContext.SeenQuestions.Where(t => currentPostIds.Contains(t.Id))
+                var dbSeenQuestionsLookup = innerContext.SeenQuestions.Where(t => questionIdList.Contains(t.Id))
                     .ToList()
                     .GroupBy(t => t.Id)
                     .ToDictionary(g => g.Key, g => g.ToList());
