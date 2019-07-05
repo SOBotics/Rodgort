@@ -156,7 +156,8 @@ namespace Rodgort.Controllers
                 _dbContext.SaveChanges();
             }
 
-            var token = CreateJwtTokenForUser(userId);
+            var expires = DateTime.UtcNow.AddDays(7);
+            var token = CreateJwtTokenForUser(userId, expires);
 
             var decodedState = DecodeBase64(state);
             var loginState = JsonConvert.DeserializeObject<LoginState>(decodedState);
@@ -167,7 +168,7 @@ namespace Rodgort.Controllers
             uriBuilder.Query = query.ToString();
             var redirectUrl = uriBuilder.ToString();
 
-            Response.Cookies.Append("access_token", token, new CookieOptions { Path = "/Hangfire" });
+            Response.Cookies.Append("access_token", token, new CookieOptions { Path = "/Hangfire", Expires = expires });
 
             return Redirect(redirectUrl);
         }
@@ -187,7 +188,7 @@ namespace Rodgort.Controllers
             return CreateJwtTokenForUser(User.UserId());
         }
 
-        private string CreateJwtTokenForUser(int userId)
+        private string CreateJwtTokenForUser(int userId, DateTime? expires = null)
         {
             var signingKey = GetSigningKey();
 
@@ -201,7 +202,7 @@ namespace Rodgort.Controllers
                 new Claim("accountId", user.Id.ToString())
             }.Concat(user.Roles.Where(r => r.Enabled).Select(r => new Claim(ClaimTypes.Role, r.RoleId.ToString())));
 
-            var newToken = CreateJwtToken(claims, signingKey);
+            var newToken = CreateJwtToken(claims, signingKey, expires);
             return newToken;
         }
 
