@@ -209,7 +209,7 @@ namespace Rodgort.Services
 
                 var userActionTagLookup = innerContext.UserActions.Local.Select(mqmt => new {mqmt.PostId, mqmt.Tag})
                     .GroupBy(ua => ua.PostId)
-                    .ToDictionary(g => g.Key, g => g.Select(gg => gg.Tag).ToList());
+                    .ToDictionary(g => g.Key, g => g.Select(gg => gg.Tag).Distinct().ToList());
 
                 var dbSeenQuestionsLookup = innerContext.SeenQuestions.Where(t => questionIdList.Contains(t.Id))
                     .ToList()
