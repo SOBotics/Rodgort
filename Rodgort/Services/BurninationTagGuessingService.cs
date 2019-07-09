@@ -148,6 +148,8 @@ namespace Rodgort.Services
             if (questionTag.TrackingStatusId == newStatus)
                 return;
 
+            questionTag.TrackingStatusId = newStatus;
+
             // Don't track changes to questions which are set to 'requires approval' by default
             if (questionTag.TrackingStatusId == 0 && newStatus == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
                 return;
@@ -161,7 +163,6 @@ namespace Rodgort.Services
                 NewTrackingStatusId = newStatus,
                 TimeChanged = _dateService.UtcNow
             });
-            questionTag.TrackingStatusId = newStatus;
         }
     }
 }
