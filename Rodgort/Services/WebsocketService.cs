@@ -62,6 +62,7 @@ namespace Rodgort.Services
                                 {
                                     cancellationTokenSource.Cancel();
                                 }
+                                catch (TaskCanceledException) { }
                                 catch (OperationCanceledException) { }
                                 catch (InvalidOperationException ex) when (ex.Message == "Reading is not allowed after reader was completed.")
                                 {
@@ -74,7 +75,6 @@ namespace Rodgort.Services
                                 }
                             }, cancellationTokenSource.Token);
                         }
-                        catch (TaskCanceledException) { }
                         catch (Exception ex)
                         {
                             logger.LogError(ex,"Failed websocket.");
