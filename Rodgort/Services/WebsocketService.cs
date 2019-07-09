@@ -75,6 +75,8 @@ namespace Rodgort.Services
                                 }
                             }, cancellationTokenSource.Token);
                         }
+                        catch (TaskCanceledException) { }
+                        catch (OperationCanceledException) { }
                         catch (Exception ex)
                         {
                             logger.LogError(ex,"Failed websocket.");
