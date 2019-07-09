@@ -34,6 +34,8 @@ namespace Rodgort.Services
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
+                        var scope = context.RequestServices.CreateScope();
+                        var logger = scope.ServiceProvider.GetService<ILogger<object>>();
                         try
                         {
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -67,7 +69,6 @@ namespace Rodgort.Services
                                 catch (Exception ex)
                                 {
                                     cancellationTokenSource.Cancel();
-                                    var logger = context.RequestServices.GetService<ILogger<object>>();
                                     logger.LogError(ex, "Failed websocket.");
                                 }
                             }, cancellationTokenSource.Token);
@@ -75,7 +76,6 @@ namespace Rodgort.Services
                         catch (TaskCanceledException) { }
                         catch (Exception ex)
                         {
-                            var logger = context.RequestServices.GetService<ILogger<object>>();
                             logger.LogError(ex,"Failed websocket.");
                         }
                     }
