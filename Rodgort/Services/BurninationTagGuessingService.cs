@@ -148,6 +148,10 @@ namespace Rodgort.Services
             if (questionTag.TrackingStatusId == newStatus)
                 return;
 
+            // Don't track changes to questions which are set to 'requires approval' by default
+            if (questionTag.TrackingStatusId == 0 && newStatus == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
+                return;
+
             _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
             {
                 ChangedByUserId = -1,
