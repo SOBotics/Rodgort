@@ -62,6 +62,7 @@ namespace Rodgort.Services
                                 {
                                     cancellationTokenSource.Cancel();
                                 }
+                                catch (OperationCanceledException) { }
                                 catch (InvalidOperationException ex) when (ex.Message == "Reading is not allowed after reader was completed.")
                                 {
                                     cancellationTokenSource.Cancel();
