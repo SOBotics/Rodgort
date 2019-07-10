@@ -38,21 +38,31 @@ namespace StackExchangeChat
 
         public async Task Connect()
         {
-            _webSocket = new ClientWebSocket();
+            try
+            {
+                _webSocket = new ClientWebSocket();
 
-            if (_headers != null)
-                foreach (var kv in _headers)
-                    _webSocket.Options.SetRequestHeader(kv.Key, kv.Value);
+                if (_headers != null)
+                    foreach (var kv in _headers)
+                        _webSocket.Options.SetRequestHeader(kv.Key, kv.Value);
 
-            _cancellationTokenSource = new CancellationTokenSource();
+                _cancellationTokenSource = new CancellationTokenSource();
 
-            _logger.LogInformation($"Connecting to {_endpoint}: {JsonConvert.SerializeObject(_headers)}");
+                _logger.LogInformation($"Connecting to {_endpoint}: {JsonConvert.SerializeObject(_headers)}");
 
-            await _webSocket.ConnectAsync(new Uri(_endpoint), _cancellationTokenSource.Token);
+                await _webSocket.ConnectAsync(new Uri(_endpoint), _cancellationTokenSource.Token);
 
-            _logger.LogInformation($"Successfully connected to {_endpoint}: {JsonConvert.SerializeObject(_headers)}");
+                _logger.LogInformation(
+                    $"Successfully connected to {_endpoint}: {JsonConvert.SerializeObject(_headers)}");
 
-            new Thread(async () => { await ProcessReads(); }).Start();
+                new Thread(async () => { await ProcessReads(); }).Start();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to connect");
+                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Connect();
+            }
         }
 
         public IObservable<string> Messages()
