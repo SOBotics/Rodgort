@@ -145,13 +145,15 @@ namespace Rodgort.Services
 
         private void ChangeTrackingStatusId(DbMetaQuestionTag questionTag, int newStatus)
         {
-            if (questionTag.TrackingStatusId == newStatus)
-                return;
+            var previousStatusId = questionTag.TrackingStatusId;
 
+            if (previousStatusId == newStatus)
+                return;
+            
             questionTag.TrackingStatusId = newStatus;
 
             // Don't track changes to questions which are set to 'requires approval' by default
-            if (questionTag.TrackingStatusId == 0 && newStatus == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
+            if (previousStatusId == 0 && newStatus == DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
                 return;
 
             _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
@@ -159,7 +161,7 @@ namespace Rodgort.Services
                 ChangedByUserId = -1,
                 Tag = questionTag.TagName,
                 MetaQuestionId = questionTag.MetaQuestionId,
-                PreviousTrackingStatusId = questionTag.TrackingStatusId == 0 ? null : (int?)questionTag.TrackingStatusId,
+                PreviousTrackingStatusId = previousStatusId == 0 ? null : (int?)previousStatusId,
                 NewTrackingStatusId = newStatus,
                 TimeChanged = _dateService.UtcNow
             });

@@ -170,8 +170,10 @@ from
                         })
                         .OrderByDescending(mq => mq.StartDate)
                         .ToList(),
-                    TriageTags = u.TagTrackingStatusAudits.Count,
-                    TriageQuestions = u.TagTrackingStatusAudits.Select(audit => audit.MetaQuestionId).Distinct().Count(),
+                    TriageTags = u.TagTrackingStatusAudits.Count(a => a.NewTrackingStatusId != DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL),
+                    TriageQuestions = u.TagTrackingStatusAudits
+                        .Where(a => a.NewTrackingStatusId != DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
+                        .Select(audit => audit.MetaQuestionId).Distinct().Count(),
                     Roles = u.Roles.Where(r => r.Enabled).Select(r => new
                     {
                         r.RoleId,

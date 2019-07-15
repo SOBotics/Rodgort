@@ -209,7 +209,7 @@ namespace Rodgort.Controllers
             if (matchingQuestionMetaTag != null)
             {
                 var alreadyExistingTag = matchingQuestionMetaTag.MetaQuestionTags.FirstOrDefault(mqt => mqt.TagName == request.TagName);
-                if (alreadyExistingTag != null)
+                if (alreadyExistingTag != null && alreadyExistingTag.TrackingStatusId != DbMetaQuestionTagTrackingStatus.TRACKED)
                 {
                     _context.MetaQuestionTagTrackingStatusAudits.Add(new DbMetaQuestionTagTrackingStatusAudit
                     {
