@@ -37,7 +37,7 @@ namespace Rodgort.Controllers
             const int pageSize = 50;
 
             var result = _context.Database.GetDbConnection()
-                .Query<ActionsResult>(@"
+                .Query(@"
 select 
 ua.post_id as PostId,
 string_agg(ua.tag, ', ') as Tags,
@@ -97,15 +97,7 @@ from
                 Data = result
             };
         }
-
-        private class ActionsResult
-        {
-            public int PostId { get; set; }
-            public string Tags { get; set; }
-            public string Type { get; set; }
-            public DateTime Time { get; set; }
-        }
-
+        
         [HttpGet("all")]
         public object GetAll(string userName, string sortBy, int pageNumber, int pageSize)
         { 
@@ -182,7 +174,7 @@ from
                         {
                             UserId = r.AddedByUserId,
                             UserName = r.AddedByUser.DisplayName,
-                            IsModerator = r.AddedByUser.IsModerator
+                            r.AddedByUser.IsModerator
                         },
                         AddedByIsModerator = r.AddedByUser.IsModerator,
                         r.DateAdded
