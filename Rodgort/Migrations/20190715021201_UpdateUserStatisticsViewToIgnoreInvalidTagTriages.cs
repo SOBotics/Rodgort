@@ -7,7 +7,7 @@ namespace Rodgort.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-ALTER VIEW user_statistics as (
+CREATE OR REPLACE VIEW user_statistics as (
     select 
 	    inner_query.*,
 	    count(distinct meta_question_tag_tracking_status_audits.id) as triaged_tags,
@@ -42,7 +42,7 @@ ALTER VIEW user_statistics as (
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.Sql(@"
-ALTER VIEW user_statistics as (
+CREATE OR REPLACE VIEW user_statistics as (
     select 
 	    inner_query.*,
 	    count(distinct meta_question_tag_tracking_status_audits.id) as triaged_tags,
