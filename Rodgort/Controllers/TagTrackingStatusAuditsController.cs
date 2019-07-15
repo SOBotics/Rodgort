@@ -36,6 +36,7 @@ namespace Rodgort.Controllers
                 query = query.Where(q => q.Tag == tag);
 
             return query
+                .Where(audit => audit.NewTrackingStatusId != DbMetaQuestionTagTrackingStatus.REQUIRES_TRACKING_APPROVAL)
                 .Select(audit => new
                 {
                     audit.TimeChanged,
