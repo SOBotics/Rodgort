@@ -97,9 +97,9 @@ namespace StackExchangeChat
         {
             const int bufferSize = 8192;
 
-            while (true)
+            try
             {
-                try
+                while (true)
                 {
                     WebSocketReceiveResult msgInfo;
                     var buffers = new List<byte[]>();
@@ -125,11 +125,12 @@ namespace StackExchangeChat
                         _subject.OnNext(text);
                     }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed reading message");
-                    await Connect();
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed reading message");
+                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Connect();
             }
         }
     }
