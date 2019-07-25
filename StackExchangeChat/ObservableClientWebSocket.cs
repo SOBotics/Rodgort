@@ -14,6 +14,8 @@ namespace StackExchangeChat
 {
     public class ObservableClientWebSocket
     {
+        private static TimeSpan _reconnectDuration = TimeSpan.FromMinutes(5);
+
         private readonly ILogger<ObservableClientWebSocketFactory> _logger;
 
         private ClientWebSocket _webSocket;
@@ -60,7 +62,7 @@ namespace StackExchangeChat
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to connect");
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Task.Delay(_reconnectDuration);
                 await Connect();
             }
         }
@@ -129,7 +131,7 @@ namespace StackExchangeChat
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed reading message");
-                await Task.Delay(TimeSpan.FromSeconds(30));
+                await Task.Delay(_reconnectDuration);
                 await Connect();
             }
         }
