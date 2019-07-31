@@ -103,7 +103,7 @@ namespace Rodgort.Services
         private void AddRole(int userId, int roleId)
         {
             var existingUserRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == roleId && sur.UserId == userId);
-            if (existingUserRole == null || !existingUserRole.Enabled)
+            if (existingUserRole != null)
                 return;
 
             var existingRole = _context.Roles.FirstOrDefault(r => r.Id == roleId);
