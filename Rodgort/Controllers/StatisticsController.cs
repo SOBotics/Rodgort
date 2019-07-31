@@ -119,34 +119,42 @@ namespace Rodgort.Controllers
                 .Database.GetDbConnection()
                 .Query(@"
 select 
-	meta_questions.id,
-	meta_questions.title,
+	innerQuery.id,
+	innerQuery.title,
 	string_agg(distinct innerQuery.tag_name, ',') as tags,
-	meta_questions.burn_started as ""burnStarted"",
-	meta_questions.burn_ended as ""burnEnded"",
-	count(*) as ""numActions""
+	innerQuery.burn_started as ""burnStarted"",
+	innerQuery.burn_ended as ""burnEnded"",
+	sum(innerQuery.action_count) as ""numActions""
 from (
-	select 
+	select
+		meta_questions.id,
+		meta_questions.title,
+		meta_questions.burn_started,
+		meta_questions.burn_ended,
 		user_actions.site_user_id,
-		meta_question_tags.tag_name, 
-		meta_question_tags.meta_question_id,
-		count(*)
-	from meta_question_tags
-	inner join user_actions on user_actions.tag = meta_question_tags.tag_name
+		meta_question_tags.tag_name,
+		count(distinct user_actions.post_id) as action_count
+	from meta_questions
+	inner join meta_question_tags on meta_question_tags.meta_question_id = meta_questions.id
+	left join user_actions 
+		on user_actions.tag = meta_question_tags.tag_name 
+		and time > meta_questions.burn_started 
+		and (time < meta_questions.burn_ended or meta_questions.burn_ended is null)
 	where meta_question_tags.tracking_status_id = 2
-	group by 
+	and meta_questions.burn_started is not null
+	group by meta_questions.id,
+		meta_questions.title,
+		meta_questions.burn_started,
+		meta_questions.burn_ended,
 		user_actions.site_user_id,
-		meta_question_tags.tag_name, 
-		meta_question_tags.meta_question_id
+		meta_question_tags.tag_name
 ) innerQuery
-inner join meta_questions on meta_questions.id = innerQuery.meta_question_id
-where meta_questions.burn_started is not null
 group by 
-	meta_questions.id,
-	meta_questions.title,
-	meta_questions.burn_started,
-	meta_questions.burn_ended
-order by meta_questions.burn_started desc
+	innerQuery.id,
+	innerQuery.title,
+	innerQuery.burn_started,
+	innerQuery.burn_ended
+order by innerQuery.burn_started desc
 ")
                 .ToList();
         }
