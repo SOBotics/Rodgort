@@ -24,7 +24,7 @@ export class TrackedBurnsComponent implements OnInit {
         let durationStr: string | undefined;
         let duration = moment.duration((momBurnEnded || moment.utc()).diff(momBurnStarted));
         const totalDays = duration.asDays();
-        const actionsPerDay = burn.numActions / totalDays;
+        const actionsPerDay = Math.round(burn.numActions / totalDays);
 
         const days = Math.floor(duration.asDays());
         duration = duration.subtract(days, 'days');
