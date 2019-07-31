@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Hangfire;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using RestSharp;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
@@ -15,6 +16,7 @@ namespace Rodgort.Services
         private readonly RodgortContext _context;
         private readonly DateService _dateService;
         private readonly ApiClient _apiClient;
+        private readonly ILogger<RoleSyncService> _logger;
         public const string SERVICE_NAME = "Sync roles from main site";
         private const string STACKOVERFLOW_CHAT_URL = "https://chat.stackoverflow.com";
         private const string TROGDOR_ROOM_INFO_PAGE_PATH = "rooms/info/165597/trogdor";
@@ -22,11 +24,13 @@ namespace Rodgort.Services
         public RoleSyncService(
             RodgortContext context, 
             DateService dateService,
-            ApiClient apiClient)
+            ApiClient apiClient,
+            ILogger<RoleSyncService> logger)
         {
             _context = context;
             _dateService = dateService;
             _apiClient = apiClient;
+            _logger = logger;
         }
 
         public void SyncRolesSync()
@@ -98,27 +102,36 @@ namespace Rodgort.Services
 
         private void AddRole(int userId, int roleId)
         {
-            var roleAlreadyExists = _context.SiteUserRoles.Any(sur => sur.UserId == userId && sur.RoleId == roleId);
-            if (!roleAlreadyExists)
-            {
-                _context.SiteUserRoles.Add(new DbSiteUserRole
-                {
-                    UserId = userId,
-                    RoleId = roleId,
-                    AddedByUserId = -1,
-                    Enabled = true,
-                    DateAdded = _dateService.UtcNow
-                });
+            var existingUserRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == roleId && sur.UserId == userId);
+            if (existingUserRole == null || !existingUserRole.Enabled)
+                return;
 
-                _context.SiteUserRoleAudits.Add(new DbSiteUserRoleAudit
-                {
-                    Added = true,
-                    ChangedByUserId = -1,
-                    DateChanged = _dateService.UtcNow,
-                    RoleId = roleId,
-                    UserId = userId
-                });
-            }
+            var existingRole = _context.Roles.FirstOrDefault(r => r.Id == roleId);
+            if (existingRole == null)
+                return;
+
+            var existingUser = _context.SiteUsers.FirstOrDefault(u => u.Id == userId);
+            if (existingUser == null)
+                return;
+
+            _logger.LogWarning($"{existingUser.DisplayName} ({existingUser.Id}) was automatically granted role '{existingRole.Name}'");
+            _context.SiteUserRoles.Add(new DbSiteUserRole
+            {
+                UserId = userId,
+                RoleId = roleId,
+                AddedByUserId = -1,
+                Enabled = true,
+                DateAdded = _dateService.UtcNow
+            });
+
+            _context.SiteUserRoleAudits.Add(new DbSiteUserRoleAudit
+            {
+                Added = true,
+                ChangedByUserId = -1,
+                DateChanged = _dateService.UtcNow,
+                RoleId = roleId,
+                UserId = userId
+            });
         }
     }
 }

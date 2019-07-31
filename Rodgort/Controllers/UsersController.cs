@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using NLog;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Data.Views;
@@ -20,11 +23,13 @@ namespace Rodgort.Controllers
     {
         private readonly RodgortContext _context;
         private readonly DateService _dateService;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(RodgortContext context, DateService dateService)
+        public UsersController(RodgortContext context, DateService dateService, ILogger<UsersController> logger)
         {
             _context = context;
             _dateService = dateService;
+            _logger = logger;
         }
 
         [HttpGet("actions")]
@@ -206,20 +211,21 @@ from
             if (!User.HasRole(DbRole.ADMIN))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
-            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);
-            if (existingRole != null && existingRole.Enabled)
+            var existingUserRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);
+            if (existingUserRole != null && existingUserRole.Enabled)
                 return;
 
-            var roleExists = _context.Roles.FirstOrDefault(r => r.Id == request.RoleId);
-            if (roleExists == null)
-                throw new HttpStatusException(HttpStatusCode.BadRequest);
-
-            var userExists = _context.SiteUsers.FirstOrDefault(u => u.Id == request.UserId);
-            if (userExists == null)
-                throw new HttpStatusException(HttpStatusCode.BadRequest);
-
+            var existingRole = _context.Roles.FirstOrDefault(r => r.Id == request.RoleId);
             if (existingRole == null)
+                throw new HttpStatusException(HttpStatusCode.BadRequest);
+
+            var existingUser = _context.SiteUsers.FirstOrDefault(u => u.Id == request.UserId);
+            if (existingUser == null)
+                throw new HttpStatusException(HttpStatusCode.BadRequest);
+
+            if (existingUserRole == null)
             {
+                _logger.LogWarning($"{User.FindFirst(ClaimTypes.Name).Value} ({User.UserId()}) granted role '{existingRole.Name}' to {existingUser.DisplayName} ({existingUser.Id})");
                 _context.SiteUserRoles.Add(new DbSiteUserRole
                 {
                     AddedByUserId = User.UserId(),
@@ -231,9 +237,10 @@ from
             }
             else
             {
-                existingRole.Enabled = true;
-                existingRole.AddedByUserId = User.UserId();
-                existingRole.DateAdded = _dateService.UtcNow;
+                _logger.LogWarning($"{User.FindFirst(ClaimTypes.Name).Value} ({User.UserId()}) re-activated role '{existingRole.Name}' for {existingUser.DisplayName} ({existingUser.Id})");
+                existingUserRole.Enabled = true;
+                existingUserRole.AddedByUserId = User.UserId();
+                existingUserRole.DateAdded = _dateService.UtcNow;
             }
 
             _context.SiteUserRoleAudits.Add(new DbSiteUserRoleAudit
@@ -255,20 +262,21 @@ from
             if (!User.HasRole(DbRole.ADMIN))
                 throw new HttpStatusException(HttpStatusCode.Forbidden);
 
-            var existingRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);
-            if (existingRole == null || !existingRole.Enabled)
+            var existingUserRole = _context.SiteUserRoles.FirstOrDefault(sur => sur.RoleId == request.RoleId && sur.UserId == request.UserId);
+            if (existingUserRole == null || !existingUserRole.Enabled)
                 return;
 
-            var roleExists = _context.Roles.FirstOrDefault(r => r.Id == request.RoleId);
-            if (roleExists == null)
+            var existingRole = _context.Roles.FirstOrDefault(r => r.Id == request.RoleId);
+            if (existingRole == null)
                 throw new HttpStatusException(HttpStatusCode.BadRequest);
 
-            var userExists = _context.SiteUsers.FirstOrDefault(u => u.Id == request.UserId);
-            if (userExists == null)
+            var existingUser = _context.SiteUsers.FirstOrDefault(u => u.Id == request.UserId);
+            if (existingUser == null)
                 throw new HttpStatusException(HttpStatusCode.BadRequest);
 
-            existingRole.Enabled = false;
-
+            _logger.LogWarning($"{User.FindFirst(ClaimTypes.Name).Value} ({User.UserId()}) disabled role '{existingRole.Name}' for {existingUser.DisplayName} ({existingUser.Id})");
+            existingUserRole.Enabled = false;
+            
             _context.SiteUserRoleAudits.Add(new DbSiteUserRoleAudit
             {
                 Added = false,
