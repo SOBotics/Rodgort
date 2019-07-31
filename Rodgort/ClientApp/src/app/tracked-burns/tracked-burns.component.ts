@@ -23,6 +23,9 @@ export class TrackedBurnsComponent implements OnInit {
 
         let durationStr: string | undefined;
         let duration = moment.duration((momBurnEnded || moment.utc()).diff(momBurnStarted));
+        const totalDays = duration.asDays();
+        const actionsPerDay = burn.numActions / totalDays;
+
         const days = Math.floor(duration.asDays());
         duration = duration.subtract(days, 'days');
         const hours = duration.hours();
@@ -36,8 +39,10 @@ export class TrackedBurnsComponent implements OnInit {
           ...burn,
           burnStartedLocal: momBurnStarted.local().format('YYYY-MM-DD hh:mm:ss A'),
           burnEndedLocal: momBurnEnded ? momBurnEnded.local().format('YYYY-MM-DD hh:mm:ss A') : undefined,
-          duration: durationStr
+          duration: durationStr,
+          actionsPerDay
         };
+        result.tags = result.tags.split(',');
         return result;
       });
       console.log(this.burns);

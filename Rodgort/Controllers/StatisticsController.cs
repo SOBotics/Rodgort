@@ -115,21 +115,44 @@ namespace Rodgort.Controllers
         [HttpGet("TrackedBurns")]
         public object TrackedBurns()
         {
-            return _context.MetaQuestions.Where(mq => mq.BurnStarted.HasValue)
-                .Select(mq => new
-                {
-                    mq.Id,
-                    mq.Title,
-                    Tags = mq.MetaQuestionTags.Where(mqt => mqt.TrackingStatusId == DbMetaQuestionTagTrackingStatus.TRACKED).Select(mqt => mqt.TagName),
-                    mq.BurnStarted,
-                    mq.BurnEnded
-                })
-                .OrderByDescending(mq => mq.BurnStarted)
+            return _context
+                .Database.GetDbConnection()
+                .Query(@"
+select 
+	meta_questions.id,
+	meta_questions.title,
+	string_agg(distinct innerQuery.tag_name, ',') as tags,
+	meta_questions.burn_started as ""burnStarted"",
+	meta_questions.burn_ended as ""burnEnded"",
+	count(*) as ""numActions""
+from (
+	select 
+		user_actions.site_user_id,
+		meta_question_tags.tag_name, 
+		meta_question_tags.meta_question_id,
+		count(*)
+	from meta_question_tags
+	inner join user_actions on user_actions.tag = meta_question_tags.tag_name
+	where meta_question_tags.tracking_status_id = 2
+	group by 
+		user_actions.site_user_id,
+		meta_question_tags.tag_name, 
+		meta_question_tags.meta_question_id
+) innerQuery
+inner join meta_questions on meta_questions.id = innerQuery.meta_question_id
+where meta_questions.burn_started is not null
+group by 
+	meta_questions.id,
+	meta_questions.title,
+	meta_questions.burn_started,
+	meta_questions.burn_ended
+order by meta_questions.burn_started desc
+")
                 .ToList();
         }
 
 
-        [HttpGet("Leaderboard/All")]
+        [HttpGet("Leaderboard /All")]
         public object AllLeaderboards()
         {
             return GenerateBurnsData(_context.MetaQuestions.Where(mq => mq.BurnStarted.HasValue));

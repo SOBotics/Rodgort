@@ -15,6 +15,8 @@
           <th>Burn started</th>
           <th>Burn ended</th>
           <th>Duration</th>
+          <th>Total actions</th>
+          <th title="Actions per day">APD</th>
         </tr>
       </thead>
       <tbody>
@@ -32,6 +34,12 @@
           </td>
           <td>
             {{burn.duration}}
+          </td>
+          <td>
+            {{burn.numActions}}
+          </td>
+          <td>
+            {{burn.actionsPerDay | number}}
           </td>
         </tr>
       </tbody>
