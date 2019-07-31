@@ -22,18 +22,16 @@ export class TrackedBurnsComponent implements OnInit {
         const momBurnEnded = burn.burnEnded ? moment.utc(burn.burnEnded) : undefined;
 
         let durationStr: string | undefined;
-        if (momBurnEnded) {
-          let duration = moment.duration(momBurnEnded.diff(momBurnStarted));
-          const days = Math.floor(duration.asDays());
-          duration = duration.subtract(days, 'days');
-          const hours = duration.hours();
-          duration = duration.subtract(hours, 'hours');
-          const minutes = duration.minutes();
-          durationStr = days > 0
-            ? `${days} day${days > 1 ? 's' : ''}, ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`
-            : hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`
-              : `${minutes} minute${minutes > 1 ? 's' : ''}`;
-        }
+        let duration = moment.duration((momBurnEnded || moment.utc()).diff(momBurnStarted));
+        const days = Math.floor(duration.asDays());
+        duration = duration.subtract(days, 'days');
+        const hours = duration.hours();
+        duration = duration.subtract(hours, 'hours');
+        const minutes = duration.minutes();
+        durationStr = days > 0
+          ? `${days} day${days > 1 ? 's' : ''}, ${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`
+          : hours > 0 ? `${hours} hour${hours > 1 ? 's' : ''} and ${minutes} minute${minutes > 1 ? 's' : ''}`
+            : `${minutes} minute${minutes > 1 ? 's' : ''}`;
         const result = {
           ...burn,
           burnStartedLocal: momBurnStarted.local().format('YYYY-MM-DD hh:mm:ss A'),
