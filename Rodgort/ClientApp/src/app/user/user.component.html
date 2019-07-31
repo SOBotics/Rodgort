@@ -62,7 +62,7 @@
             <app-render-username [user]="role.addedBy"></app-render-username>
           </td>
           <td title="{{role.dateAdded}}">{{role.dateAddedLocal}}</td>
-          <td *ngIf="isAdmin"><a href="javascript:void(0);" (click)="removeRole(role.name)">Remove</a></td>
+          <td *ngIf="isAdmin"><a href="javascript:void(0);" (click)="removeRole(role.roleId)">Remove</a></td>
         </tr>
       </tbody>
     </table>
