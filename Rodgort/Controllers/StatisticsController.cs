@@ -160,7 +160,7 @@ order by innerQuery.burn_started desc
         }
 
 
-        [HttpGet("Leaderboard /All")]
+        [HttpGet("Leaderboard/All")]
         public object AllLeaderboards()
         {
             return GenerateBurnsData(_context.MetaQuestions.Where(mq => mq.BurnStarted.HasValue));
