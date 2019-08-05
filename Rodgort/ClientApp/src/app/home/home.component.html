@@ -22,7 +22,7 @@
             <li><a routerLink="/requests" [queryParams]="{status:'status-declined'}">{{statistics.requests.declined | number}}
                     were declined</a></li>
             <li><a routerLink="/requests" [queryParams]="{status:'status-completed'}">{{statistics.requests.completed | number}}
-                    were completed</a> (<a href="/tracked-burns">{{statistics.requests.trackedCompleted | number}} tracked</a>)</li>
+                    were completed</a> (<a routerLink="/tracked-burns">{{statistics.requests.trackedCompleted | number}} tracked</a>)</li>
             <li><a routerLink="/requests"
                     [queryParams]="{status:'status-completed', hasQuestions: 'yes'}">{{statistics.requests.completedWithQuestionsLeft | number}}
                     are completed but still have tracked tags with questions</a></li>
@@ -57,8 +57,8 @@
             <li><a routerLink="/logs" [queryParams]="{level:'Info'}">Logs</a></li>
             <li><a routerLink="/tag-tracking-status-audits">Tag Tracking Status Audits</a></li>
             <li><a href="/Hangfire">Hangfire</a></li>
-            <li><a href="/manual-question-processing">Manual Question Processing</a></li>
-            <li><a href="/unknown-deletion-resolution">Unknown deletion resolution
+            <li><a routerLink="/manual-question-processing">Manual Question Processing</a></li>
+            <li><a routerLink="/unknown-deletion-resolution">Unknown deletion resolution
                     ({{statistics.admin.unknownDeletions | number}})</a></li>
             <li><a href="javascript:void(0)" (click)="shutdown()">Shutdown</a></li>
         </ul>
