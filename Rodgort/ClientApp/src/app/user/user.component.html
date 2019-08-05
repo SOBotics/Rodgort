@@ -24,12 +24,12 @@
           <td title="{{burn.startDate}}">{{burn.startDateLocal}}</td>
           <td><a routerLink="/progress"
               [queryParams]="{metaQuestionId: burn.metaQuestionId}">{{burn.metaQuestionTitle}}</a></td>
-          <td>{{burn.numActions | number}} actions</td>
+          <td>{{burn.numActions | number}} action{{burn.numActions === 1 ? '' : 's'}}</td>
         </tr>
         <tr>
           <td></td>
           <td></td>
-          <td *ngIf="!isTrusted"><b>{{userData.totalActions | number}} total actions</b></td>
+          <td *ngIf="!isTrusted"><b>{{userData.totalActions | number}} total action{{userData.totalActions === 1 ? '' : 's'}}</b></td>
           <td *ngIf="isTrusted"><a [routerLink]="['/user-actions', userData.userId]">{{userData.totalActions | number}}
               total actions</a></td>
         </tr>
@@ -41,7 +41,7 @@
   <p class="h2">Rodgort triage</p>
   <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has triaged <a
     routerLink="/tag-tracking-status-audits" [queryParams]="{userId: userData.userId}">{{userData.triageTags | number}}
-    tags, across {{userData.triageQuestions | number}} requests</a>
+    tag{{userData.triageTags === 1 ? '' : 's'}}, across {{userData.triageQuestions | number}} request{{userData.triageQuestions === 1 ? '' : 's'}}</a>
 
   <hr />
   <p class="h2">User access</p>

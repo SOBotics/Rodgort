@@ -42,7 +42,7 @@
             <li>{{statistics.tags.hasQuestionsAndAttachedToCompletedRequest | number}} have questions despite being found on
                 a
                 status-completed request</li>
-            <li><a routerLink="/zombies">{{statistics.tags.zombieCount | number}} currently alive tags have re-appeared after removal</a></li>
+            <li><span class="mr-1" *ngIf="statistics.tags.zombieCount > 0">⚠️</span><a routerLink="/zombies">{{statistics.tags.zombieCount | number}} currently alive tags have re-appeared after removal</a></li>
         </ul>
     </ul>
     <ul>
