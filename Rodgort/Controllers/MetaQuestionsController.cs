@@ -48,7 +48,7 @@ namespace Rodgort.Controllers
                         break;
                     }
                     case "tag":
-                        dbQuery = dbQuery.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == query));
+                        dbQuery = dbQuery.Where(mq => mq.MetaQuestionTags.Any(mqt => mqt.TagName == query && mqt.TrackingStatusId != DbMetaQuestionTagTrackingStatus.IGNORED));
                         break;
                     case "content":
                         dbQuery = dbQuery.Where(mq => mq.Body.Contains(query) || mq.Title.Contains(query));
