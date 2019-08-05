@@ -8,7 +8,7 @@
 
   <p class="h2">Burninations</p>
   <app-render-username [user]="userData" [hyperlinkName]="false"></app-render-username> has contributed towards
-  {{userData.numBurninations}} burninations
+  {{userData.numBurninations}} burnination{{userData.numBurninations === 1 ? '' : 's'}}
 
   <div *ngIf="userData.numBurninations > 0" class="table-responsive">
     <table class="table mt-3">
