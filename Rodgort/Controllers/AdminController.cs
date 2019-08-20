@@ -211,8 +211,8 @@ namespace Rodgort.Controllers
         [HttpPost("Backup")]
         public string BackupGetToken()
         {
-            var isAdmin = User.HasRole(DbRole.ADMIN);
-            if (!isAdmin)
+            var isTriager = User.HasRole(DbRole.TRIAGER);
+            if (!isTriager)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
             var signingKey = GetSigningKey();
