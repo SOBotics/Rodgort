@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, ADMIN } from '../services/auth.service';
+import { AuthService, ADMIN, TRIAGER } from '../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -39,6 +39,7 @@ export class HomeComponent implements OnInit {
   public loading = false;
 
   public isAdmin = false;
+  public isTriager = true;
 
   constructor(
     private httpClient: HttpClient,
@@ -54,6 +55,7 @@ export class HomeComponent implements OnInit {
 
     this.authService.GetAuthDetails().subscribe(d => {
       this.isAdmin = d.HasRole(ADMIN);
+      this.isTriager = d.HasRole(TRIAGER);
     });
   }
 
