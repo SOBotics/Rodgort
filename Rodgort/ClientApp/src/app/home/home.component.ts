@@ -65,8 +65,10 @@ export class HomeComponent implements OnInit {
     });
   }
   public downloadBackup() {
-    this.httpClient.post('/api/admin/backup', {}, {responseType: 'text'}).subscribe(token => {
-      window.open('/api/admin/backup?token=' + token);
-    });
+    if (confirm('Are you sure you want to download a backup?')) {
+      this.httpClient.post('/api/admin/backup', {}, { responseType: 'text' }).subscribe(token => {
+        window.open('/api/admin/backup?token=' + token);
+      });
+    }
   }
 }
