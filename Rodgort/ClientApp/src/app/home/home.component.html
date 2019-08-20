@@ -60,6 +60,7 @@
             <li><a routerLink="/manual-question-processing">Manual Question Processing</a></li>
             <li><a routerLink="/unknown-deletion-resolution">Unknown deletion resolution
                     ({{statistics.admin.unknownDeletions | number}})</a></li>
+            <li><a href="javascript:void(0)" (click)="downloadBackup()">Download backup</a></li>
             <li><a href="javascript:void(0)" (click)="shutdown()">Shutdown</a></li>
         </ul>
     </ng-container>

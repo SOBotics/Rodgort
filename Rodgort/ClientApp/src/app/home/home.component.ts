@@ -62,4 +62,9 @@ export class HomeComponent implements OnInit {
       window.location.reload();
     });
   }
+  public downloadBackup() {
+    this.httpClient.post('/api/admin/backup', {}, {responseType: 'text'}).subscribe(token => {
+      window.open('/api/admin/backup?token=' + token);
+    });
+  }
 }

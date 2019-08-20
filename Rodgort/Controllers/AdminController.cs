@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
@@ -25,8 +31,9 @@ namespace Rodgort.Controllers
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<AdminController> _logger;
         private readonly IApplicationLifetime _appLifetime;
+        private readonly IConfiguration _configuration;
 
-        public AdminController(RodgortContext context, BurnProcessingService burnProcessingService, DateService dateService, IServiceProvider serviceProvider, ILogger<AdminController> logger, IApplicationLifetime appLifetime)
+        public AdminController(RodgortContext context, BurnProcessingService burnProcessingService, DateService dateService, IServiceProvider serviceProvider, ILogger<AdminController> logger, IApplicationLifetime appLifetime, IConfiguration configuration)
         {
             _context = context;
             _burnProcessingService = burnProcessingService;
@@ -34,6 +41,7 @@ namespace Rodgort.Controllers
             _serviceProvider = serviceProvider;
             _logger = logger;
             _appLifetime = appLifetime;
+            _configuration = configuration;
         }
 
         [HttpGet("UnresolvedDeletions")]
@@ -173,9 +181,6 @@ namespace Rodgort.Controllers
             if (!isAdmin)
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
-            var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
-            var dateService = _serviceProvider.GetRequiredService<DateService>();
-
             var follows = _context.BurnakiFollows.Where(bf => bf.BurnakiId == request.FollowingId && bf.RoomId == request.RoomId).ToList();
             if (follows.Count == 0)
             {
@@ -202,7 +207,72 @@ namespace Rodgort.Controllers
 
             _logger.LogInformation($"Finished manual processing for {request.QuestionIds.Count} questions");
         }
-        
+
+        [HttpPost("Backup")]
+        public string BackupGetToken()
+        {
+            var isAdmin = User.HasRole(DbRole.ADMIN);
+            if (!isAdmin)
+                throw new HttpStatusException(HttpStatusCode.Unauthorized);
+
+            var signingKey = GetSigningKey();
+            var token = AuthenticationController.CreateJwtToken(new[] {new Claim("BackupToken", "true")}, signingKey, DateTime.UtcNow.AddMinutes(1));
+            return token;
+        }
+
+        [HttpGet("Backup")]
+        public FileResult Backup(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                throw new HttpStatusException(HttpStatusCode.Unauthorized);
+
+            var symmetricKey = GetSigningKey();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+
+                IssuerSigningKey = new SymmetricSecurityKey(symmetricKey)
+            };
+
+            var ident = new JwtSecurityTokenHandler().ValidateToken(token, validationParameters, out _);
+            if (!ident.Claims.Any(t => t.Type == "BackupToken" && t.Value == "true"))
+                throw new HttpStatusException(HttpStatusCode.Unauthorized);
+            
+            var pgDumpPath = _configuration["PGDumpPath"];
+            var pgDumpUsername = _configuration["PGDumpUsername"];
+            var pgDumpPassword = _configuration["PGDumpPassword"];
+
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = pgDumpPath,
+                    Environment = {
+                    {
+                        "PGPASSWORD", pgDumpPassword
+                    }},
+                    Arguments = $"-U {pgDumpUsername} -h localhost rodgort",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+            process.Start();
+
+            return File(process.StandardOutput.BaseStream, "text/plain", $"Rodgort - {DateTime.UtcNow:yyyy.MM.dd}.bak");
+        }
+
+        private byte[] GetSigningKey()
+        {
+            var signingKey = Convert.FromBase64String(_configuration["JwtSigningKey"]);
+            return signingKey;
+        }
+
         public class ResolveUnresolvedDeletionRequest
         {
             public int UnknownDeletionId { get; set; }
