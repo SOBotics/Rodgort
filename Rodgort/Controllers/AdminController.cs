@@ -216,7 +216,12 @@ namespace Rodgort.Controllers
                 throw new HttpStatusException(HttpStatusCode.Unauthorized);
 
             var signingKey = GetSigningKey();
-            var token = AuthenticationController.CreateJwtToken(new[] {new Claim("BackupToken", "true")}, signingKey, DateTime.UtcNow.AddMinutes(1));
+            var token = AuthenticationController.CreateJwtToken(new[]
+            {
+                new Claim("BackupToken", "true"),
+                new Claim(ClaimTypes.Name, User.FindFirstValue(ClaimTypes.Name)),
+                new Claim("accountId", User.UserId().ToString())
+            }, signingKey, DateTime.UtcNow.AddMinutes(1));
             return token;
         }
 
@@ -264,6 +269,7 @@ namespace Rodgort.Controllers
             };
             process.Start();
 
+            _logger.LogInformation($"User {ident.FindFirstValue(ClaimTypes.Name)} ({ident.UserId()}) initiated a backup");
             return File(process.StandardOutput.BaseStream, "text/plain", $"Rodgort - {DateTime.UtcNow:yyyy.MM.dd}.bak");
         }
 
