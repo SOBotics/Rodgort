@@ -180,15 +180,15 @@ export class QuestionCountGraphComponent implements OnInit {
     const minTime = hasStartBoundary ? toUtcDateTime(boundaryStart) : undefined;
 
     const onLoad = (event: any) => {
-      if (canUploadSvg && this.questionId) {
-        const svg = (event.target.renderer as any).box as SVGElement;
-        this.httpClient.post('/api/statistics/UpdateSvg', {
-          metaQuestionId: this.questionId,
-          svg: svg.outerHTML
-        }).subscribe(_ => { });
+      // if (canUploadSvg && this.questionId) {
+      //   const svg = (event.target.renderer as any).box as SVGElement;
+      //   this.httpClient.post('/api/statistics/UpdateSvg', {
+      //     metaQuestionId: this.questionId,
+      //     svg: svg.outerHTML
+      //   }).subscribe(_ => { });
 
-        console.log({ q: this.questionId, svg });
-      }
+      //   console.log({ q: this.questionId, svg });
+      // }
     };
 
     this.chart = new Chart({
