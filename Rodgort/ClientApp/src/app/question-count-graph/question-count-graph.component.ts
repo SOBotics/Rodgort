@@ -3,7 +3,7 @@ import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
 import { toUtcDateTime } from '../../utils/ToUtcDateTime';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../services/auth.service';
+import { AuthService, TRIAGER } from '../services/auth.service';
 
 @Component({
   selector: 'app-question-count-graph',
@@ -46,8 +46,8 @@ export class QuestionCountGraphComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    let isLoggedIn = false;
-    this.authService.GetAuthDetails().subscribe(d => isLoggedIn = d.IsAuthenticated);
+    let canUploadSvg = false;
+    this.authService.GetAuthDetails().subscribe(d => canUploadSvg = d.HasRole(TRIAGER));
     const bands = [];
     const lines = this.customLines ?
       this.customLines.map(l => ({
@@ -180,7 +180,7 @@ export class QuestionCountGraphComponent implements OnInit {
     const minTime = hasStartBoundary ? toUtcDateTime(boundaryStart) : undefined;
 
     const onLoad = (event: any) => {
-      if (isLoggedIn && this.questionId) {
+      if (canUploadSvg && this.questionId) {
         const svg = (event.target.renderer as any).box as SVGElement;
         this.httpClient.post('/api/statistics/UpdateSvg', {
           metaQuestionId: this.questionId,
