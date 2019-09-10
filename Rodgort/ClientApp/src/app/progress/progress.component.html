@@ -22,6 +22,7 @@
 
         <h2>Tag Progress</h2>
         <app-question-count-graph [data]="tag.questionCountOverTime" [remainingOverTime]="tag.remainingOverTime"
+          [questionId]="burn.metaQuestionId"
           [closuresOverTime]="tag.closuresOverTime" [deletionsOverTime]="tag.deletionsOverTime"
           [retagsOverTime]="tag.retagsOverTime" [roombasOverTime]="tag.roombasOverTime"
           [featuredStarted]="burn.featuredStarted" [featuredEnded]="burn.featuredEnded" [burnStarted]="burn.burnStarted"

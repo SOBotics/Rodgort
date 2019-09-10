@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Security.Claims;
+using System.Text;
 using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Rodgort.Data;
 using Rodgort.Data.Tables;
 using Rodgort.Services;
@@ -16,11 +21,13 @@ namespace Rodgort.Controllers
     {
         private readonly RodgortContext _context;
         private readonly DateService _dateService;
-        
-        public StatisticsController(RodgortContext context, DateService dateService)
+        private readonly ILogger<StatisticsController> _logger;
+
+        public StatisticsController(RodgortContext context, DateService dateService, ILogger<StatisticsController> logger)
         {
             _context = context;
             _dateService = dateService;
+            _logger = logger;
         }
         
         [HttpGet]
@@ -184,6 +191,40 @@ order by innerQuery.burn_started desc
                     .Where(mq => mq.MetaQuestionMetaTags.Any(mqtmt => DbMetaTag.RequestTypes.Contains(mqtmt.TagName)))
                     .Where(mq => mq.Id == metaQuestionId)
             );
+        }
+
+        public class UpdateSvgRequest
+        {
+            public int MetaQuestionId { get; set; }
+            public string Svg { get; set; }
+        }
+
+        [HttpPost("UpdateSvg")]
+        [Authorize]
+        public void UpdateSvg([FromBody] UpdateSvgRequest request)
+        {
+            var metaQuestion = _context.MetaQuestions.FirstOrDefault(mq => mq.Id == request.MetaQuestionId);
+            var userName = User.FindFirstValue(ClaimTypes.Name);
+            if (metaQuestion != null)
+            {
+                metaQuestion.ProgressSvg = request.Svg;
+                _context.SaveChanges();
+                _logger.LogInformation($"User {userName} ({User.UserId()}) uploaded svg for {request.MetaQuestionId}");
+            }
+            else
+            {
+                _logger.LogInformation($"User {userName} ({User.UserId()}) attempted to upload svg for {request.MetaQuestionId}");
+            }
+        }
+
+        [HttpGet("{metaQuestionId}/Progress.svg")]
+        public FileResult Svg(int metaQuestionId)
+        {
+            var metaQuestion = _context.MetaQuestions.FirstOrDefault(mq => mq.Id == metaQuestionId);
+            if (metaQuestion != null)
+                return File(Encoding.UTF8.GetBytes(metaQuestion.ProgressSvg), "image/svg+xml");
+
+            return File(new byte[0], "image/svg+xml");
         }
 
         private object GenerateBurnsData(IQueryable<DbMetaQuestion> query)

@@ -2,6 +2,8 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Chart } from 'angular-highcharts';
 import * as Highcharts from 'highcharts';
 import { toUtcDateTime } from '../../utils/ToUtcDateTime';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-question-count-graph',
@@ -10,6 +12,8 @@ import { toUtcDateTime } from '../../utils/ToUtcDateTime';
 })
 export class QuestionCountGraphComponent implements OnInit {
 
+  @Input()
+  public questionId: number;
   @Input()
   public data: any;
   @Input()
@@ -36,10 +40,14 @@ export class QuestionCountGraphComponent implements OnInit {
 
   public chart: Chart = null;
 
-  constructor() { }
+  constructor(
+    private httpClient: HttpClient,
+    private authService: AuthService
+  ) { }
 
   ngOnInit() {
-    debugger;
+    let isLoggedIn = false;
+    this.authService.GetAuthDetails().subscribe(d => isLoggedIn = d.IsAuthenticated);
     const bands = [];
     const lines = this.customLines ?
       this.customLines.map(l => ({
@@ -171,9 +179,24 @@ export class QuestionCountGraphComponent implements OnInit {
 
     const minTime = hasStartBoundary ? toUtcDateTime(boundaryStart) : undefined;
 
+    const onLoad = (event: any) => {
+      if (isLoggedIn && this.questionId) {
+        const svg = (event.target.renderer as any).box as SVGElement;
+        this.httpClient.post('/api/statistics/UpdateSvg', {
+          metaQuestionId: this.questionId,
+          svg: svg.outerHTML
+        }).subscribe(_ => { });
+
+        console.log({ q: this.questionId, svg });
+      }
+    };
+
     this.chart = new Chart({
       chart: {
         type: 'line',
+        events: {
+          load: onLoad
+        }
       },
       title: {
         text: ''
@@ -231,7 +254,8 @@ export class QuestionCountGraphComponent implements OnInit {
       legend: {
         enabled: this.remainingOverTime || this.closuresOverTime || this.deletionsOverTime || this.retagsOverTime || this.roombasOverTime
       },
-      series: series
+      series: series,
+      exporting: null
     });
   }
 }
