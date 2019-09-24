@@ -7,6 +7,7 @@ using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -23,17 +24,20 @@ namespace StackExchangeChat
 
         private readonly string _endpoint;
         private readonly IDictionary<string, string> _headers;
+        private readonly IApplicationLifetime _appLifetime;
 
         private readonly Subject<string> _subject;
         private readonly IObservable<string> _observable;
 
         public ObservableClientWebSocket(ILogger<ObservableClientWebSocketFactory> logger,
-            string endpoint, IDictionary<string, string> headers)
+            string endpoint, IDictionary<string, string> headers,
+            IApplicationLifetime appLifetime)
         {
             _logger = logger;
             _endpoint = endpoint;
             _headers = headers;
-            
+            _appLifetime = appLifetime;
+
             _subject = new Subject<string>();
             _observable = _subject.AsObservable().Publish().RefCount();
         }
@@ -62,8 +66,8 @@ namespace StackExchangeChat
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to connect");
-                await Task.Delay(_reconnectDuration);
-                await Connect();
+
+                _appLifetime.StopApplication();
             }
         }
 
