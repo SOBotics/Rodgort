@@ -69,34 +69,34 @@ namespace StackExchangeChat
                     try
                     {
                         doc.LoadHtml(resultStr);
+
+                        var fkeyElement = doc.DocumentNode.SelectSingleNode("//input[@id = 'fkey']");
+                        var fkey = fkeyElement.Attributes["value"].Value;
+
+                        var userPanel = doc.DocumentNode.SelectSingleNode("//div[@id = 'active-user']");
+                        var classItems = userPanel.Attributes["class"].Value;
+
+                        var userIdRegex = new Regex("user\\-(\\d+)");
+                        var userId = int.Parse(userIdRegex.Match(classItems).Groups[1].Value);
+                        var userName = userPanel.SelectSingleNode(".//img").Attributes["title"].Value;
+
+                        var roomDetails = new RoomDetails
+                        {
+                            ChatSite = chatSite,
+                            RoomId = roomId,
+
+                            MyUserId = userId,
+                            MyUserName = userName,
+
+                            FKey = fkey
+                        };
+
+                        return roomDetails;
                     }
                     catch (NullReferenceException)
                     {
                         throw new RoomNotFoundException($"Room {roomId} not found.");
                     }
-
-                    var fkeyElement = doc.DocumentNode.SelectSingleNode("//input[@id = 'fkey']");
-                    var fkey = fkeyElement.Attributes["value"].Value;
-
-                    var userPanel = doc.DocumentNode.SelectSingleNode("//div[@id = 'active-user']");
-                    var classItems = userPanel.Attributes["class"].Value;
-
-                    var userIdRegex = new Regex("user\\-(\\d+)");
-                    var userId = int.Parse(userIdRegex.Match(classItems).Groups[1].Value);
-                    var userName = userPanel.SelectSingleNode(".//img").Attributes["title"].Value;
-                    
-                    var roomDetails = new RoomDetails
-                    {
-                        ChatSite = chatSite,
-                        RoomId = roomId,
-                        
-                        MyUserId = userId,
-                        MyUserName = userName,
-
-                        FKey = fkey
-                    };
-
-                    return roomDetails;
                 }
             }
         }
