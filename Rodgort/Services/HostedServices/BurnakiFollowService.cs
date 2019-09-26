@@ -128,21 +128,17 @@ namespace Rodgort.Services.HostedServices
                             }
                         }, cancellationToken);
                 }
-                catch (SiteAuthenticator.RoomNotFoundException ex)
+                catch (SiteAuthenticator.RoomNotFoundException)
                 {
-                    using (var context = _serviceProvider.GetRequiredService<RodgortContext>())
-                    {
-                        var followsForRoom = context.BurnakiFollows.Where(bf => bf.RoomId == roomId).ToList();
-                        if (followsForRoom.Any())
-                        {
-                            //foreach (var follow in followsForRoom)
-                            //    context.BurnakiFollows.Remove(follow);
-                            //context.SaveChanges();
-
-                            _logger.LogInformation($"Stopped following room {roomId}");
-                            throw;
-                        }
-                    }
+                    throw;
+                    //using (var context = _serviceProvider.GetRequiredService<RodgortContext>())
+                    //{
+                    //    var followsForRoom = context.BurnakiFollows.Where(bf => bf.RoomId == roomId).ToList();
+                    //    if (followsForRoom.Any())
+                    //    {
+                    //        throw;
+                    //    }
+                    //}
                 }
             }
             catch (Exception ex)
