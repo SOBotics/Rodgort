@@ -66,7 +66,14 @@ namespace StackExchangeChat
                         throw new RoomNotFoundException($"Room {roomId} not found.");
                     
                     var doc = new HtmlDocument();
-                    doc.LoadHtml(resultStr);
+                    try
+                    {
+                        doc.LoadHtml(resultStr);
+                    }
+                    catch (NullReferenceException)
+                    {
+                        throw new RoomNotFoundException($"Room {roomId} not found.");
+                    }
 
                     var fkeyElement = doc.DocumentNode.SelectSingleNode("//input[@id = 'fkey']");
                     var fkey = fkeyElement.Attributes["value"].Value;
