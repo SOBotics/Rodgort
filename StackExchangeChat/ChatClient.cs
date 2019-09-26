@@ -85,8 +85,16 @@ namespace StackExchangeChat
 
                     LogResponseError(response);
 
-                    var responsePayload = JsonConvert.DeserializeObject<JObject>(responseString);
-                    return int.Parse(responsePayload["id"].ToString());
+                    try
+                    {
+                        var responsePayload = JsonConvert.DeserializeObject<JObject>(responseString);
+                        return int.Parse(responsePayload["id"].ToString());
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        _logger.LogError(ex, "Failed to deserialize message: " + responseString);
+                        throw;
+                    }
                 }
 
                 return await SendMessage();
