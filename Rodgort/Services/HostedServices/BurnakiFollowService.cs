@@ -93,37 +93,57 @@ namespace Rodgort.Services.HostedServices
                 var chatClient = _serviceProvider.GetRequiredService<ChatClient>();
 
                 var questionIdRegex = new Regex(@"stackoverflow\.com\/q\/(\d+)");
+
+                try
+                {
+                    var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, roomId);
+                    await events.FirstAsync();
                 
-                var events = chatClient.SubscribeToEvents(ChatSite.StackOverflow, roomId);
-                await events.FirstAsync();
-                _logger.LogInformation($"Successfully joined room {roomId}");
-                chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, $"I just joined {roomId}");
+                    _logger.LogInformation($"Successfully joined room {roomId}");
+                    chatClient.SendMessage(ChatSite.StackOverflow, ChatRooms.HEADQUARTERS, $"I just joined {roomId}");
 
-                events
-                    .ReplyAlive()
-                    .OnlyMessages()
-                    .SameRoomOnly()
-                    .Where(r => r.ChatEventDetails.UserId == followingUserId)
-                    .SlidingBuffer(TimeSpan.FromSeconds(30))
-                    .Subscribe(async chatEvents =>
-                    {
-                        try
+                    events
+                        .ReplyAlive()
+                        .OnlyMessages()
+                        .SameRoomOnly()
+                        .Where(r => r.ChatEventDetails.UserId == followingUserId)
+                        .SlidingBuffer(TimeSpan.FromSeconds(30))
+                        .Subscribe(async chatEvents =>
                         {
-                            var questionIds = chatEvents
-                                .SelectMany(ceg => questionIdRegex.Matches(ceg.ChatEventDetails.Content).Select(m => int.Parse(m.Groups[1].Value)))
-                                .Distinct();
-
-                            using (var scope = _serviceProvider.CreateScope())
+                            try
                             {
-                                var burnProcessingService = scope.ServiceProvider.GetRequiredService<BurnProcessingService>();
-                                await burnProcessingService.ProcessQuestionIds(questionIds, followingTag, roomId, true);
+                                var questionIds = chatEvents
+                                    .SelectMany(ceg => questionIdRegex.Matches(ceg.ChatEventDetails.Content).Select(m => int.Parse(m.Groups[1].Value)))
+                                    .Distinct();
+
+                                using (var scope = _serviceProvider.CreateScope())
+                                {
+                                    var burnProcessingService = scope.ServiceProvider.GetRequiredService<BurnProcessingService>();
+                                    await burnProcessingService.ProcessQuestionIds(questionIds, followingTag, roomId, true);
+                                }
                             }
-                        }
-                        catch (Exception ex)
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex, "Failed processing chat events");
+                            }
+                        }, cancellationToken);
+                }
+                catch (SiteAuthenticator.RoomNotFoundException ex)
+                {
+                    using (var context = _serviceProvider.GetRequiredService<RodgortContext>())
+                    {
+                        var followsForRoom = context.BurnakiFollows.Where(bf => bf.RoomId == roomId).ToList();
+                        if (followsForRoom.Any())
                         {
-                            _logger.LogError(ex, "Failed processing chat events");
+                            //foreach (var follow in followsForRoom)
+                            //    context.BurnakiFollows.Remove(follow);
+                            //context.SaveChanges();
+
+                            _logger.LogInformation($"Stopped following room {roomId}");
+                            throw;
                         }
-                    }, cancellationToken);
+                    }
+                }
             }
             catch (Exception ex)
             {

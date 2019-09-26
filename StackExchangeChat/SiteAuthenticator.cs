@@ -23,6 +23,11 @@ namespace StackExchangeChat
 
         private static readonly Dictionary<SiteRoomIdPair, Task<RoomDetails>> _cachedRoomDetails = new Dictionary<SiteRoomIdPair, Task<RoomDetails>>();
 
+        public class RoomNotFoundException : Exception
+        {
+            public RoomNotFoundException(string message) : base(message) {}
+        }
+
         public SiteAuthenticator(IServiceProvider serviceProvider, IChatCredentials chatCredentials)
         {
             _serviceProvider = serviceProvider;
@@ -57,6 +62,9 @@ namespace StackExchangeChat
                     var result = await httpClient.GetAsync($"https://{chatSite.ChatDomain}/rooms/{roomId}");
                     var resultStr = await result.Content.ReadAsStringAsync();
 
+                    if (!result.IsSuccessStatusCode)
+                        throw new RoomNotFoundException($"Room {roomId} not found.");
+                    
                     var doc = new HtmlDocument();
                     doc.LoadHtml(resultStr);
 
