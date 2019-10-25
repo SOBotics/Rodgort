@@ -65,6 +65,7 @@ namespace StackExchangeApi
 
                 using (var httpClient = _serviceProvider.GetService<HttpClient>())
                 {
+                    _logger.LogTrace($"Making request to {url}");
                     var response = await httpClient.GetAsync(url);
                     var content = await response.Content.ReadAsStringAsync();
                     var payloadUntyped = JsonConvert.DeserializeObject<JObject>(content);
